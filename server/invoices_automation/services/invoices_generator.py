@@ -137,16 +137,3 @@ if __name__ == "__main__":
     )
     reciminas_url = "https://cloud3.sygecom.com.br/sgr_reciminas.html"
     entry_invoices_automation.run(url=reciminas_url, headless=False, devtools=True)
-
-
-"""
-HOURS
-
-23/09/2025 - 20:00 > 23:00 = 3h
-24/09/2025 - 20:30 > 22:40 = 2:10h
-26/09/2025 - 21:00 > 22:15 = 1:15h
-27/09/2025 - 13:00 > 16:00 = 3h
-27/09/2025 - 18:30 > 19:45 = 1:15h
-29/09/2025 - 20:30 > 23:40 = 3:10h
-30/09/2025 - 20:30 > 22:30 = 2h
-"""
