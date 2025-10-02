@@ -12,7 +12,8 @@ urlpatterns = [
         auth_views.LoginView.as_view(template_name="core/login.html", authentication_form=CustomAuthenticationForm),
         name="login",
     ),
-    path("logout/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
-    path("register/", views.register, name="register"),
+    path("sair/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
+    path("registro/", views.register, name="register"),
     path("dashboard/", views.dashboard, name="dashboard"),
+    path("emissao-nf-de-entrada/", views.entry_invoice, name="entry_invoice"),
 ]

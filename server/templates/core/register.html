@@ -3,49 +3,41 @@
 {% block title %}Registrar - Reciminas{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-center vh-100 bg-light">
-    <div class="card shadow p-4" style="width: 400px;">
-        <h4 class="mb-3 text-center">Criar Conta</h4>
+<div class="d-flex align-items-center justify-content-center" style="min-height: 85vh;">
+    <div class="card shadow-lg p-4" style="max-width: 450px; width: 100%;">
+        <h4 class="mb-3 text-center fw-bold">📝 Criar Conta</h4>
         <form method="post">
             {% csrf_token %}
 
             <div class="mb-3">
                 {{ form.username.label_tag }}
                 {{ form.username }}
-                {% if form.username.errors %}
-                    <div class="text-danger small">{{ form.username.errors }}</div>
-                {% endif %}
+                <div class="text-danger small">{{ form.username.errors }}</div>
             </div>
 
             <div class="mb-3">
                 {{ form.email.label_tag }}
                 {{ form.email }}
-                {% if form.email.errors %}
-                    <div class="text-danger small">{{ form.email.errors }}</div>
-                {% endif %}
+                <div class="text-danger small">{{ form.email.errors }}</div>
             </div>
 
             <div class="mb-3">
                 {{ form.password1.label_tag }}
                 {{ form.password1 }}
-                {% if form.password1.errors %}
-                    <div class="text-danger small">{{ form.password1.errors }}</div>
-                {% endif %}
+                <div class="text-danger small">{{ form.password1.errors }}</div>
             </div>
 
             <div class="mb-3">
                 {{ form.password2.label_tag }}
                 {{ form.password2 }}
-                {% if form.password2.errors %}
-                    <div class="text-danger small">{{ form.password2.errors }}</div>
-                {% endif %}
+                <div class="text-danger small">{{ form.password2.errors }}</div>
             </div>
 
             <button type="submit" class="btn btn-success w-100">Registrar</button>
         </form>
 
         <div class="text-center mt-3">
-            <a href="{% url 'login' %}">Já tem conta? Entrar</a>
+            <a href="{% url 'login' %}" class="text-decoration-none">Já tem conta? <strong>Entrar</strong></a>
         </div>
     </div>
 </div>

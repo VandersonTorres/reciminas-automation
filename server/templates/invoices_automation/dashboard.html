@@ -3,12 +3,24 @@
 {% block title %}Dashboard - Reciminas{% endblock %}
 
 {% block content %}
-<body>
-    <h2>Bem-vindo, {{ user.username }}!</h2>
-    <form action="{% url 'logout' %}" method="post" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-link">Sair</button>
-    </form>
-</body>
-</html>
+<div class="text-center mb-5">
+    <h2 class="fw-bold">Bem-vindo, {{ user.username }}! 👋</h2>
+    <p class="text-muted">Selecione uma funcionalidade abaixo:</p>
+</div>
+
+<!-- Section for Invoices Emission -->
+<div class="card shadow-lg mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">📄 Emissão de Notas Fiscais</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">Gerencie as notas fiscais disponíveis no sistema:</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'entry_invoice' %}" class="btn btn-success">
+                📥 NF de Entrada
+            </a>
+            <!-- TODO: Add others here, ex: -->
+        </div>
+    </div>
+</div>
 {% endblock %}
