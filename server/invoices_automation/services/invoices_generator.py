@@ -10,11 +10,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
     company_name = "RECIMINAS"
 
     def __init__(
-        self, provider: str,
-        material_code: str,
-        material_quantity: float,
-        material_price: float,
-        discount: float
+        self, provider: str, material_code: str, material_quantity: float, material_price: float, discount: float
     ) -> None:
         super().__init__()
         self.provider = provider
@@ -45,11 +41,15 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
 
             # Insert Username
             self.logger.info("Inserting username...")
-            self._insert_data(page=logged_page, element_to_click=self.coord_user_insertion, data_to_insert=RECIMINAS_USERNAME)
+            self._insert_data(
+                page=logged_page, element_to_click=self.coord_user_insertion, data_to_insert=RECIMINAS_USERNAME
+            )
 
             # Insert Password
             self.logger.info("Inserting password...")
-            self._insert_data(page=logged_page, element_to_click=self.coord_password_insertion, data_to_insert=RECIMINAS_PASSWORD)
+            self._insert_data(
+                page=logged_page, element_to_click=self.coord_password_insertion, data_to_insert=RECIMINAS_PASSWORD
+            )
 
             # Log in
             self.logger.info(f"Logging in to {RECIMINAS_USERNAME} account...")
@@ -99,9 +99,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
             self._insert_data(
                 page=logged_page, element_to_click=self.coord_price, data_to_insert=str(self.material_price)
             )
-            self._insert_data(
-                page=logged_page, element_to_click=self.coord_discount, data_to_insert=str(self.discount)
-            )
+            self._insert_data(page=logged_page, element_to_click=self.coord_discount, data_to_insert=str(self.discount))
             self._click_element(page=logged_page, element_to_click=self.coord_store_progress)
 
             # Manage charge and payments
@@ -116,7 +114,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
             self.logger.info("Documento salvo em reciminas_documento.pdf")
             self._click_element(page=logged_page, element_to_click=self.coord_see_invoice)
             self._click_element(page=logged_page, element_to_click=self.coord_confirm_store, delay=30)
-            import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace()
             self._click_element(page=logged_page, element_to_click=self.coord_page_zoom)
             self._click_element(page=logged_page, element_to_click=self.coord_set_zoom)
             logged_page.screenshot(path=f"NF-ENTRADA-{self.provider}-{str(self.coord_price)}.png", full_page=True)
@@ -126,9 +124,9 @@ if __name__ == "__main__":
     # INPUTS
     provider = "SERGIO WANDUARLES"
     material_code = "50"
-    material_quantity = 10.2    # Kg
-    material_price = 50.10      # R$
-    discount = 0                # R$
+    material_quantity = 10.2  # Kg
+    material_price = 50.10  # R$
+    discount = 0  # R$
 
     entry_invoices_automation = EntryInvoicesAutomation(
         provider=provider,
