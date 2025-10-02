@@ -1,13 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LogoutView
 from django.shortcuts import render, redirect
 
 from .forms import CustomUserCreationForm
-
-
-class CustomLogoutView(LogoutView):
-    template_name = "logout.html"
 
 
 def register(request):
@@ -19,9 +14,9 @@ def register(request):
             return redirect("login")
     else:
         form = CustomUserCreationForm()
-    return render(request, "register.html", {"form": form})
+    return render(request, "core/register.html", {"form": form})
 
 
 @login_required
 def dashboard(request):
-    return render(request, "dashboard.html")
+    return render(request, "invoices_automation/dashboard.html")
