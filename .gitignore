@@ -1,0 +1,17 @@
+.idea/
+/log-review/*.jl
+*.egg-info/
+build/
+*.pyc
+.env
+.venv/
+venv*
+env/*.env
+.envrc
+.releases
+.cache
+.~lock*
+*html
+.vscode
+*.log
+.python-version
