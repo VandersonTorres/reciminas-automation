@@ -42,3 +42,43 @@ class CustomUserCreationForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+
+# Entry Invoices Emission Form
+class EntryInvoiceForm(forms.Form):
+    provider = forms.CharField(
+        label="Fornecedor",
+        max_length=100,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome completo"}),
+    )
+    material_code = forms.ChoiceField(
+        label="Material",
+        choices=[
+            ("", "Selecione"),
+            ("50", "Sucata de Cobre"),
+            ("51", "Sucata de Latão"),
+            ("52", "Sucata de Alumínio"),
+            ("64", "Sucata de Ferro"),
+        ],
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+    material_quantity = forms.DecimalField(
+        label="Quantidade (Kg)",
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "placeholder": "Ex: 10.2"}),
+    )
+    material_price = forms.DecimalField(
+        label="Preço Unitário (R$)",
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "placeholder": "Ex: 50.10"}),
+    )
+    discount = forms.DecimalField(
+        label="Desconto (R$)",
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        initial=0,
+        widget=forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "placeholder": "Ex: 0"}),
+    )

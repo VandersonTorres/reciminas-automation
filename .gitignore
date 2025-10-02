@@ -14,3 +14,4 @@ env/*.env
 .vscode
 *.log
 .python-version
+db.sqlite3
