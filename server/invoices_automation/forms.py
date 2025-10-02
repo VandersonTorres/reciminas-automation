@@ -55,9 +55,10 @@ class EntryInvoiceForm(forms.Form):
         label="Material",
         choices=[
             ("", "Selecione"),
-            ("50", "Aço"),
-            ("51", "Madeira"),
-            ("52", "Cimento"),
+            ("50", "Sucata de Cobre"),
+            ("51", "Sucata de Latão"),
+            ("52", "Sucata de Alumínio"),
+            ("64", "Sucata de Ferro"),
         ],
         widget=forms.Select(attrs={"class": "form-select"}),
     )
