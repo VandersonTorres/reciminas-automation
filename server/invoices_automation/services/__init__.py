@@ -4,12 +4,25 @@ import time
 from playwright.sync_api import sync_playwright
 from playwright.sync_api._generated import Page
 
+from .log_buffer import InMemoryLogHandler
 
-# /__init__.py
+
 class BaseAutomation:
+    company_name = "RECIMINAS"
+    reciminas_url = "https://cloud3.sygecom.com.br/sgr_reciminas.html"
+
     def __init__(self) -> None:
         # Set logger
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logging.getLogger("Reciminas - SYGECOM")
+
+        # Connect logger to a memory buffer
+        self.log_handler = InMemoryLogHandler()
+        self.log_handler.setFormatter(logging.Formatter("[%(asctime)s] [%(name)s] - %(levelname)s - %(message)s"))
+        self.logger.addHandler(self.log_handler)
+        self.logger.setLevel(logging.INFO)
+
+        # Clean logs whenever starts a new execution
+        self.log_handler.clear()
 
     def _sleep_between_actions(self, seconds: int = 3) -> None:
         """

@@ -16,4 +16,7 @@ urlpatterns = [
     path("registro/", views.register, name="register"),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("emissao-nf-de-entrada/", views.entry_invoice, name="entry_invoice"),
+    path("execucao-automacao/", views.automation_logs, name="automation_logs"),
+    path("get-logs/", views.get_logs, name="get_logs"),
+    path("cancelar-processo/", views.cancel_automation, name="cancel_automation"),
 ]

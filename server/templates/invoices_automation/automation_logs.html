@@ -1,0 +1,69 @@
+{% extends "core/base.html" %}
+
+{% block title %}Execução de Automação{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Acompanhamento - Automação</h5>
+      <button id="cancelButton" class="btn btn-danger btn-sm">Cancelar</button>
+    </div>
+    <div class="card-body">
+      <pre id="logs" style="max-height: 400px; overflow-y: auto; background: #111; color: #0f0; padding: 10px; border-radius: 5px;"></pre>
+    </div>
+    <p class="alert alert-warning text-center mt-3 mb-0 fw-bold shadow-sm"
+      style="font-size: 1rem; border-left: 6px solid #dc3545;">
+      ⚠️ <span class="text-danger">Atenção:</span> não atualize nem feche esta janela enquanto a automação estiver em execução!
+    </p>
+  </div>
+</div>
+
+<script>
+let cancelConfirmed = false;
+
+function fetchLogs() {
+  if (!cancelConfirmed) {
+    fetch("{% url 'get_logs' %}")
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("logs").innerText = data.logs.join("\n");
+      });
+  }
+}
+
+setInterval(fetchLogs, 1000);
+fetchLogs();
+
+const jobId = "{{ request.session.job_id }}";
+
+document.getElementById("cancelButton").addEventListener("click", function() {
+    if (confirm("Deseja realmente cancelar a automação em andamento?")) {
+        fetch("{% url 'cancel_automation' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: new URLSearchParams({ job_id: jobId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "cancelling") {
+                alert("Prosseguindo com cancelamento...");
+                window.location.href = "{% url 'dashboard' %}";
+            } else {
+                alert("Erro ao cancelar: " + (data.error || "Desconhecido"));
+            }
+        });
+    }
+});
+
+window.addEventListener("beforeunload", (e) => {
+  if (!cancelConfirmed) {
+    e.preventDefault();
+    e.returnValue = "A automação ainda está em execução. Deseja sair e cancelá-la?";
+  }
+});
+</script>
+{% endblock %}
