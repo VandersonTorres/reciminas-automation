@@ -15,6 +15,9 @@ class BaseAutomation:
         # Set logger
         self.logger = logging.getLogger("Reciminas - SYGECOM")
 
+        # Clean old handlers to avoid duplicates
+        self.logger.handlers.clear()
+
         # Connect logger to a memory buffer
         self.log_handler = InMemoryLogHandler()
         self.log_handler.setFormatter(logging.Formatter("[%(asctime)s] [%(name)s] - %(levelname)s - %(message)s"))
@@ -50,12 +53,12 @@ class BaseAutomation:
                 self._browser = self._pw.chromium.launch(headless=headless, devtools=devtools)
                 self._context = self._browser.new_context(viewport={"width": 1280, "height": 720})
                 self._page = self._context.new_page()
-                self.logger.info(f"Navigating to {url}...")
+                self.logger.info(f"Navegando para {url}...")
                 self._page.goto(url, wait_until="load", timeout=60000)
                 return self._page
 
             def __exit__(inner_self, exc_type, exc_val, exc_tb):
-                self.logger.warning("Closing playwright context.")
+                self.logger.warning("Fechando o contexto do playwright.")
                 self._browser.close()
                 self._pw.stop()
 

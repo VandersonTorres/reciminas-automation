@@ -1,0 +1,44 @@
+{% extends "core/base.html" %}
+
+{% block title %}NF de Entrada - Reciminas{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">
+                {% if is_edit %}
+                    ✏️ Editar Nota Fiscal de Entrada
+                {% else %}
+                    📥 Adicionar Nota Fiscal de Entrada
+                {% endif %}
+            </h4>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">
+                Preencha os dados abaixo para emitir uma nova Nota Fiscal de Entrada
+                ou adicioná-la em uma fila para emissão encadeada.
+            </p>
+
+            <form method="post" class="p-3">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <div class="d-flex gap-2 mt-3">
+                    <button type="submit" name="action" value="emit_now" class="btn btn-success">
+                        ⚡ Emitir Agora
+                    </button>
+                    <button type="submit" name="action" value="add_to_queue" class="btn btn-primary">
+                        ➕ Adicionar à Fila
+                    </button>
+                </div>
+            </form>
+            <hr>
+            <div class="d-flex gap-2 mt-3 p-3">
+                <a href="{% url 'invoice_queue' %}" class="btn btn-secondary">📋 Ir para Fila</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">🔙 Voltar</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

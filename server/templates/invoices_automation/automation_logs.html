@@ -12,7 +12,7 @@
     <div class="card-body">
       <pre id="logs" style="max-height: 400px; overflow-y: auto; background: #111; color: #0f0; padding: 10px; border-radius: 5px;"></pre>
     </div>
-    <p class="alert alert-warning text-center mt-3 mb-0 fw-bold shadow-sm"
+    <p id="automationAlert" class="alert alert-warning text-center mt-3 mb-0 fw-bold shadow-sm"
       style="font-size: 1rem; border-left: 6px solid #dc3545;">
       ⚠️ <span class="text-danger">Atenção:</span> não atualize nem feche esta janela enquanto a automação estiver em execução!
     </p>
@@ -21,15 +21,35 @@
 
 <script>
 let cancelConfirmed = false;
+let finished = false;
 
 function fetchLogs() {
-  if (!cancelConfirmed) {
+  if (!cancelConfirmed && !finished) {
     fetch("{% url 'get_logs' %}")
       .then(response => response.json())
       .then(data => {
-        document.getElementById("logs").innerText = data.logs.join("\n");
+        const logsEl = document.getElementById("logs");
+        logsEl.innerText = data.logs.join("\n");
+
+        const lastLine = data.logs[data.logs.length - 1] || "";
+
+        if (lastLine.includes("Término do processo")) {
+          finished = true;
+          updateAlertSuccess();
+        }
       });
   }
+}
+
+function updateAlertSuccess() {
+  const alertEl = document.getElementById("automationAlert");
+  alertEl.classList.remove("alert-warning");
+  alertEl.classList.add("alert-success");
+  alertEl.style.borderLeft = "6px solid #198754";
+  alertEl.innerHTML = `
+    ✅ <span class="text-success">Automação concluída com sucesso!</span><br>
+    <a href="{% url 'dashboard' %}" class="btn btn-success btn-sm mt-2 shadow-sm">⬅️ Voltar ao Dashboard</a>
+  `;
 }
 
 setInterval(fetchLogs, 1000);
@@ -38,29 +58,29 @@ fetchLogs();
 const jobId = "{{ request.session.job_id }}";
 
 document.getElementById("cancelButton").addEventListener("click", function() {
-    if (confirm("Deseja realmente cancelar a automação em andamento?")) {
-        fetch("{% url 'cancel_automation' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": "{{ csrf_token }}"
-            },
-            body: new URLSearchParams({ job_id: jobId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "cancelling") {
-                alert("Prosseguindo com cancelamento...");
-                window.location.href = "{% url 'dashboard' %}";
-            } else {
-                alert("Erro ao cancelar: " + (data.error || "Desconhecido"));
-            }
-        });
-    }
+  if (confirm("Deseja realmente cancelar a automação em andamento?")) {
+    fetch("{% url 'cancel_automation' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: new URLSearchParams({ job_id: jobId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "cancelling") {
+            alert("Prosseguindo com cancelamento...");
+            window.location.href = "{% url 'dashboard' %}";
+        } else {
+            alert("Erro ao cancelar: " + (data.error || "Desconhecido"));
+        }
+    });
+  }
 });
 
 window.addEventListener("beforeunload", (e) => {
-  if (!cancelConfirmed) {
+  if (!cancelConfirmed && !finished) {
     e.preventDefault();
     e.returnValue = "A automação ainda está em execução. Deseja sair e cancelá-la?";
   }

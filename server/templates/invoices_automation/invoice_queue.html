@@ -1,0 +1,97 @@
+{% extends "core/base.html" %}
+
+{% block title %}Fila de Emissão{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3 class="mb-4">📋 Fila de Notas a Emitir</h3>
+
+    {% if invoices_queue %}
+        <table class="table table-striped">
+            <thead class="table-light">
+                <tr>
+                    <th>Fornecedor</th>
+                    <th>Tipo de Material</th>
+                    <th>Quantidade (Kg)</th>
+                    <th>Preço</th>
+                    <th>Desconto</th>
+                    <th>Status</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices_queue %}
+                    <tr>
+                        <td>{{ invoice.provider }}</td>
+                        <td>{{ invoice.get_material_code_display }}</td>
+                        <td>{{ invoice.material_quantity }}</td>
+                        <td>R$ {{ invoice.material_price|floatformat:2 }}</td>
+                        <td>R$ {{ invoice.discount|floatformat:2 }}</td>
+                        <td>{{ invoice.get_status_display }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'edit_invoice' invoice.pk %}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                            <form method="post" action="{% url 'delete_invoice' invoice.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja remover esta nota?');">
+                                    🗑️ Excluir
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="mt-3 d-flex justify-content-between align-items-center">
+            <a href="{% url 'entry_invoices_management' %}" class="btn btn-secondary">➕ Adicionar nova</a>
+
+            <form method="post" action="{% url 'start_batch_automation' %}">
+                {% csrf_token %}
+                <button class="btn btn-success">🚀 Iniciar Emissão</button>
+            </form>
+        </div>
+
+        <!-- PAGINATE -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">« Anterior</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">« Anterior</span>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima »</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Próxima »</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <p class="text-muted">Nenhuma nota adicionada à fila.</p>
+        <a href="{% url 'entry_invoices_management' %}" class="btn btn-primary">➕ Adicionar nota</a>
+    {% endif %}
+</div>
+{% endblock %}
