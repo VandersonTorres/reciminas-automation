@@ -4,47 +4,14 @@ import uuid
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
-from .forms import CustomUserCreationForm, EntryInvoiceForm
-from .models import EntryInvoiceQueue
-from .services.invoices_generator import EntryInvoicesAutomation, CANCEL_FLAGS
-from .services.lock_manager import automation_lock
-from .services.log_buffer import current_logs
-
-
-def register(request):
-    if request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()  # noqa: F841
-            messages.success(request, "Cadastro enviado! Aguarde a aprovação do administrador.")
-            return redirect("login")
-    else:
-        form = CustomUserCreationForm()
-    return render(request, "core/register.html", {"form": form})
-
-
-@login_required
-def dashboard(request):
-    return render(request, "invoices_automation/dashboard.html")
-
-
-@login_required
-def invoice_queue(request):
-    queue = EntryInvoiceQueue.objects.filter(user=request.user).order_by("created_at")
-    paginator = Paginator(queue, 10)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-    context = {
-        "page_obj": page_obj,
-        "invoices_queue": page_obj.object_list,
-    }
-
-    return render(request, "invoices_automation/invoice_queue.html", context)
+from invoices_automation.models import EntryInvoiceQueue
+from invoices_automation.services.invoices_generator import EntryInvoicesAutomation, CANCEL_FLAGS
+from invoices_automation.services.lock_manager import automation_lock
+from invoices_automation.services.log_buffer import current_logs
 
 
 @login_required
@@ -107,72 +74,6 @@ def start_batch_automation(request):
 
     threading.Thread(target=run_batch, daemon=True).start()
     return redirect("automation_logs")
-
-
-@login_required
-def entry_invoices_management(request):
-    if request.method == "POST":
-        form = EntryInvoiceForm(request.POST)
-        action = request.POST.get("action")  # Get which button was pressed
-        if form.is_valid():
-            invoice_data = {
-                "provider": form.cleaned_data["provider"],
-                "material_code": form.cleaned_data["material_code"],
-                "material_quantity": form.cleaned_data["material_quantity"],
-                "material_price": form.cleaned_data["material_price"],
-                "discount": form.cleaned_data.get("discount", 0.0),
-            }
-
-            # Action: Emit now
-            if action == "emit_now":
-                if automation_lock.locked():
-                    messages.error(request, "Outra automação já está em andamento. Aguarde finalizar.")
-                    return redirect("dashboard")
-
-                def run_automation():
-                    with automation_lock:
-                        automation = EntryInvoicesAutomation(**invoice_data, job_id=str(uuid.uuid4()))
-                        request.session["job_id"] = automation.job_id
-                        automation.run()
-
-                threading.Thread(target=run_automation, daemon=True).start()
-                return redirect("automation_logs")
-
-            # Action: Add to queue
-            elif action == "add_to_queue":
-                EntryInvoiceQueue.objects.create(user=request.user, **invoice_data)
-                messages.success(request, "Nota adicionada à fila com sucesso!")
-                return redirect("entry_invoices_management")
-
-            # Action: Go to queue
-            elif action == "go_to_queue":
-                return redirect("invoice_queue")
-    else:
-        form = EntryInvoiceForm()
-
-    return render(request, "invoices_automation/entry_invoices_management.html", {"form": form})
-
-
-@login_required
-def delete_invoice(request, pk):
-    invoice = get_object_or_404(EntryInvoiceQueue, pk=pk, user=request.user)
-    invoice.delete()
-    messages.success(request, "Nota removida da fila com sucesso!")
-    return redirect("invoice_queue")
-
-
-@login_required
-def edit_invoice(request, pk):
-    invoice = get_object_or_404(EntryInvoiceQueue, pk=pk, user=request.user)
-    if request.method == "POST":
-        form = EntryInvoiceForm(request.POST, instance=invoice)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Nota atualizada com sucesso!")
-            return redirect("invoice_queue")
-    else:
-        form = EntryInvoiceForm(instance=invoice)
-    return render(request, "invoices_automation/entry_invoices_management.html", {"form": form, "is_edit": True})
 
 
 @login_required
