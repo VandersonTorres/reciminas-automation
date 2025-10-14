@@ -24,6 +24,14 @@
                                 <button type="submit" class="btn btn-link nav-link">Sair</button>
                             </form>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'automation_logs' %}">
+                                <button class="btn btn-warning btn-sm nav-link text-dark px-3 fw-bold"
+                                        data-bs-target="#automationModal">
+                                    ⚙️ Modal de Automação
+                                </button>
+                            </a>
+                        </li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Entrar</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Registrar</a></li>

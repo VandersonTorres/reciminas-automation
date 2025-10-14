@@ -51,7 +51,7 @@ def start_batch_automation(request):
                 )
 
                 try:
-                    automation.run()
+                    invoice = automation.run()
                     # TODO: Aqui salva o resultado em EntryInvoiceResult (PDF/screenshot)
                     # EntryInvoiceResult.objects.create(
                     #     queue_item=item,
@@ -59,12 +59,13 @@ def start_batch_automation(request):
                     #     # pdf_file="path/to/pdf.pdf",
                     #     # screenshot="path/to/screenshot.png",
                     # )
-                    item.status = "done"
+                    if invoice:
+                        item.status = "done"
+                        item.invoice_path = invoice.replace("downloads/", "")
+                    else:
+                        item.status = "cancelled"
                 except RuntimeError:
                     item.status = "cancelled"
-                except Exception as e:
-                    item.status = "cancelled"
-                    automation.logger.error(f"Erro ao emitir NF {item.id}: {e}")
                 finally:
                     item.save()
                     time.sleep(2)
@@ -78,7 +79,7 @@ def start_batch_automation(request):
 
 @login_required
 def automation_logs(request):
-    return render(request, "invoices_automation/automation_logs.html")
+    return render(request, "invoices_automation/automation_logs.html", {"logs": current_logs})
 
 
 @login_required
@@ -86,36 +87,42 @@ def get_logs(request):
     return JsonResponse({"logs": current_logs})
 
 
+@login_required
+@csrf_exempt
+def clear_logs(request):
+    current_logs.clear()
+    return JsonResponse({"status": "cleared"})
+
+
 @csrf_exempt
 @login_required
 def cancel_automation(request):
-    if request.method == "POST":
-        job_id = request.POST.get("job_id")
-        try:
-            if job_id:
-                if job_id in CANCEL_FLAGS:
-                    CANCEL_FLAGS[job_id] = True
-                    messages.info(request, f"Cancelando processo '{job_id}'.")
-                else:
-                    # If job_id no longer exists, create a global flag as a fallback
-                    CANCEL_FLAGS["__GLOBAL_CANCEL__"] = True
-                    messages.warning(request, f"Job '{job_id}' não encontrado. Cancelamento global acionado.")
+    job_id = request.POST.get("job_id") or request.GET.get("job_id")
+    try:
+        if job_id:
+            if job_id in CANCEL_FLAGS:
+                CANCEL_FLAGS[job_id] = True
+                messages.info(request, f"Cancelando processo '{job_id}'.")
             else:
-                # No job_id found - Cancel all for safety
+                # If job_id no longer exists, create a global flag as a fallback
                 CANCEL_FLAGS["__GLOBAL_CANCEL__"] = True
-                messages.warning(request, "Nenhum job_id informado — cancelamento global acionado.")
-        except Exception as e:
-            messages.error(request, f"Erro durante cancelamento: {str(e)}")
-            # Even if it fails, Try to ensure the cancelling
+                messages.warning(request, f"Job '{job_id}' não encontrado. Cancelamento global acionado.")
+        else:
+            # No job_id found - Cancel all for safety
             CANCEL_FLAGS["__GLOBAL_CANCEL__"] = True
-            return JsonResponse({"status": "cancelling_with_error"})
-        finally:
-            # Release lock
-            if automation_lock.locked():
-                try:
-                    automation_lock.release()
-                    messages.info(request, "Fila liberada com sucesso.")
-                except RuntimeError as err:
-                    messages.warning(request, f"Erro ao liberar fila: {err}")
+            messages.warning(request, "Nenhum job_id informado — cancelamento global acionado.")
+    except Exception as e:
+        messages.error(request, f"Erro durante cancelamento: {str(e)}")
+        # Even if it fails, Try to ensure the cancelling
+        CANCEL_FLAGS["__GLOBAL_CANCEL__"] = True
+        return JsonResponse({"status": "cancelling_with_error"})
+    finally:
+        # Release lock
+        if automation_lock.locked():
+            try:
+                automation_lock.release()
+                messages.info(request, "Fila liberada com sucesso.")
+            except RuntimeError as err:
+                messages.warning(request, f"Erro ao liberar fila: {err}")
 
-            return JsonResponse({"status": "cancelling"})
+        return JsonResponse({"status": "cancelling"})

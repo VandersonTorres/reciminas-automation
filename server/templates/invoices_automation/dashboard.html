@@ -16,11 +16,36 @@
     <div class="card-body">
         <p class="text-muted">Gerencie as notas fiscais disponíveis no sistema</p>
         <div class="d-flex flex-wrap gap-2">
-            <a href="{% url 'entry_invoices_management' %}" class="btn btn-success">
+            <a href="{% url 'create_invoice_registry' %}" class="btn btn-success">
                 📥 NF de Entrada
             </a>
             <!-- TODO: Add others here, ex: -->
         </div>
     </div>
 </div>
+
+<!-- Automation and Invoice Queue Modal Access -->
+<section class="bg-dark text-white mt-5 p-4 rounded shadow-lg">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h5 class="fw-bold mb-1">⚙️ Modal de Automação</h5>
+            <p class="mb-0 text-light small">Acompanhe ou reabra a automação atual em tempo real.</p>
+        </div>
+        <a href="{% url 'automation_logs' %}" class="btn btn-warning fw-bold shadow-sm">
+            🔍 Abrir Modal
+        </a>
+    </div>
+</section>
+
+<section class="bg-dark text-white mt-5 p-4 rounded shadow-lg">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h5 class="fw-bold mb-1">📋 Lista de Notas Fiscais</h5>
+            <p class="mb-0 text-light small">Acompanhe o status de emissão das NFs mais recentes.</p>
+        </div>
+        <a href="{% url 'invoice_queue' %}" class="btn btn-warning fw-bold shadow-sm">
+            🔍 Ir para Fila
+        </a>
+    </div>
+</section>
 {% endblock %}

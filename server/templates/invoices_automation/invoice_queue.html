@@ -10,6 +10,7 @@
         <table class="table table-striped">
             <thead class="table-light">
                 <tr>
+                    <th>Data de Criação</th>
                     <th>Fornecedor</th>
                     <th>Tipo de Material</th>
                     <th>Quantidade (Kg)</th>
@@ -22,6 +23,7 @@
             <tbody>
                 {% for invoice in invoices_queue %}
                     <tr>
+                        <td>{{ invoice.created_at|date:"d/m/Y H:i" }}</td>
                         <td>{{ invoice.provider }}</td>
                         <td>{{ invoice.get_material_code_display }}</td>
                         <td>{{ invoice.material_quantity }}</td>
@@ -29,11 +31,20 @@
                         <td>R$ {{ invoice.discount|floatformat:2 }}</td>
                         <td>{{ invoice.get_status_display }}</td>
                         <td class="text-center">
-                            <a href="{% url 'edit_invoice' invoice.pk %}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                            {% if invoice.status == "pending" %}
+                                <a href="{% url 'edit_invoice' invoice.pk %}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                            {% endif %}
+
+                            {% if invoice.invoice_path %}
+                                <a href="{% url 'serve_pdf' filename=invoice.invoice_path %}" class="btn btn-sm btn-info" download>
+                                    📥 Baixar PDF
+                                </a>
+                            {% endif %}
+
                             <form method="post" action="{% url 'delete_invoice' invoice.pk %}" style="display:inline;">
                                 {% csrf_token %}
                                 <button class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja remover esta nota?');">
-                                    🗑️ Excluir
+                                    🗑️ Excluir Registro
                                 </button>
                             </form>
                         </td>
@@ -43,7 +54,7 @@
         </table>
 
         <div class="mt-3 d-flex justify-content-between align-items-center">
-            <a href="{% url 'entry_invoices_management' %}" class="btn btn-secondary">➕ Adicionar nova</a>
+            <a href="{% url 'create_invoice_registry' %}" class="btn btn-secondary">➕ Adicionar nova</a>
 
             <form method="post" action="{% url 'start_batch_automation' %}">
                 {% csrf_token %}
@@ -91,7 +102,7 @@
         {% endif %}
     {% else %}
         <p class="text-muted">Nenhuma nota adicionada à fila.</p>
-        <a href="{% url 'entry_invoices_management' %}" class="btn btn-primary">➕ Adicionar nota</a>
+        <a href="{% url 'create_invoice_registry' %}" class="btn btn-primary">➕ Adicionar nota</a>
     {% endif %}
 </div>
 {% endblock %}

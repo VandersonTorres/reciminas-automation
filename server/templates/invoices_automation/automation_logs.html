@@ -4,86 +4,68 @@
 
 {% block content %}
 <div class="container mt-5">
+  <div id="automationConfig"
+      data-get-logs-url="{% url 'get_logs' %}"
+      data-clear-logs-url="{% url 'clear_logs' %}"
+      data-cancel-url="{% url 'cancel_automation' %}"
+      data-dashboard-url="{% url 'dashboard' %}"
+      data-get-pdfs-url="{% url 'get_pending_pdfs' %}"
+      data-approve-url="{% url 'approve_pdf' %}"
+      data-serve-pdf-url="{% url 'serve_pdf' filename='__PLACEHOLDER__' %}"
+      data-job-id="{{ request.session.job_id }}"
+      data-csrf-token="{{ csrf_token }}">
+  </div>
+
+  {% if logs %}
   <div class="card shadow-lg">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
       <h5 class="mb-0">Acompanhamento - Automação</h5>
-      <button id="cancelButton" class="btn btn-danger btn-sm">Cancelar</button>
+      <button id="cancelButton" class="btn btn-danger btn-sm">Cancelar Emissão</button>
     </div>
+
     <div class="card-body">
-      <pre id="logs" style="max-height: 400px; overflow-y: auto; background: #111; color: #0f0; padding: 10px; border-radius: 5px;"></pre>
+      <pre id="logs"
+        style="max-height: 400px; overflow-y: auto; background: #111; color: #0f0; padding: 10px; border-radius: 5px;">
+      </pre>
+      <!-- Approval PDF MODAL -->
+      <div class="modal fade" id="pdfApprovalModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Pré-visualizar NF</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <iframe id="pdfFrame" style="width:100%; height:80vh; border:none;" allow="fullscreen" src=""></iframe>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-success" id="approveBtn">Transmitir</button>
+              <button class="btn btn-danger" id="cancelBtn">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
     <p id="automationAlert" class="alert alert-warning text-center mt-3 mb-0 fw-bold shadow-sm"
       style="font-size: 1rem; border-left: 6px solid #dc3545;">
-      ⚠️ <span class="text-danger">Atenção:</span> não atualize nem feche esta janela enquanto a automação estiver em execução!
+      ⚠️ <span class="text-danger">Atenção:</span> atualizar, voltar e/ou fechar esta janela não irá interromper a automação em
+      andamento!
     </p>
   </div>
+  {% else %}
+    <div class="alert alert-info text-center shadow-sm">
+      <h5 class="mb-0">Nenhuma automação em andamento no momento.</h5>
+      <p class="mb-0">Volte ao <a href="{% url 'dashboard' %}">Dashboard</a> para iniciar uma nova automação.</p>
+    </div>
+  {% endif %}
 </div>
 
-<script>
-let cancelConfirmed = false;
-let finished = false;
+<div class="d-flex gap-2 mt-3 p-3">
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">🔙 Voltar</a>
+</div>
 
-function fetchLogs() {
-  if (!cancelConfirmed && !finished) {
-    fetch("{% url 'get_logs' %}")
-      .then(response => response.json())
-      .then(data => {
-        const logsEl = document.getElementById("logs");
-        logsEl.innerText = data.logs.join("\n");
+{% load static %}
+<script src="{% static 'core/js/automation.js' %}"></script>
 
-        const lastLine = data.logs[data.logs.length - 1] || "";
-
-        if (lastLine.includes("Término do processo")) {
-          finished = true;
-          updateAlertSuccess();
-        }
-      });
-  }
-}
-
-function updateAlertSuccess() {
-  const alertEl = document.getElementById("automationAlert");
-  alertEl.classList.remove("alert-warning");
-  alertEl.classList.add("alert-success");
-  alertEl.style.borderLeft = "6px solid #198754";
-  alertEl.innerHTML = `
-    ✅ <span class="text-success">Automação concluída com sucesso!</span><br>
-    <a href="{% url 'dashboard' %}" class="btn btn-success btn-sm mt-2 shadow-sm">⬅️ Voltar ao Dashboard</a>
-  `;
-}
-
-setInterval(fetchLogs, 1000);
-fetchLogs();
-
-const jobId = "{{ request.session.job_id }}";
-
-document.getElementById("cancelButton").addEventListener("click", function() {
-  if (confirm("Deseja realmente cancelar a automação em andamento?")) {
-    fetch("{% url 'cancel_automation' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: new URLSearchParams({ job_id: jobId })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === "cancelling") {
-            alert("Prosseguindo com cancelamento...");
-            window.location.href = "{% url 'dashboard' %}";
-        } else {
-            alert("Erro ao cancelar: " + (data.error || "Desconhecido"));
-        }
-    });
-  }
-});
-
-window.addEventListener("beforeunload", (e) => {
-  if (!cancelConfirmed && !finished) {
-    e.preventDefault();
-    e.returnValue = "A automação ainda está em execução. Deseja sair e cancelá-la?";
-  }
-});
-</script>
 {% endblock %}

@@ -26,10 +26,11 @@ class EntryInvoiceQueue(models.Model):
             ("pending", "Pendente"),
             ("processing", "Processando"),
             ("cancelled", "Cancelada"),
-            ("done", "Emitida"),
+            ("done", "Transmitida"),
         ],
         default="pending",
     )
+    invoice_path = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"{self.provider} ({self.material_code})"

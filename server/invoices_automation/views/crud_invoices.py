@@ -14,7 +14,7 @@ from invoices_automation.services.lock_manager import automation_lock
 
 # Create invoice entry
 @login_required
-def entry_invoices_management(request):
+def create_invoice_registry(request):
     if request.method == "POST":
         form = EntryInvoiceForm(request.POST)
         action = request.POST.get("action")  # Get which button was pressed
@@ -33,11 +33,28 @@ def entry_invoices_management(request):
                     messages.error(request, "Outra automação já está em andamento. Aguarde finalizar.")
                     return redirect("dashboard")
 
+                job_id = str(uuid.uuid4())
+                request.session["job_id"] = job_id
+                queue_item = EntryInvoiceQueue.objects.create(
+                    user=request.user,
+                    status="processing",
+                    **invoice_data,
+                )
+
                 def run_automation():
                     with automation_lock:
-                        automation = EntryInvoicesAutomation(**invoice_data, job_id=str(uuid.uuid4()))
-                        request.session["job_id"] = automation.job_id
-                        automation.run()
+                        automation = EntryInvoicesAutomation(**invoice_data, job_id=job_id)
+                        try:
+                            invoice = automation.run()
+                            if invoice:
+                                queue_item.status = "done"
+                                queue_item.invoice_path = invoice.replace("downloads/", "")
+                            else:
+                                queue_item.status = "cancelled"
+                        except RuntimeError:
+                            queue_item.status = "cancelled"
+                        finally:
+                            queue_item.save()
 
                 threading.Thread(target=run_automation, daemon=True).start()
                 return redirect("automation_logs")
@@ -46,7 +63,7 @@ def entry_invoices_management(request):
             elif action == "add_to_queue":
                 EntryInvoiceQueue.objects.create(user=request.user, **invoice_data)
                 messages.success(request, "Nota adicionada à fila com sucesso!")
-                return redirect("entry_invoices_management")
+                return redirect("create_invoice_registry")
 
             # Action: Go to queue
             elif action == "go_to_queue":
