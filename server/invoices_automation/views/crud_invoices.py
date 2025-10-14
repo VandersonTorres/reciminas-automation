@@ -17,7 +17,6 @@ from invoices_automation.services.lock_manager import automation_lock
 def create_invoice_registry(request):
     if request.method == "POST":
         form = EntryInvoiceForm(request.POST)
-        action = request.POST.get("action")  # Get which button was pressed
         if form.is_valid():
             invoice_data = {
                 "provider": form.cleaned_data["provider"],
@@ -26,6 +25,7 @@ def create_invoice_registry(request):
                 "material_price": form.cleaned_data["material_price"],
                 "discount": form.cleaned_data.get("discount", 0.0),
             }
+            action = request.POST.get("action")  # Get which button was pressed
 
             # Action: Emit now
             if action == "emit_now":
@@ -41,7 +41,7 @@ def create_invoice_registry(request):
                     **invoice_data,
                 )
 
-                def run_automation():
+                def run_unique_automation():
                     with automation_lock:
                         automation = EntryInvoicesAutomation(**invoice_data, job_id=job_id)
                         try:
@@ -56,8 +56,8 @@ def create_invoice_registry(request):
                         finally:
                             queue_item.save()
 
-                threading.Thread(target=run_automation, daemon=True).start()
-                return redirect("automation_logs")
+                threading.Thread(target=run_unique_automation, daemon=True).start()
+                return redirect("follow_automation_logs")
 
             # Action: Add to queue
             elif action == "add_to_queue":
@@ -67,7 +67,7 @@ def create_invoice_registry(request):
 
             # Action: Go to queue
             elif action == "go_to_queue":
-                return redirect("invoice_queue")
+                return redirect("access_invoices_queue")
     else:
         form = EntryInvoiceForm()
 
@@ -76,7 +76,7 @@ def create_invoice_registry(request):
 
 # Read invoices
 @login_required
-def invoice_queue(request):
+def access_invoices_queue(request):
     queue = EntryInvoiceQueue.objects.filter(user=request.user).order_by("created_at")
     paginator = Paginator(queue, 10)
     page_number = request.GET.get("page")
@@ -86,7 +86,7 @@ def invoice_queue(request):
         "invoices_queue": page_obj.object_list,
     }
 
-    return render(request, "invoices_automation/invoice_queue.html", context)
+    return render(request, "invoices_automation/access_invoices_queue.html", context)
 
 
 # Update invoice
@@ -98,7 +98,7 @@ def edit_invoice(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, "Nota atualizada com sucesso!")
-            return redirect("invoice_queue")
+            return redirect("access_invoices_queue")
     else:
         form = EntryInvoiceForm(instance=invoice)
     return render(request, "invoices_automation/entry_invoices_management.html", {"form": form, "is_edit": True})
@@ -110,4 +110,4 @@ def delete_invoice(request, pk):
     invoice = get_object_or_404(EntryInvoiceQueue, pk=pk, user=request.user)
     invoice.delete()
     messages.success(request, "Nota removida da fila com sucesso!")
-    return redirect("invoice_queue")
+    return redirect("access_invoices_queue")

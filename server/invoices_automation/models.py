@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-# Invoices waiting to emit.
+# Invoices Model
 class EntryInvoiceQueue(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     provider = models.CharField(max_length=255)
@@ -34,12 +34,3 @@ class EntryInvoiceQueue(models.Model):
 
     def __str__(self):
         return f"{self.provider} ({self.material_code})"
-
-
-# TODO: Emitted Invoices
-# class EntryInvoiceResult(models.Model):
-#     queue_item = models.OneToOneField(EntryInvoiceQueue, on_delete=models.CASCADE)
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     pdf_file = models.FileField(upload_to="invoices/pdfs/", null=True, blank=True)
-#     screenshot = models.ImageField(upload_to="invoices/screenshots/", null=True, blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)

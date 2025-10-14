@@ -18,28 +18,29 @@ from invoices_automation.services.log_buffer import current_logs
 def start_batch_automation(request):
     if automation_lock.locked():
         messages.error(request, "Outra automação já está em andamento. Aguarde finalizar.")
-        return redirect("invoice_queue")
+        return redirect("dashboard")
 
     queue_items = EntryInvoiceQueue.objects.filter(user=request.user, status="pending")
     if not queue_items:
         messages.info(request, "Nenhuma nota pendente para emitir.")
-        return redirect("invoice_queue")
+        return redirect("access_invoices_queue")
 
     job_id = str(uuid.uuid4())
     request.session["job_id"] = job_id
 
-    def run_batch():
+    def run_batch_automation():
         with automation_lock:
             for idx, item in enumerate(queue_items):
-                current_iter = f"{idx + 1}/{len(queue_items)}"
                 if CANCEL_FLAGS.get(job_id) or CANCEL_FLAGS.get("__GLOBAL_CANCEL__"):
+                    # Keep monitoring through the loop to cancel all items if needed
                     item.status = "cancelled"
                     item.save()
                     messages.warning(request, "Automação cancelada pelo usuário — interrompendo o lote.")
                     break
-
                 item.status = "processing"
                 item.save()
+
+                current_iter = f"{idx + 1}/{len(queue_items)}"
                 automation = EntryInvoicesAutomation(
                     provider=item.provider,
                     material_code=item.material_code,
@@ -52,13 +53,6 @@ def start_batch_automation(request):
 
                 try:
                     invoice = automation.run()
-                    # TODO: Aqui salva o resultado em EntryInvoiceResult (PDF/screenshot)
-                    # EntryInvoiceResult.objects.create(
-                    #     queue_item=item,
-                    #     user=request.user,
-                    #     # pdf_file="path/to/pdf.pdf",
-                    #     # screenshot="path/to/screenshot.png",
-                    # )
                     if invoice:
                         item.status = "done"
                         item.invoice_path = invoice.replace("downloads/", "")
@@ -73,13 +67,13 @@ def start_batch_automation(request):
             CANCEL_FLAGS.pop(job_id, None)
             CANCEL_FLAGS.pop("__GLOBAL_CANCEL__", None)
 
-    threading.Thread(target=run_batch, daemon=True).start()
-    return redirect("automation_logs")
+    threading.Thread(target=run_batch_automation, daemon=True).start()
+    return redirect("follow_automation_logs")
 
 
 @login_required
-def automation_logs(request):
-    return render(request, "invoices_automation/automation_logs.html", {"logs": current_logs})
+def follow_automation_logs(request):
+    return render(request, "invoices_automation/follow_automation_logs.html", {"logs": current_logs})
 
 
 @login_required

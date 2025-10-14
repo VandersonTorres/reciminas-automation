@@ -17,7 +17,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Início</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
                         <li class="nav-item">
                             <form action="{% url 'logout' %}" method="post" class="d-inline">
                                 {% csrf_token %}
@@ -25,7 +25,7 @@
                             </form>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'automation_logs' %}">
+                            <a class="nav-link" href="{% url 'follow_automation_logs' %}">
                                 <button class="btn btn-warning btn-sm nav-link text-dark px-3 fw-bold"
                                         data-bs-target="#automationModal">
                                     ⚙️ Modal de Automação
