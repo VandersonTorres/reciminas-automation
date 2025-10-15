@@ -25,14 +25,22 @@
                 {% csrf_token %}
                 {{ form.as_p }}
 
-                <div class="d-flex gap-2 mt-3">
-                    <button type="submit" name="action" value="emit_now" class="btn btn-success">
-                        ⚡ Emitir Agora
-                    </button>
-                    <button type="submit" name="action" value="add_to_queue" class="btn btn-primary">
-                        ➕ Adicionar à Fila
-                    </button>
-                </div>
+                {% if is_edit %}
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-warning">
+                            💾 Salvar Alterações
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" name="action" value="emit_now" class="btn btn-success">
+                            ⚡ Emitir Agora
+                        </button>
+                        <button type="submit" name="action" value="add_to_queue" class="btn btn-primary">
+                            ➕ Adicionar à Fila
+                        </button>
+                    </div>
+                {% endif %}
             </form>
             <hr>
             <div class="d-flex gap-2 mt-3 p-3">

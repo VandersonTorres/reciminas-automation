@@ -1,5 +1,6 @@
 {% extends "core/base.html" %}
 {% load static %}
+{% load tz %}
 
 {% block title %}Fila de Emissão{% endblock %}
 
@@ -11,6 +12,7 @@
         <table class="table table-striped">
             <thead class="table-light">
                 <tr>
+                    <th>Usuário</th>
                     <th>Data de Criação</th>
                     <th>Fornecedor</th>
                     <th>Tipo de Material</th>
@@ -24,7 +26,8 @@
             <tbody>
                 {% for invoice in invoices_queue %}
                     <tr>
-                        <td>{{ invoice.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>{{ invoice.user.get_full_name|default:invoice.user.username }}</td>
+                        <td>{{ invoice.created_at|localtime|date:"d/m/Y H:i" }}</td>
                         <td>{{ invoice.provider }}</td>
                         <td>{{ invoice.get_material_code_display }}</td>
                         <td>{{ invoice.material_quantity }}</td>

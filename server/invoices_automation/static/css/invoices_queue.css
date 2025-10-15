@@ -44,7 +44,7 @@
 }
 
 /* Status */
-.queue-view td:nth-child(7) {
+.queue-view td:nth-child(8) {
     font-weight: 600;
     color: #2eb996;
 }
