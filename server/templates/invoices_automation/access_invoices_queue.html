@@ -1,9 +1,10 @@
 {% extends "core/base.html" %}
+{% load static %}
 
 {% block title %}Fila de Emissão{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4 queue-view">
     <h3 class="mb-4">📋 Fila de Notas a Emitir</h3>
 
     {% if invoices_queue %}
@@ -105,4 +106,6 @@
         <a href="{% url 'create_invoice_registry' %}" class="btn btn-primary">➕ Adicionar nota</a>
     {% endif %}
 </div>
+
+<link rel="stylesheet" href="{% static 'css/invoices_queue.css' %}">
 {% endblock %}

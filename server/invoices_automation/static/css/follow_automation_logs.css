@@ -1,0 +1,134 @@
+/* follow_automation_logs.css */
+
+/* Escopo geral dentro do automation-modal para não afetar a navbar */
+.automation-modal {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(26, 188, 156, 0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 20px rgba(26, 188, 156, 0.15);
+    color: #dffaf3;
+}
+
+/* Títulos */
+.automation-modal h5 {
+    color: #1abc9c;
+    font-weight: 600;
+    text-shadow: 0 0 4px rgba(26, 188, 156, 0.4);
+}
+
+/* Card */
+.automation-modal .card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(26, 188, 156, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(26, 188, 156, 0.15);
+}
+
+.automation-modal .card-header {
+    background: linear-gradient(90deg, #0f7a5d, #1abc9c);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Botões */
+.automation-modal .btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.automation-modal .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #d1d1d1;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.automation-modal .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.automation-modal .btn-danger {
+    background: linear-gradient(90deg, #b7322c, #a31b15);
+    color: #fff;
+    border: none;
+}
+.automation-modal .btn-danger:hover {
+    background: linear-gradient(90deg, #a31b15, #87140f);
+}
+
+.automation-modal .btn-success {
+    background: linear-gradient(90deg, #1abc9c, #159b80);
+    border: none;
+    color: #fff;
+}
+.automation-modal .btn-success:hover {
+    background: linear-gradient(90deg, #159b80, #12876e);
+}
+
+/* Logs */
+#logs {
+    background: #111;
+    color: #0f0;
+    padding: 10px;
+    border-radius: 5px;
+    max-height: 400px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+/* Modal */
+.automation-modal .modal-content {
+    background: rgba(0, 0, 0, 0.9);
+    color: #dffaf3;
+    border: 1px solid rgba(26, 188, 156, 0.3);
+    border-radius: 12px;
+}
+
+.automation-modal .modal-header,
+.automation-modal .modal-footer {
+    border-bottom: 1px solid rgba(26, 188, 156, 0.2);
+    border-top: 1px solid rgba(26, 188, 156, 0.2);
+}
+
+/* Iframe PDF */
+#pdfFrame {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(26, 188, 156, 0.2);
+}
+
+/* Alertas */
+#automationAlert {
+    background: rgba(255, 255, 0, 0.1);
+    color: #ffdd57;
+    border-left: 6px solid #dc3545;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(26, 188, 156, 0.1);
+}
+
+.automation-modal .alert-info {
+    background: rgba(0, 0, 0, 0.3);
+    color: #1abc9c;
+    border: 1px solid rgba(26, 188, 156, 0.2);
+    border-radius: 12px;
+}
+
+/* Links dentro do alert */
+.automation-modal .alert-info a {
+    color: #1abc9c;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.automation-modal .alert-info a:hover {
+    color: #16a085;
+}
+
+/* Pequeno espaçamento para voltar */
+.d-flex .btn {
+    margin-right: 0.5rem;
+}

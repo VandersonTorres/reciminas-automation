@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load static %}
 
 {% block title %}NF de Entrada - Reciminas{% endblock %}
 
@@ -41,4 +42,6 @@
         </div>
     </div>
 </div>
+
+<link rel="stylesheet" href="{% static 'css/entry_invoices.css' %}">
 {% endblock %}

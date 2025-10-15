@@ -1,0 +1,88 @@
+/* ====== Main Card ====== */
+.dashboard-card {
+    background: #121a16;
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(0, 255, 136, 0.1);
+}
+
+.bg-gradient-green {
+    background: linear-gradient(135deg, #006d3e 0%, #00c46a 100%);
+    border-bottom: 1px solid #00ff88;
+}
+
+/* ====== Sub-Sections ====== */
+.bg-gradient-dark-green {
+    background: linear-gradient(145deg, #0e1813 0%, #13241b 100%);
+    border: 1px solid rgba(0, 255, 136, 0.08);
+    transition: all 0.25s ease;
+}
+
+.invoice-section:hover {
+    transform: translateY(-2px);
+    border-left: 4px solid #00ff88;
+    box-shadow: 0 6px 18px rgba(0, 255, 136, 0.15);
+}
+
+.invoice-section h6 {
+    color: #00ff88;
+}
+
+.text-muted {
+    color: #a9b7ad !important;
+}
+
+/* ====== Custom Buttons ====== */
+.btn-green-gradient {
+    background: linear-gradient(135deg, #00c46a, #00ff88);
+    color: #0b0f0e;
+    font-weight: 600;
+    border: none;
+    transition: 0.2s;
+}
+
+.btn-green-gradient:hover {
+    background: linear-gradient(135deg, #00ff88, #00c46a);
+    transform: translateY(-1px);
+}
+
+.btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #e8f5e9;
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #00ff88;
+    color: #00ff88;
+}
+
+/* ====== Fixed footer ====== */
+.footer-fixed {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1030;
+    border-top: 3px solid #00ff88;
+    background: linear-gradient(90deg, #004d2c 0%, #007a47 100%);
+}
+
+.footer-item {
+    min-width: 220px;
+}
+
+.footer-item .btn {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* ====== Responsivity ====== */
+@media (max-width: 768px) {
+    .footer-fixed {
+        text-align: center;
+        padding: 1.5rem;
+    }
+    .footer-item {
+        width: 100%;
+    }
+}

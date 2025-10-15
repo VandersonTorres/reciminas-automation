@@ -58,7 +58,7 @@ def start_batch_automation(request):
                         item.invoice_path = invoice.replace("downloads/", "")
                     else:
                         item.status = "cancelled"
-                except RuntimeError:
+                except Exception:
                     item.status = "cancelled"
                 finally:
                     item.save()

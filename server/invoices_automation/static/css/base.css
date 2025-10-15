@@ -1,0 +1,7 @@
+/* ====== Base Dark Theme ====== */
+body {
+    background: linear-gradient(180deg, #000000 0%, #05211b 50%, #0c1c18 100%);
+    color: #f1f1f1;
+    min-height: 100vh;
+    font-family: "Inter", sans-serif;
+}

@@ -51,7 +51,7 @@ def create_invoice_registry(request):
                                 queue_item.invoice_path = invoice.replace("downloads/", "")
                             else:
                                 queue_item.status = "cancelled"
-                        except RuntimeError:
+                        except Exception:
                             queue_item.status = "cancelled"
                         finally:
                             queue_item.save()

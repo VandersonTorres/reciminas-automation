@@ -1,9 +1,10 @@
 {% extends "core/base.html" %}
+{% load static %}
 
 {% block title %}Execução de Automação{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5 automation-modal">
   <div id="automationConfig"
       data-get-logs-url="{% url 'get_logs' %}"
       data-clear-logs-url="{% url 'clear_logs' %}"
@@ -65,7 +66,6 @@
     <a href="{% url 'dashboard' %}" class="btn btn-secondary">🔙 Voltar</a>
 </div>
 
-{% load static %}
-<script src="{% static 'core/js/automation.js' %}"></script>
-
+<script src="{% static 'js/automation.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/follow_automation_logs.css' %}">
 {% endblock %}
