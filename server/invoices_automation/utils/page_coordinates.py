@@ -36,15 +36,9 @@ class PageAttributesCoordinates:
     coord_payments = (904, 236)
     coord_no_payments = (791, 496)
     coord_see_invoice = (822, 662)
-    coord_confirm_store = (709, 445)
-
-    coord_page_zoom = ()
-    coord_set_zoom = ()
-    # Wait for 60 seconds, Take a screenshot here and send to user...
+    coord_confirm_storage = (709, 445)
+    coord_see_fullscreen = (500, 37)
     coord_close_visualization = (761, 42)
-    # Wait for user to confirm before proceeding
-    # If user doesn't confirm, kill the execution
-    # else: Click Save
     coord_save_job = (913, 615)
     coord_transmit_invoice = (712, 413)
     coord_dont_see = (763, 414)

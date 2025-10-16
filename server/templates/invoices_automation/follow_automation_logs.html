@@ -1,0 +1,71 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Execução de Automação{% endblock %}
+
+{% block content %}
+<div class="container mt-5 automation-modal">
+  <div id="automationConfig"
+      data-get-logs-url="{% url 'get_logs' %}"
+      data-clear-logs-url="{% url 'clear_logs' %}"
+      data-cancel-url="{% url 'cancel_automation' %}"
+      data-dashboard-url="{% url 'dashboard' %}"
+      data-get-pdfs-url="{% url 'get_pending_pdfs' %}"
+      data-approve-url="{% url 'approve_pdf' %}"
+      data-serve-pdf-url="{% url 'serve_pdf' filename='__PLACEHOLDER__' %}"
+      data-job-id="{{ request.session.job_id }}"
+      data-csrf-token="{{ csrf_token }}">
+  </div>
+
+  {% if logs %}
+  <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Acompanhamento - Automação</h5>
+      <button id="cancelButton" class="btn btn-danger btn-sm">Cancelar Emissão</button>
+    </div>
+
+    <div class="card-body">
+      <pre id="logs"
+        style="max-height: 400px; overflow-y: auto; background: #111; color: #0f0; padding: 10px; border-radius: 5px;">
+      </pre>
+      <!-- Approval PDF MODAL -->
+      <div class="modal fade" id="pdfApprovalModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Pré-visualizar NF</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <iframe id="pdfFrame" style="width:100%; height:80vh; border:none;" allow="fullscreen" src=""></iframe>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-success" id="approveBtn">Transmitir</button>
+              <button class="btn btn-danger" id="cancelBtn">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p id="automationAlert" class="alert alert-warning text-center mt-3 mb-0 fw-bold shadow-sm"
+      style="font-size: 1rem; border-left: 6px solid #dc3545;">
+      ⚠️ <span class="text-danger">Atenção:</span> atualizar, voltar e/ou fechar esta janela não irá interromper a automação em
+      andamento!
+    </p>
+  </div>
+  {% else %}
+    <div class="alert alert-info text-center shadow-sm">
+      <h5 class="mb-0">Nenhuma automação em andamento no momento.</h5>
+      <p class="mb-0">Volte ao <a href="{% url 'dashboard' %}">Dashboard</a> para iniciar uma nova automação.</p>
+    </div>
+  {% endif %}
+</div>
+
+<div class="d-flex gap-2 mt-3 p-3">
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">🔙 Voltar</a>
+</div>
+
+<script src="{% static 'js/automation.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/follow_automation_logs.css' %}">
+{% endblock %}

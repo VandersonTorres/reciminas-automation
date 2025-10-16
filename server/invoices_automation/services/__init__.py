@@ -4,12 +4,28 @@ import time
 from playwright.sync_api import sync_playwright
 from playwright.sync_api._generated import Page
 
+from .log_buffer import InMemoryLogHandler
 
-# /__init__.py
+
 class BaseAutomation:
+    company_name = "RECIMINAS"
+    reciminas_url = "https://cloud3.sygecom.com.br/sgr_reciminas.html"
+
     def __init__(self) -> None:
         # Set logger
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logging.getLogger("Reciminas - SYGECOM")
+
+        # Clean old handlers to avoid duplicates
+        self.logger.handlers.clear()
+
+        # Connect logger to a memory buffer
+        self.log_handler = InMemoryLogHandler()
+        self.log_handler.setFormatter(logging.Formatter("[%(asctime)s] [%(name)s] - %(levelname)s - %(message)s"))
+        self.logger.addHandler(self.log_handler)
+        self.logger.setLevel(logging.INFO)
+
+        # Clean logs whenever starts a new execution
+        self.log_handler.clear()
 
     def _sleep_between_actions(self, seconds: int = 3) -> None:
         """
@@ -37,12 +53,12 @@ class BaseAutomation:
                 self._browser = self._pw.chromium.launch(headless=headless, devtools=devtools)
                 self._context = self._browser.new_context(viewport={"width": 1280, "height": 720})
                 self._page = self._context.new_page()
-                self.logger.info(f"Navigating to {url}...")
+                self.logger.info(f"Navegando para {url}...")
                 self._page.goto(url, wait_until="load", timeout=60000)
                 return self._page
 
             def __exit__(inner_self, exc_type, exc_val, exc_tb):
-                self.logger.warning("Closing playwright context.")
+                self.logger.warning("Fechando o contexto do playwright.")
                 self._browser.close()
                 self._pw.stop()
 

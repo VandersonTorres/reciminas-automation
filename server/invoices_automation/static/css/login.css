@@ -1,0 +1,66 @@
+.login-container {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(26, 188, 156, 0.3);
+    border-radius: 16px;
+    backdrop-filter: blur(6px);
+    color: #e4e4e4;
+    width: 100%;
+    max-width: 400px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Hover Effect */
+.login-card:hover {
+    box-shadow: 0 0 20px rgba(26, 188, 156, 0.4);
+    transform: translateY(-2px);
+}
+
+.login-card input[type="text"],
+.login-card input[type="password"] {
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(26, 188, 156, 0.3);
+    color: #fff;
+    border-radius: 6px;
+    padding: 0.6rem;
+    width: 100%;
+}
+
+.login-card input:focus {
+    border-color: #1abc9c;
+    box-shadow: 0 0 0 0.2rem rgba(26, 188, 156, 0.25);
+    outline: none;
+}
+
+.btn-success {
+    background: linear-gradient(90deg, #1abc9c, #159b80);
+    border: none;
+    transition: background 0.3s ease;
+}
+
+.btn-success:hover {
+    background: linear-gradient(90deg, #159b80, #12876e);
+}
+
+.alert-danger {
+    background: rgba(220, 53, 69, 0.2);
+    border: 1px solid rgba(220, 53, 69, 0.4);
+    color: #ffbdbd;
+}
+
+a.text-success:hover {
+    text-decoration: underline;
+}
+
+/* Responsivity */
+@media (max-width: 576px) {
+    .login-card {
+        padding: 2rem 1.5rem;
+    }
+}

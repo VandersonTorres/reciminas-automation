@@ -1,26 +1,75 @@
 {% extends "core/base.html" %}
+{% load static %}
 
 {% block title %}Dashboard - Reciminas{% endblock %}
 
 {% block content %}
 <div class="text-center mb-5">
-    <h2 class="fw-bold">Bem-vindo, {{ user.username }}! 👋</h2>
-    <p class="text-muted">Selecione uma funcionalidade abaixo:</p>
+    <h2 class="fw-bold text-light">Bem-vindo, {{ user.username }}! 👋</h2>
+    <p class="text-muted">Gerencie suas notas fiscais e automações de forma prática</p>
 </div>
 
-<!-- Section for Invoices Emission -->
-<div class="card shadow-lg mb-4">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">📄 Emissão de Notas Fiscais</h5>
+<!-- Main Section of Invoices Emission -->
+<div class="card dashboard-card mb-5 shadow-lg border-0">
+    <div class="card-header text-white bg-gradient-green py-3">
+        <h5 class="mb-0 fw-bold">📄 Emissão de Notas Fiscais</h5>
     </div>
-    <div class="card-body">
-        <p class="text-muted">Gerencie as notas fiscais disponíveis no sistema:</p>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{% url 'entry_invoice' %}" class="btn btn-success">
-                📥 NF de Entrada
-            </a>
-            <!-- TODO: Add others here, ex: -->
-        </div>
+
+    <div class="card-body bg-dark text-light">
+
+        <!-- NF Entrada -->
+        <section class="invoice-section bg-gradient-dark-green rounded-4 p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div>
+                    <h6 class="fw-bold text-success mb-1">📥 NF de Entrada</h6>
+                    <p class="text-muted small mb-0">
+                        Cadastre e acompanhe as notas fiscais recebidas pelo sistema.
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'create_invoice' %}" class="btn btn-green-gradient">
+                    ➕ Criar NF de Entrada
+                </a>
+                <a href="{% url 'access_invoices_queue' %}" class="btn btn-outline-light">
+                    🔍 Consultar Entradas
+                </a>
+            </div>
+        </section>
+
+        <!-- NF Saída -->
+        <section class="invoice-section bg-gradient-dark-green rounded-4 p-4 opacity-75">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div>
+                    <h6 class="fw-bold text-secondary mb-1">
+                        📤 NF de Saída <span class="badge bg-secondary">Em breve</span>
+                    </h6>
+                    <p class="text-muted small mb-0">
+                        Em breve será possível emitir e gerenciar notas fiscais de saída.
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-secondary" disabled>➕ Criar NF de Saída</button>
+                <button class="btn btn-outline-secondary" disabled>🔍 Consultar Saídas</button>
+            </div>
+        </section>
+
     </div>
 </div>
+
+<!-- Fixed Footer -->
+<footer class="footer-fixed shadow-lg py-3 px-4 bg-gradient-green text-white">
+    <div class="container-fluid d-flex justify-content-around flex-wrap gap-3 text-center">
+        <div class="footer-item">
+            <h6 class="fw-bold mb-1">⚙️ Modal de Automação</h6>
+            <p class="mb-2 text-light small">Acompanhe a automação em tempo real</p>
+            <a href="{% url 'follow_automation_logs' %}" class="btn btn-outline-light fw-bold shadow-sm">
+                🔍 Abrir Modal
+            </a>
+        </div>
+    </div>
+</footer>
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
