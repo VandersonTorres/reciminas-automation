@@ -5,7 +5,7 @@ from invoices_automation.forms import CustomAuthenticationForm
 from invoices_automation.views.core import dashboard, register
 from invoices_automation.views.manage_emission_approval import approve_pdf, get_pending_pdfs, serve_pdf
 from invoices_automation.views.crud_invoices import (
-    create_invoice_registry,
+    create_invoice,
     access_invoices_queue,
     edit_invoice,
     delete_invoice,
@@ -28,7 +28,7 @@ urlpatterns = [
     path("sair/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
     path("cadastro/", register, name="register"),
     path("dashboard/", dashboard, name="dashboard"),
-    path("registro-nf-entrada/", create_invoice_registry, name="create_invoice_registry"),
+    path("registro-nf-entrada/", create_invoice, name="create_invoice"),
     path("emissoes-nfs-entrada/", start_batch_automation, name="start_batch_automation"),
     path("controle-nfs/", access_invoices_queue, name="access_invoices_queue"),
     path("fila/excluir/<int:pk>/", delete_invoice, name="delete_invoice"),
@@ -40,4 +40,5 @@ urlpatterns = [
     path("aprovar-nota/", approve_pdf, name="approve_pdf"),
     path("downloads/<path:filename>", serve_pdf, name="serve_pdf"),
     path("limpar-logs/", clear_logs, name="clear_logs"),
+    path("emitit-nota/<int:invoice_pk>/", create_invoice, name="create_invoice"),
 ]

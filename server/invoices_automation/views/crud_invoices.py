@@ -14,9 +14,11 @@ from invoices_automation.services.lock_manager import automation_lock
 
 # Create invoice entry
 @login_required
-def create_invoice_registry(request):
+def create_invoice(request, invoice_pk=None):
     if request.method == "POST":
+        action = request.POST.get("action")  # Get which button was pressed
         form = EntryInvoiceForm(request.POST)
+        invoice_data = {}
         if form.is_valid():
             invoice_data = {
                 "provider": form.cleaned_data["provider"],
@@ -25,8 +27,18 @@ def create_invoice_registry(request):
                 "material_price": form.cleaned_data["material_price"],
                 "discount": form.cleaned_data.get("discount", 0.0),
             }
-            action = request.POST.get("action")  # Get which button was pressed
+        elif invoice_pk:
+            invoice = get_object_or_404(EntryInvoiceQueue, pk=invoice_pk)
+            action = "emit_now"
+            invoice_data = {
+                "provider": invoice.provider,
+                "material_code": invoice.material_code,
+                "material_quantity": invoice.material_quantity,
+                "material_price": invoice.material_price,
+                "discount": invoice.discount,
+            }
 
+        if invoice_data:
             # Action: Emit now
             if action == "emit_now":
                 if automation_lock.locked():
@@ -63,7 +75,7 @@ def create_invoice_registry(request):
             elif action == "add_to_queue":
                 EntryInvoiceQueue.objects.create(user=request.user, **invoice_data)
                 messages.success(request, "Nota adicionada à fila com sucesso!")
-                return redirect("create_invoice_registry")
+                return redirect("create_invoice")
 
             # Action: Go to queue
             elif action == "go_to_queue":
