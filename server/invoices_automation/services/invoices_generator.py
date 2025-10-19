@@ -50,6 +50,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
                 with page.context.expect_page() as logged_page_event:
                     self.logger.info(f"Inicializando CNPJ {self.company_name}.")
                     page.locator("input[value='Entrar']").click()
+                    self.check_cancelled()
                     self._sleep_between_actions(seconds=25)
 
                 # Capturing new tab

@@ -17,6 +17,26 @@
 
     <div class="card-body bg-dark text-light">
 
+        <!-- Material Management -->
+        <section class="invoice-section bg-gradient-dark-green rounded-4 p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div>
+                    <h6 class="fw-bold text-success mb-1">🛠️ Controle de Materiais Disponíveis</h6>
+                    <p class="text-muted small mb-0">
+                        Veja e adicione materiais disponíveis para inclusão em Nota
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'add_new_material' %}" class="btn btn-green-gradient">
+                    ➕ Adicionar novo material
+                </a>
+                <a href="{% url 'list_materials' %}" class="btn btn-outline-light">
+                    🔍 Ver Materiais
+                </a>
+            </div>
+        </section>
+
         <!-- NF Entrada -->
         <section class="invoice-section bg-gradient-dark-green rounded-4 p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">

@@ -10,6 +10,11 @@ from invoices_automation.views.crud_invoices import (
     edit_invoice,
     delete_invoice,
 )
+from invoices_automation.views.crud_materials import (
+    list_materials,
+    add_new_material,
+    delete_material,
+)
 from invoices_automation.views.manage_automation import (
     start_batch_automation,
     cancel_automation,
@@ -41,4 +46,7 @@ urlpatterns = [
     path("downloads/<path:filename>", serve_pdf, name="serve_pdf"),
     path("limpar-logs/", clear_logs, name="clear_logs"),
     path("emitit-nota/<int:invoice_pk>/", create_invoice, name="create_invoice"),
+    path("materiais/", list_materials, name="list_materials"),
+    path("materiais/cadastro/", add_new_material, name="add_new_material"),
+    path("materiais/excluir/<int:pk>/", delete_material, name="delete_material"),
 ]

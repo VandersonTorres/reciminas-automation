@@ -1,21 +1,24 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
+
+
+# Material Support Model
+class Material(models.Model):
+    code = models.CharField(
+        max_length=50, unique=True, validators=[RegexValidator(r"^\d+$", "O código deve conter apenas números.")]
+    )
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
 
 
 # Invoices Model
 class EntryInvoiceQueue(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     provider = models.CharField(max_length=255)
-    material_code = models.CharField(
-        max_length=50,
-        choices=[
-            ("", "Selecione"),
-            ("50", "Sucata de Cobre"),
-            ("51", "Sucata de Latão"),
-            ("52", "Sucata de Alumínio"),
-            ("64", "Sucata de Ferro"),
-        ],
-    )
+    material = models.ForeignKey(Material, on_delete=models.PROTECT)
     material_quantity = models.FloatField()
     material_price = models.FloatField()
     discount = models.FloatField(default=0.0)
@@ -33,4 +36,4 @@ class EntryInvoiceQueue(models.Model):
     invoice_path = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.provider} ({self.material_code})"
+        return f"{self.provider} - {self.material.name}"

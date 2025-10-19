@@ -22,17 +22,18 @@ def create_invoice(request, invoice_pk=None):
         if form.is_valid():
             invoice_data = {
                 "provider": form.cleaned_data["provider"],
-                "material_code": form.cleaned_data["material_code"],
+                "material": form.cleaned_data["material"],
                 "material_quantity": form.cleaned_data["material_quantity"],
                 "material_price": form.cleaned_data["material_price"],
                 "discount": form.cleaned_data.get("discount", 0.0),
             }
+            print(f">>>> {invoice_data.get('material').code}")
         elif invoice_pk:
             invoice = get_object_or_404(EntryInvoiceQueue, pk=invoice_pk)
             action = "emit_now"
             invoice_data = {
                 "provider": invoice.provider,
-                "material_code": invoice.material_code,
+                "material": invoice.material,
                 "material_quantity": invoice.material_quantity,
                 "material_price": invoice.material_price,
                 "discount": invoice.discount,
@@ -55,7 +56,14 @@ def create_invoice(request, invoice_pk=None):
 
                 def run_unique_automation():
                     with automation_lock:
-                        automation = EntryInvoicesAutomation(**invoice_data, job_id=job_id)
+                        automation = EntryInvoicesAutomation(
+                            provider=invoice_data.get("provider"),
+                            material_code=invoice_data.get("material").code,
+                            material_quantity=invoice_data.get("material_quantity"),
+                            material_price=invoice_data.get("material_price"),
+                            discount=invoice_data.get("discount"),
+                            job_id=job_id,
+                        )
                         try:
                             invoice = automation.run()
                             if invoice:
@@ -89,7 +97,7 @@ def create_invoice(request, invoice_pk=None):
 # Read invoices
 @login_required
 def access_invoices_queue(request):
-    queue = EntryInvoiceQueue.objects.filter(user=request.user).order_by("created_at")
+    queue = EntryInvoiceQueue.objects.filter().order_by("created_at")
     paginator = Paginator(queue, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -104,7 +112,7 @@ def access_invoices_queue(request):
 # Update invoice
 @login_required
 def edit_invoice(request, pk):
-    invoice = get_object_or_404(EntryInvoiceQueue, pk=pk, user=request.user)
+    invoice = get_object_or_404(EntryInvoiceQueue, pk=pk)
     if request.method == "POST":
         form = EntryInvoiceForm(request.POST, instance=invoice)
         if form.is_valid():
@@ -119,7 +127,11 @@ def edit_invoice(request, pk):
 # Delete Invoice
 @login_required
 def delete_invoice(request, pk):
-    invoice = get_object_or_404(EntryInvoiceQueue, pk=pk, user=request.user)
+    invoice = get_object_or_404(EntryInvoiceQueue, pk=pk)
+    if not request.user.is_superuser:
+        messages.error(request, "Você não tem permissão para excluir notas.")
+        return redirect("access_invoices_queue")
+
     invoice.delete()
     messages.success(request, "Nota removida da fila com sucesso!")
     return redirect("access_invoices_queue")

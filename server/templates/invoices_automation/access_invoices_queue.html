@@ -30,7 +30,7 @@
                             <td>{{ invoice.user.get_full_name|default:invoice.user.username }}</td>
                             <td>{{ invoice.created_at|localtime|date:"d/m/Y H:i" }}</td>
                             <td>{{ invoice.provider }}</td>
-                            <td>{{ invoice.get_material_code_display }}</td>
+                            <td>{{ invoice.material.name }}</td>
                             <td>{{ invoice.material_quantity }}</td>
                             <td>R$ {{ invoice.material_price|floatformat:2 }}</td>
                             <td>R$ {{ invoice.discount|floatformat:2 }}</td>
@@ -50,12 +50,14 @@
                                     </a>
                                 {% endif %}
 
-                                <form method="post" action="{% url 'delete_invoice' invoice.pk %}" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja remover esta nota?');">
-                                        🗑️ Excluir Registro
-                                    </button>
-                                </form>
+                                {% if user.is_superuser %}
+                                    <form method="post" action="{% url 'delete_invoice' invoice.pk %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja remover esta nota?');">
+                                            🗑️ Excluir Registro
+                                        </button>
+                                    </form>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
