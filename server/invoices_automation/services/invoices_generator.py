@@ -38,6 +38,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
             self.logger.warning("Automação cancelada pelo usuário.")
             raise RuntimeError("Automation cancelled")
 
+    # TODO: REMOVE HEADFUL
     def run(self, headless: bool = False, devtools: bool = False) -> str:
         try:
             self.logger.info(f"Iniciando processo '{self.task_id}'. NF-{self.provider}")

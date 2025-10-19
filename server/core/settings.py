@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = "/downloads/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "downloads")
 
-# TODO: Production settings for media
+# TODO: Production Settings for MEDIA
 # MEDIA_URL = "/media/"
 # MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
@@ -38,14 +38,19 @@ logging.basicConfig(
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
+# TODO: Get a DJANGO Secret Key
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
+# TODO: Disable DEBUG Mode
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# TODO: Add the domain here
+ALLOWED_HOSTS = ["*"]
 
+# TODO: Remove this in production
+CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.app"]
 
 # Application definition
 
