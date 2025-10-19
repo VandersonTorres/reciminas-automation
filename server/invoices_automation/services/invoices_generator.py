@@ -1,7 +1,7 @@
 from playwright.sync_api._generated import Page
 
 from . import BaseAutomation
-from core.settings import RECIMINAS_CNPJ, RECIMINAS_USERNAME, RECIMINAS_PASSWORD
+from core.settings import RECIMINAS_CNPJ, RECIMINAS_USERNAME
 from invoices_automation.utils.page_coordinates import PageAttributesCoordinates
 
 CANCEL_FLAGS = {}
@@ -62,59 +62,52 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
 
                 # Go to Reciminas ticker content
                 self.logger.info(f"Selecionando ticker {self.company_name}...")
-                self._click_element(page=logged_page, element_to_click=self.coord_initial_ticker_selection)
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Insert Username
                 self.logger.info(f"Inserindo nome de usuário (conta: {RECIMINAS_USERNAME})...")
-                self._insert_data(
-                    page=logged_page, element_to_click=self.coord_user_insertion, data_to_insert=RECIMINAS_USERNAME
-                )
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Insert Password
                 self.logger.info("Inserindo Senha...")
-                self._insert_data(
-                    page=logged_page, element_to_click=self.coord_password_insertion, data_to_insert=RECIMINAS_PASSWORD
-                )
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Log in
                 self.logger.info("Logando na conta...")
-                self._click_element(page=logged_page, element_to_click=self.coord_log_in, delay=10)
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Open Fiscal Tab
                 self.logger.info("Abrindo guia 'Opções Fiscal'...")
-                self._click_element(page=logged_page, element_to_click=self.coord_fiscal_tab)
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Open Invoice Control
                 self.logger.info("Abrindo guia 'Controle de Nota Fiscal'...")
-                self._click_element(page=logged_page, element_to_click=self.coord_invoice_control)
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Open Registry
                 self.logger.info("Abrindo 'Cadastro'...")
-                self._click_element(page=logged_page, element_to_click=self.coord_register, use_dblclick=True)
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Locate provider
                 self.logger.info("Expandindo lista de fornecedores...")
-                self._click_element(page=logged_page, element_to_click=self.coord_locate_provider)
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Fill the search bar with the provider name
                 self.logger.info(f"Procurando pelo fornecedor {self.provider}...")
-                self._insert_data(
-                    page=logged_page, element_to_click=self.coord_provider_search_bar, data_to_insert=self.provider
-                )
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Include Provider
                 self.logger.info(f"Selecionando e incluindo {self.provider}...")
-                self._click_element(page=logged_page, element_to_click=self.coord_provider_selection, use_dblclick=True)
-                self._click_element(page=logged_page, element_to_click=self.coord_include_provider)
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Inserting Material Specifications
@@ -122,39 +115,17 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
                     "Inserindo especificações de material. "
                     f"Produto: {self.material_code} - {self.material_quantity} - R${self.material_price}"
                 )
-                self._insert_data(
-                    page=logged_page, element_to_click=self.coord_insert_mat_code, data_to_insert=self.material_code
-                )
-                self._click_element(page=logged_page, element_to_click=self.coord_quantity_selection)
-                self._click_element(page=logged_page, element_to_click=self.coord_confirm_mat, use_dblclick=True)
-                self._insert_data(
-                    page=logged_page,
-                    element_to_click=self.coord_quantity_selection,
-                    data_to_insert=str(self.material_quantity),
-                )
-                self._insert_data(
-                    page=logged_page, element_to_click=self.coord_price, data_to_insert=str(self.material_price)
-                )
-                self._insert_data(
-                    page=logged_page, element_to_click=self.coord_discount, data_to_insert=str(self.discount)
-                )
-                self._click_element(page=logged_page, element_to_click=self.coord_store_progress)
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Manage charge and payments
                 self.logger.info("Excluindo cobrança e selecionando 'Sem Pagamentos'...")
-                self._click_element(page=logged_page, element_to_click=self.coord_charging)
-                self._click_element(page=logged_page, element_to_click=self.coord_exclude)
-                self._click_element(page=logged_page, element_to_click=self.coord_confirm_exclusion)
-                self._click_element(page=logged_page, element_to_click=self.coord_payments)
-                self._click_element(page=logged_page, element_to_click=self.coord_no_payments)
+                self._sleep_between_actions()
                 self.check_cancelled()
 
                 # Cancelling is no longer supported here
                 self.logger.info("Baixando NF em PDF...")
-                self._click_element(page=logged_page, element_to_click=self.coord_see_invoice)
-                self._click_element(page=logged_page, element_to_click=self.coord_confirm_storage, delay=25)
-                self._click_element(page=logged_page, element_to_click=self.coord_see_fullscreen, delay=10)
+                self._sleep_between_actions()
                 invoice_path = f"downloads/NF-{self.name}-{self.provider}-{self.task_id}.pdf".replace(" ", "-")
                 logged_page.pdf(
                     path=invoice_path,
@@ -177,11 +148,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
                     raise RuntimeError("Automation cancelled")
 
                 self.logger.info("Aprovado. Prosseguindo com transmissão...")
-                self._click_element(page=logged_page, element_to_click=self.coord_close_visualization, delay=10)
-                self._click_element(page=logged_page, element_to_click=self.coord_save_job, delay=10)
-                self._click_element(page=logged_page, element_to_click=self.coord_transmit_invoice, delay=10)
-                self._click_element(page=logged_page, element_to_click=self.coord_dont_see, delay=10)
-                self._click_element(page=logged_page, element_to_click=self.coord_dont_send_email, delay=10)
+                self._sleep_between_actions()
                 self.logger.info(f"NF 'Entrada' para '{self.provider}' Transmitida com sucesso.")
 
         except RuntimeError as e:
