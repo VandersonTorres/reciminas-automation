@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
 from invoices_automation.forms import CustomUserCreationForm
+from invoices_automation.services.lock_manager import automation_lock
 
 
 def register(request):
@@ -19,4 +20,5 @@ def register(request):
 
 @login_required
 def dashboard(request):
-    return render(request, "invoices_automation/dashboard.html")
+    lock_status = "Bloqueada. Em execução..." if automation_lock.locked() else "Disponível"
+    return render(request, "invoices_automation/dashboard.html", {"lock_status": lock_status})

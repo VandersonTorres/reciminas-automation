@@ -9,6 +9,19 @@
     <p class="text-muted">Gerencie suas notas fiscais e automações de forma prática</p>
 </div>
 
+<!-- Automation Queue Status -->
+<div class="automation-status text-center my-4">
+    <h6 class="fw-bold text-light mb-2">Fila de Automações</h6>
+    <div class="status-indicator d-inline-flex align-items-center gap-2">
+        <span class="status-dot rounded-circle"
+            style="width: 12px; height: 12px; display: inline-block;
+                background-color: {% if lock_status == 'Em execução' %}#dc3545{% else %}#198754{% endif %};
+                animation: {% if lock_status == 'Em execução' %}pulse 1s infinite{% else %}none{% endif %};">
+        </span>
+        <span class="text-light fw-bold">{{ lock_status }}</span>
+    </div>
+</div>
+
 <!-- Main Section of Invoices Emission -->
 <div class="card dashboard-card mb-5 shadow-lg border-0">
     <div class="card-header text-white bg-gradient-green py-3">
@@ -16,6 +29,26 @@
     </div>
 
     <div class="card-body bg-dark text-light">
+
+        <!-- Material Management -->
+        <section class="invoice-section bg-gradient-dark-green rounded-4 p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div>
+                    <h6 class="fw-bold text-success mb-1">🛠️ Controle de Materiais Disponíveis</h6>
+                    <p class="text-muted small mb-0">
+                        Veja e adicione materiais disponíveis para inclusão em Nota
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'add_new_material' %}" class="btn btn-green-gradient">
+                    ➕ Adicionar novo material
+                </a>
+                <a href="{% url 'list_materials' %}" class="btn btn-outline-light">
+                    🔍 Ver Materiais
+                </a>
+            </div>
+        </section>
 
         <!-- NF Entrada -->
         <section class="invoice-section bg-gradient-dark-green rounded-4 p-4 mb-4">
@@ -57,6 +90,8 @@
 
     </div>
 </div>
+
+<div style="height: 120px;"></div>
 
 <!-- Fixed Footer -->
 <footer class="footer-fixed shadow-lg py-3 px-4 bg-gradient-green text-white">

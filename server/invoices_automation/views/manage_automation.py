@@ -43,7 +43,7 @@ def start_batch_automation(request):
                 current_iter = f"{idx + 1}/{len(queue_items)}"
                 automation = EntryInvoicesAutomation(
                     provider=item.provider,
-                    material_code=item.material_code,
+                    material_code=item.material.code,
                     material_quantity=item.material_quantity,
                     material_price=item.material_price,
                     discount=item.discount,
