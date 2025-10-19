@@ -20,5 +20,5 @@ def register(request):
 
 @login_required
 def dashboard(request):
-    lock_status = "Bloqueada. Em execução..." if automation_lock.locked() else "Disponível"
+    lock_status = "Bloqueada. Aguarde alguns minutos" if automation_lock.locked() else "Disponível"
     return render(request, "invoices_automation/dashboard.html", {"lock_status": lock_status})
