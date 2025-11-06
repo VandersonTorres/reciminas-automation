@@ -86,3 +86,10 @@
         width: 100%;
     }
 }
+
+@media (max-width: 576px) {
+    .dashboard-card {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+}
