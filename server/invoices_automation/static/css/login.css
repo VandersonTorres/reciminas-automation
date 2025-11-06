@@ -61,6 +61,7 @@ a.text-success:hover {
 /* Responsivity */
 @media (max-width: 576px) {
     .login-card {
-        padding: 2rem 1.5rem;
+        max-width: 90%;
+        padding: 2.5rem 2rem;
     }
 }

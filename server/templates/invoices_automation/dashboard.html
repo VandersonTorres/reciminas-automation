@@ -17,8 +17,8 @@
     <div class="status-indicator d-inline-flex align-items-center gap-2">
         <span class="status-dot rounded-circle"
             style="width: 12px; height: 12px; display: inline-block;
-                background-color: {% if lock_status == 'Em execução' %}#dc3545{% else %}#198754{% endif %};
-                animation: {% if lock_status == 'Em execução' %}pulse 1s infinite{% else %}none{% endif %};">
+                background-color: {% if lock_status == 'Bloqueada. Aguarde alguns minutos' %}#dc3545{% else %}#198754{% endif %};
+                animation: {% if lock_status == 'Bloqueada. Aguarde alguns minutos' %}pulse 1s infinite{% else %}none{% endif %};">
         </span>
         <span class="text-light fw-bold">{{ lock_status }}</span>
     </div>
