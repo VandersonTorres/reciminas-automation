@@ -1,123 +1,152 @@
+/* ----- CONTAINER ----- */
+.queue-view {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 2rem;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Title */
 .queue-view h3 {
     color: #1abc9c;
-    font-weight: 600;
-    text-shadow: 0 0 4px rgba(26, 188, 156, 0.4);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0px 0px 8px rgba(26, 188, 156, 0.6);
 }
 
-/* Container */
-.queue-view.container {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(26, 188, 156, 0.2);
-    border-radius: 16px;
-    padding: 2rem;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 0 20px rgba(26, 188, 156, 0.15);
+/* ----- TABLE WRAPPER ----- */
+.queue-view .table-responsive {
+    border-radius: 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Table */
-.queue-view.table {
-    color: #dffaf3;
+/* ----- TABLE ----- */
+.queue-view table {
     background: rgba(255, 255, 255, 0.03);
-    border-radius: 12px;
+    color: #e2f7f3;
     overflow: hidden;
 }
 
-.queue-view.table thead {
-    background: linear-gradient(90deg, #0f7a5d, #1abc9c);
+.queue-view thead th {
+    background: linear-gradient(120deg, #0f7a5d, #19b89a);
     color: #fff;
     text-transform: uppercase;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-.queue-view.table tbody tr {
-    transition: background 0.2s ease-in-out;
+.queue-view tbody tr {
+    transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.queue-view.table tbody tr:hover {
-    background: rgba(26, 188, 156, 0.15);
+.queue-view tbody tr:hover {
+    background: rgba(26, 188, 156, 0.12);
 }
 
-/* Cells */
-.queue-view.table td, .table th {
+/* ----- CELLS ----- */
+.queue-view td, .queue-view th {
     vertical-align: middle;
+    padding: 0.75rem;
     border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Status */
-.queue-view td:nth-child(8) {
-    font-weight: 600;
-    color: #2eb996;
+/* ----- CHIPS TO MATERIALS ----- */
+.material-chip {
+    background: rgba(26, 188, 156, 0.15);
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    display: inline-block;
+    border: 1px solid rgba(26, 188, 156, 0.25);
+
+    min-width: 120px;
+    max-width: 180px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* Buttons */
+/* ----- STATUS ----- */
+.queue-view td.status {
+    font-weight: 700;
+    color: #25c7a6;
+}
+
+/* ----- BUTTONS ----- */
 .queue-view .btn {
-    border-radius: 6px;
-    font-weight: 500;
-    transition: all 0.3s ease;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    transition: all 0.25s ease;
+}
+
+/* EFFECTS */
+.queue-view .btn:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
 }
 
 .queue-view .btn-warning {
-    background: linear-gradient(90deg, #e6b800, #d9a300);
+    background: #ffcf4d;
     border: none;
-    color: #1e1e1e;
-}
-.queue-view .btn-warning:hover {
-    background: linear-gradient(90deg, #d9a300, #c69500);
-}
-
-.queue-view .btn-info {
-    background: linear-gradient(90deg, #148f77, #1abc9c);
-    border: none;
-    color: #fff;
-}
-.queue-view .btn-info:hover {
-    background: linear-gradient(90deg, #1abc9c, #16a085);
-}
-
-.queue-view .btn-danger {
-    background: linear-gradient(90deg, #b7322c, #a31b15);
-    border: none;
-    color: #fff;
-}
-.queue-view .btn-danger:hover {
-    background: linear-gradient(90deg, #a31b15, #87140f);
-}
-
-.queue-view .btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: #d1d1d1;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.queue-view .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
+    color: #3a3a3a;
 }
 
 .queue-view .btn-success {
-    background: linear-gradient(90deg, #1abc9c, #159b80);
+    background: #1abc9c;
     border: none;
-}
-.queue-view .btn-success:hover {
-    background: linear-gradient(90deg, #159b80, #12876e);
+    color: white;
 }
 
-/* Pagination */
+.queue-view .btn-info {
+    background: #16a085;
+    border: none;
+    color: white;
+}
+
+.queue-view .btn-danger {
+    background: #c0392b;
+    border: none;
+}
+
+.queue-view .btn-secondary {
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #dfeeea;
+}
+
+.queue-view .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
 .queue-view .pagination .page-link {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(26, 188, 156, 0.3);
     color: #1abc9c;
 }
+
 .queue-view .pagination .page-item.active .page-link {
     background-color: #1abc9c;
-    color: #fff;
     border-color: #1abc9c;
-}
-.queue-view .pagination .page-link:hover {
-    background-color: rgba(26, 188, 156, 0.2);
-    color: #fff;
+    color: white;
 }
 
-/* Empty message */
+.queue-view .pagination .page-link:hover {
+    background-color: rgba(26, 188, 156, 0.25);
+    color: white;
+}
+
 .queue-view .text-muted {
-    color: #a3d2c5 !important;
+    color: #b9e2d9 !important;
 }

@@ -52,6 +52,9 @@ ALLOWED_HOSTS = ["*"]
 # TODO: Remove this in production
 CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.app"]
 
+# TODO: Uncomment this line for PROD
+# STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -128,7 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "pt-br"
 
 TIME_ZONE = "America/Sao_Paulo"
 

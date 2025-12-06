@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
+from django.forms import inlineformset_factory
 
-from .models import EntryInvoiceQueue, Material
+from .models import EntryInvoiceQueue, EntryInvoiceItem, Material
 
 
 # Login Form
@@ -61,16 +62,24 @@ class MaterialForm(forms.ModelForm):
 class EntryInvoiceForm(forms.ModelForm):
     class Meta:
         model = EntryInvoiceQueue
-        fields = ["provider", "material", "material_quantity", "material_price", "discount"]
+        fields = ["provider"]
+        labels = {"provider": "Fornecedor"}
+        widgets = {
+            "provider": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome completo"}),
+        }
+
+
+class EntryInvoiceItemForm(forms.ModelForm):
+    class Meta:
+        model = EntryInvoiceItem
+        fields = ["material", "material_quantity", "material_price", "discount"]
         labels = {
-            "provider": "Fornecedor",
             "material": "Material",
             "material_quantity": "Quantidade (Kg)",
             "material_price": "Preço Unitário (R$)",
             "discount": "Desconto (R$)",
         }
         widgets = {
-            "provider": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome completo"}),
             "material": forms.Select(attrs={"class": "form-select"}),
             "material_quantity": forms.NumberInput(
                 attrs={"class": "form-control", "step": "0.01", "min": "0", "placeholder": "Ex: 10.2"}
@@ -83,20 +92,30 @@ class EntryInvoiceForm(forms.ModelForm):
             ),
         }
 
-    def clean_material_quantity(self):
-        value = self.cleaned_data["material_quantity"]
-        if value < 0:
-            raise forms.ValidationError("A quantidade não pode ser negativa.")
-        return value
+    def clean(self):
+        cleaned = super().clean()
 
-    def clean_material_price(self):
-        value = self.cleaned_data["material_price"]
-        if value < 0:
-            raise forms.ValidationError("O preço não pode ser negativo.")
-        return value
+        material = cleaned.get("material")
+        q = cleaned.get("material_quantity")
+        p = cleaned.get("material_price")
+        d = cleaned.get("discount")
 
-    def clean_discount(self):
-        value = self.cleaned_data.get("discount", 0)
-        if value < 0:
+        if any(v in [None, ""] for v in [material, q, p]):
+            raise forms.ValidationError("Preencha todos os campos do material.")
+
+        if any(v <= 0 for v in [q, p]):
+            raise forms.ValidationError("Quantidade e preço devem ser maiores que zero.")
+
+        if d < 0:
             raise forms.ValidationError("O desconto não pode ser negativo.")
-        return value
+
+        return cleaned
+
+
+EntryInvoiceItemFormSet = inlineformset_factory(
+    EntryInvoiceQueue,
+    EntryInvoiceItem,
+    form=EntryInvoiceItemForm,
+    extra=1,
+    can_delete=True,
+)
