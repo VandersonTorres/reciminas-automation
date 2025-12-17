@@ -14,32 +14,44 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
     def __init__(
         self,
         provider: str,
-        material_code: str,
-        material_quantity: float,
-        material_price: float,
-        discount: float,
+        materials: list[dict],
         job_id: str,
         current_iter: str = "",
     ) -> None:
+        """Initialize Entry Invoices Automation.
+
+        Args:
+            provider (str): Provider name.
+            materials (list[dict]): List of materials with their details.
+            job_id (str): Unique job identifier.
+            current_iter (str, optional): Current iteration in batch processing. Defaults to "".
+        """
         super().__init__()
         # Automation Inputs
         self.provider = provider
-        self.material_code = material_code
-        self.material_quantity = material_quantity
-        self.material_price = material_price
-        self.discount = discount
+        self.materials = materials
         self.job_id = job_id
         self.current_iter = current_iter
         self.task_id = f"{self.job_id}_{'-'.join(self.current_iter.split('/'))}"
+
         CANCEL_FLAGS[self.job_id] = False
 
-    def check_cancelled(self):
+    def check_cancelled(self) -> None:
+        """Check if the automation has been cancelled."""
         if CANCEL_FLAGS.get(self.job_id) or CANCEL_FLAGS.get("__GLOBAL_CANCEL__"):
             self.logger.warning("Automação cancelada pelo usuário.")
             raise RuntimeError("Automation cancelled")
 
     # TODO: REMOVE HEADFUL
     def run(self, headless: bool = False, devtools: bool = False) -> str:
+        """Run the Entry Invoices Automation.
+
+        Args:
+            headless (bool, optional): Whether to run the browser in headless mode. Defaults to False.
+            devtools (bool, optional): Whether to open devtools. Defaults to False.
+        Returns:
+            str: Path to the generated invoice PDF.
+        """
         try:
             self.logger.info(f"Iniciando processo '{self.task_id}'. NF-{self.provider}")
             with self.start_navigation(url=self.reciminas_url, headless=headless, devtools=devtools) as _page:
@@ -118,28 +130,32 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
                 self.check_cancelled()
 
                 # Inserting Material Specifications
-                self.logger.info(
-                    "Inserindo especificações de material. "
-                    f"Produto: {self.material_code} - {self.material_quantity} - R${self.material_price}"
-                )
-                self._insert_data(
-                    page=logged_page, element_to_click=self.coord_insert_mat_code, data_to_insert=self.material_code
-                )
-                self._click_element(page=logged_page, element_to_click=self.coord_quantity_selection)
-                self._click_element(page=logged_page, element_to_click=self.coord_confirm_mat, use_dblclick=True)
-                self._insert_data(
-                    page=logged_page,
-                    element_to_click=self.coord_quantity_selection,
-                    data_to_insert=str(self.material_quantity),
-                )
-                self._insert_data(
-                    page=logged_page, element_to_click=self.coord_price, data_to_insert=str(self.material_price)
-                )
-                self._insert_data(
-                    page=logged_page, element_to_click=self.coord_discount, data_to_insert=str(self.discount)
-                )
-                self._click_element(page=logged_page, element_to_click=self.coord_store_progress)
-                self.check_cancelled()
+                self.logger.info("Inserindo especificações de material.")
+                for mat in self.materials:
+                    self.logger.info(f"Registrando material: {mat}")
+
+                    self._insert_data(
+                        page=logged_page,
+                        element_to_click=self.coord_insert_mat_code,
+                        data_to_insert=mat["material_code"],
+                    )
+                    self._click_element(page=logged_page, element_to_click=self.coord_quantity_selection)
+                    self._click_element(page=logged_page, element_to_click=self.coord_confirm_mat, use_dblclick=True)
+                    self._insert_data(
+                        page=logged_page,
+                        element_to_click=self.coord_quantity_selection,
+                        data_to_insert=str(mat["material_quantity"]),
+                    )
+                    self._insert_data(
+                        page=logged_page, element_to_click=self.coord_price, data_to_insert=str(mat["material_price"])
+                    )
+                    self._insert_data(
+                        page=logged_page, element_to_click=self.coord_discount, data_to_insert=str(mat["discount"])
+                    )
+
+                    # TODO: Check if need to click on another element to register multiple items
+                    self._click_element(page=logged_page, element_to_click=self.coord_store_progress)
+                    self.check_cancelled()
 
                 # Manage charge and payments
                 self.logger.info("Excluindo cobrança e selecionando 'Sem Pagamentos'...")
@@ -208,20 +224,32 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
 # TODO: Remove this debug snippet
 # python -m server.invoices_automation.services.invoices_generator
 # if __name__ == "__main__":
-#     # INPUTS
 #     provider = "Ramon Azevedo"
-#     material_code = "52"
-#     material_quantity = 3007.6  # Kg
-#     material_price = 13.30  # R$
-#     discount = 1.08  # R$
+#     materials = [
+#         {
+#             "material_code": "50",
+#             "material_quantity": 10.0,
+#             "material_price": 56.0,
+#             "discount": 0.0,
+#         },
+#         {
+#             "material_code": "52",
+#             "material_quantity": 98.0,
+#             "material_price": 2.0,
+#             "discount": 1.8,
+#         },
+#         {
+#             "material_code": "51",
+#             "material_quantity": 65.0,
+#             "material_price": 4.0,
+#             "discount": 1.4,
+#         },
+#     ]
 
 #     entry_invoices_automation = EntryInvoicesAutomation(
 #         provider=provider,
-#         material_code=material_code,
-#         material_quantity=material_quantity,
-#         material_price=material_price,
-#         discount=discount,
+#         materials=materials,
 #         job_id="DEBUG_JOB_001",
 #     )
 
-#     entry_invoices_automation.run(headless=False, devtools=False)
+#     entry_invoices_automation.run(headless=False, devtools=True)

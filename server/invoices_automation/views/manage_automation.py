@@ -37,16 +37,26 @@ def start_batch_automation(request):
                     item.save()
                     messages.warning(request, "Automação cancelada pelo usuário — interrompendo o lote.")
                     break
+
                 item.status = "processing"
                 item.save()
 
+                # Build materials items list
+                # TODO: Confirm if this is the expected structure
+                materials_payload = []
+                for mat_item in item.items.all():
+                    materials_payload.append(
+                        {
+                            "material_code": mat_item.material.code,
+                            "material_quantity": mat_item.material_quantity,
+                            "material_price": mat_item.material_price,
+                            "discount": mat_item.discount,
+                        }
+                    )
                 current_iter = f"{idx + 1}/{len(queue_items)}"
                 automation = EntryInvoicesAutomation(
                     provider=item.provider,
-                    material_code=item.material.code,
-                    material_quantity=item.material_quantity,
-                    material_price=item.material_price,
-                    discount=item.discount,
+                    materials=materials_payload,
                     job_id=job_id,
                     current_iter=current_iter,
                 )

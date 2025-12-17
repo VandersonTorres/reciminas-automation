@@ -89,7 +89,7 @@ def create_invoice(request, invoice_pk=None):
                             # TODO: Fix automation to receive the multiple invoice materials
                             automation = EntryInvoicesAutomation(
                                 provider=invoice.provider,
-                                items=materials_payload,
+                                materials=materials_payload,
                                 job_id=job_id,
                             )
 
