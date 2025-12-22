@@ -71,7 +71,7 @@
                             <td class="text-center">
                                 {% if invoice.status == "pending" %}
                                     <a href="{% url 'edit_invoice' invoice.pk %}" class="btn btn-sm btn-warning">✏️ Editar</a>
-                                    <form method="post" action="{% url 'create_invoice' invoice.pk %}" style="display:inline;">
+                                    <form method="post" action="{% url 'emit_invoice' invoice.pk %}" style="display:inline;">
                                         {% csrf_token %}
                                         <button class="btn btn-sm btn-success">🚀 Emitir</button>
                                     </form>

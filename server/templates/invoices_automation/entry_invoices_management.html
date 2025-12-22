@@ -106,15 +106,13 @@
                         ⚡ Emitir Agora
                     </button>
 
-                    {% if is_edit %}
-                        <button type="submit" name="action" value="add_to_queue" class="btn btn-primary">
+                    <button type="submit" name="action" value="add_to_queue" class="btn btn-primary">
+                        {% if is_edit %}
                             ➕ Salvar alterações
-                        </button>
-                    {% else %}
-                        <button type="submit" name="action" value="add_to_queue" class="btn btn-primary">
+                        {% else %}
                             ➕ Adicionar à Fila
-                        </button>
-                    {% endif %}
+                        {% endif %}
+                    </button>
                 </div>
             </form>
 

@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const urls = {
         getLogs: cfg.getLogsUrl,
         clearLogs: cfg.clearLogsUrl,
+        followLogs: cfg.followLogsUrl,
         cancel: cfg.cancelUrl,
         dashboard: cfg.dashboardUrl,
         getPdfs: cfg.getPdfsUrl,
@@ -26,14 +27,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 .then(data => {
                     const logsEl = document.getElementById("logs");
                     logsEl.innerText = data.logs.join("\n");
-                    const lastLine = data.logs[data.logs.length - 1] || "";
+                    const lastLines = data.logs.slice(-2).join("\n");
 
-                    if (lastLine.includes("Término do processo")) {
+                    if (lastLines.includes("Automação cancelada")) {
+                        cancelConfirmed = true;
+                        finished = true;
+                        updateAlertCancelled();
+                    }
+
+                    if (lastLines.includes("Término do processo") && !cancelConfirmed) {
                         finished = true;
                         updateAlertSuccess();
                     }
                 });
         }
+    }
+
+    function updateAlertCancelled() {
+        const alertEl = document.getElementById("automationAlert");
+
+        alertEl.className = "alert alert-info";
+        alertEl.innerHTML = `
+            ⛔ Automação cancelada.<br>
+            <a href="${urls.dashboard}" class="btn btn-secondary btn-sm mt-2">
+                Voltar ao Dashboard
+            </a>
+        `;
+        fetch(urls.clearLogs, { method: "POST" })
+            .then((response) => response.json())
+            .then((data) => console.log("Logs limpos:", data))
+            .catch((err) => console.error("Erro ao limpar logs:", err));
     }
 
     function updateAlertSuccess() {
@@ -68,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .then(data => {
                     if (data.status === "cancelling") {
                         alert("Prosseguindo com cancelamento...");
-                        window.location.href = urls.dashboard;
+                        window.location.href = urls.followLogs;
                     } else {
                         alert("Erro ao cancelar: " + (data.error || "Desconhecido"));
                     }

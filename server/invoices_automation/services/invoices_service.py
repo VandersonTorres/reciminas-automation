@@ -8,7 +8,7 @@ CANCEL_FLAGS = {}
 TO_PDF_APPROVAL = {}  # Ex.: {"<taskID>": {"path": "downloads/path.pdf", "status": "pending", "job_id": "JOB_001"}}
 
 
-class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
+class EntryInvoiceService(BaseAutomation, PageAttributesCoordinates):
     name = "ENTRADA"
 
     def __init__(
@@ -39,11 +39,10 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
     def check_cancelled(self) -> None:
         """Check if the automation has been cancelled."""
         if CANCEL_FLAGS.get(self.job_id) or CANCEL_FLAGS.get("__GLOBAL_CANCEL__"):
-            self.logger.warning("Automação cancelada pelo usuário.")
-            raise RuntimeError("Automation cancelled")
+            raise RuntimeError("Automação cancelada pelo usuário.")
 
     # TODO: REMOVE HEADFUL
-    def run(self, headless: bool = False, devtools: bool = False) -> str:
+    def run(self, headless: bool = False, devtools: bool = True) -> str:
         """Run the Entry Invoices Automation.
 
         Args:
@@ -55,6 +54,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
         try:
             self.logger.info(f"Iniciando processo '{self.task_id}'. NF-{self.provider}")
             with self.start_navigation(url=self.reciminas_url, headless=headless, devtools=devtools) as _page:
+                self.check_cancelled()
                 page: Page = _page
                 ticker_sel = page.locator("input[name='Password']")
                 ticker_sel.fill(RECIMINAS_CNPJ)
@@ -62,9 +62,9 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
                 self.check_cancelled()
                 with page.context.expect_page() as logged_page_event:
                     self.logger.info(f"Inicializando CNPJ {self.company_name}.")
-                    page.locator("input[value='Entrar']").click()
+                    page.locator("#buttonLogOn").click()
                     self.check_cancelled()
-                    self._sleep_between_actions(seconds=25)
+                    self._sleep_between_actions(seconds=15)
 
                 # Capturing new tab
                 logged_page = logged_page_event.value
@@ -74,7 +74,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
 
                 # Go to Reciminas ticker content
                 self.logger.info(f"Selecionando ticker {self.company_name}...")
-                self._click_element(page=logged_page, element_to_click=self.coord_initial_ticker_selection)
+                self._click_element(page=logged_page, element_to_click=self.coord_initial_ticker_selection, delay=10)
                 self.check_cancelled()
 
                 # Insert Username
@@ -93,7 +93,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
 
                 # Log in
                 self.logger.info("Logando na conta...")
-                self._click_element(page=logged_page, element_to_click=self.coord_log_in, delay=10)
+                self._click_element(page=logged_page, element_to_click=self.coord_log_in, delay=10, use_dblclick=True)
                 self.check_cancelled()
 
                 # Open Fiscal Tab
@@ -132,6 +132,8 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
                 # Inserting Material Specifications
                 self.logger.info("Inserindo especificações de material.")
                 for mat in self.materials:
+                    # TODO: Need Fixes here...
+                    # import pdb; pdb.set_trace()
                     self.logger.info(f"Registrando material: {mat}")
 
                     self._insert_data(
@@ -190,7 +192,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
                 if TO_PDF_APPROVAL[self.task_id]["status"] == "cancelled":
                     # Interrupt the flow
                     self.logger.warning("Transmissão abortada pelo usuário.")
-                    raise RuntimeError("Automation cancelled")
+                    raise RuntimeError("Automação cancelada.")
 
                 self.logger.info("Aprovado. Prosseguindo com transmissão...")
                 self._click_element(page=logged_page, element_to_click=self.coord_close_visualization, delay=10)
@@ -199,16 +201,20 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
                 self._click_element(page=logged_page, element_to_click=self.coord_dont_see, delay=10)
                 self._click_element(page=logged_page, element_to_click=self.coord_dont_send_email, delay=10)
                 self.logger.info(f"NF 'Entrada' para '{self.provider}' Transmitida com sucesso.")
-
         except RuntimeError as e:
+            self.logger.warning(str(e))
+        except Exception as e:
+            self.check_cancelled()
             self.logger.warning(str(e))
 
         finally:
             terminate_process = False
             if (n_of_nn := self.current_iter.split("/")) and len(n_of_nn) == 2:
                 if n_of_nn[0] == n_of_nn[1]:
+                    # Example: '2/2' -> It means the service is finished
                     terminate_process = True
             else:
+                # This means an unique finished execution
                 terminate_process = True
 
             if terminate_process:
@@ -222,7 +228,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
 
 
 # TODO: Remove this debug snippet
-# python -m server.invoices_automation.services.invoices_generator
+# python -m server.invoices_automation.services.invoices_service
 # if __name__ == "__main__":
 #     provider = "Ramon Azevedo"
 #     materials = [
@@ -246,7 +252,7 @@ class EntryInvoicesAutomation(BaseAutomation, PageAttributesCoordinates):
 #         },
 #     ]
 
-#     entry_invoices_automation = EntryInvoicesAutomation(
+#     entry_invoices_automation = EntryInvoiceService(
 #         provider=provider,
 #         materials=materials,
 #         job_id="DEBUG_JOB_001",

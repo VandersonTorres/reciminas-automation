@@ -1,6 +1,3 @@
-import threading
-import uuid
-
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
@@ -8,7 +5,6 @@ from django.shortcuts import get_object_or_404, render, redirect
 
 from invoices_automation.forms import EntryInvoiceForm, EntryInvoiceItemFormSet
 from invoices_automation.models import EntryInvoiceQueue
-from invoices_automation.services.invoices_generator import EntryInvoicesAutomation
 from invoices_automation.services.lock_manager import automation_lock
 
 
@@ -54,7 +50,7 @@ def create_invoice(request, invoice_pk=None):
             # Create Invoice
             invoice = invoice_form.save(commit=False)
             invoice.user = request.user
-            invoice.status = "processing" if action == "emit_now" else "pending"
+            invoice.status = "pending"
             invoice.save()
 
             # Store invoice materials
@@ -62,60 +58,11 @@ def create_invoice(request, invoice_pk=None):
             material_formset.save()
 
             if action == "emit_now":
-                if automation_lock.locked():
-                    messages.error(request, "Outra automação já está em andamento. Aguarde finalizar.")
-                    return redirect("dashboard")
+                return redirect("emit_invoice", invoice_pk=invoice.pk)
 
-                job_id = str(uuid.uuid4())
-                request.session["job_id"] = job_id
-                invoice.status = "processing"
-                invoice.save()
-
-                # Build materials items list
-                materials_payload = []
-                for item in invoice.items.all():
-                    materials_payload.append(
-                        {
-                            "material_code": item.material.code,
-                            "material_quantity": item.material_quantity,
-                            "material_price": item.material_price,
-                            "discount": item.discount,
-                        }
-                    )
-
-                def run_unique_automation():
-                    with automation_lock:
-                        try:
-                            # TODO: Fix automation to receive the multiple invoice materials
-                            automation = EntryInvoicesAutomation(
-                                provider=invoice.provider,
-                                materials=materials_payload,
-                                job_id=job_id,
-                            )
-
-                            invoice_path = automation.run()
-
-                            if invoice_path:
-                                invoice.status = "done"
-                                invoice.invoice_path = invoice_path.replace("downloads/", "")
-                            else:
-                                invoice.status = "cancelled"
-                        except Exception:
-                            invoice.status = "cancelled"
-                        finally:
-                            invoice.save()
-
-                threading.Thread(target=run_unique_automation, daemon=True).start()
-                return redirect("follow_automation_logs")
-
-            # Action: Add to queue
             elif action == "add_to_queue":
                 messages.success(request, "Nota adicionada à fila!")
                 return redirect("create_invoice")
-
-            # Action: Go to queue
-            elif action == "go_to_queue":
-                return redirect("access_invoices_queue")
         else:
             if material_formset.error_messages.get("missing_management_form"):
                 material_formset.non_form_errors = "Material sem especificações"
@@ -151,7 +98,14 @@ def create_invoice(request, invoice_pk=None):
 # Read invoices
 @login_required
 def access_invoices_queue(request):
-    queue = EntryInvoiceQueue.objects.filter().order_by("created_at")
+    # Check if there are any invoices with status "processing" and automation is not running
+    processing_invoices = EntryInvoiceQueue.objects.filter(status="processing")
+    if not automation_lock.locked():
+        for invoice in processing_invoices:
+            invoice.status = "cancelled"
+            invoice.save()
+
+    queue = EntryInvoiceQueue.objects.all().order_by("created_at")
     paginator = Paginator(queue, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
