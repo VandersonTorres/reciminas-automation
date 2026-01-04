@@ -53,6 +53,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 Voltar ao Dashboard
             </a>
         `;
+
+        const messagesEl = document.querySelector(".alert-dismissible");
+        if (messagesEl) {
+            messagesEl.innerHTML = "Processo cancelado.";
+        }
+        const cancelBtn = document.getElementById("cancelButton");
+        if (cancelBtn) {
+            cancelBtn.style.display = "none";
+        }
+        const spinner = document.getElementById("cancelLoadingSpinner");
+        if (spinner) {
+            spinner.style.display = "none";
+        }
+        
         fetch(urls.clearLogs, { method: "POST" })
             .then((response) => response.json())
             .then((data) => console.log("Logs limpos:", data))
@@ -79,6 +93,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("cancelButton").addEventListener("click", () => {
         if (confirm("Deseja realmente cancelar a automação em andamento?")) {
+            // Show loading spinner
+            const spinner = document.createElement("div");
+            spinner.id = "cancelLoadingSpinner";
+            spinner.innerHTML = `<div class="spinner-border text-danger" role="status" style="margin-left:10px;"><span class="visually-hidden">Carregando...</span></div>`;
+            document.getElementById("cancelButton").parentNode.appendChild(spinner);
+            spinner.style.display = "inline-block";
+
             fetch(urls.cancel, {
                 method: "POST",
                 headers: {

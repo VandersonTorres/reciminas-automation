@@ -1,4 +1,5 @@
 class PageAttributesCoordinates:
+    # TODO: Divide into multiple classes if it gets too big
     """
     Defines X/ Y axis based coordinates of the main operations.
 

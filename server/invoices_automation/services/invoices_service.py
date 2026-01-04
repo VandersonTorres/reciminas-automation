@@ -133,7 +133,7 @@ class EntryInvoiceService(BaseAutomation, PageAttributesCoordinates):
                 self.logger.info("Inserindo especificações de material.")
                 for mat in self.materials:
                     # TODO: Need Fixes here...
-                    # import pdb; pdb.set_trace()
+                    import pdb; pdb.set_trace()
                     self.logger.info(f"Registrando material: {mat}")
 
                     self._insert_data(
