@@ -30,6 +30,7 @@ def process_single_invoice(
             materials=build_material_payload(invoice),
             job_id=job_id,
             current_iter=current_iter,
+            close_popup_confirmation=invoice.close_popup,
         )
 
         invoice_path = automation.run()

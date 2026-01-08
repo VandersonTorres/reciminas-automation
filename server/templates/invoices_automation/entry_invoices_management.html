@@ -27,6 +27,35 @@
                 <h5 class="mb-4 text-white">Dados da Nota</h5>
 
                 {{ form.as_p }}
+                <div class="form-check">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="closePopup"
+                        name="closePopup"
+                        style="width: 0.9em; height: 0.9em; margin-top: 0.1em;"
+                    >
+                    <label class="form-check-label ms-1" for="closePopup" style="font-size: 0.85em;">
+                        Fechar popup de inclusão de NF para fornecedor
+                    </label>
+                    &nbsp;
+                    <small
+                        class="btn btn-warning btn-sm py-0 px-2 position-relative"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="right"
+                        title="Necessário apenas se houver uma emissão anterior pendente para o mesmo fornecedor."
+                        style="font-size: 0.85em;">
+                        ⚠️ Atenção
+                    </small>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                                new bootstrap.Tooltip(tooltipTriggerEl)
+                            })
+                        });
+                    </script>
+                </div>
 
                 <hr>
                 <h5 class="mb-4 text-white">MATERIAIS</h5>

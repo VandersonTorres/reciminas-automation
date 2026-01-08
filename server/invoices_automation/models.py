@@ -18,6 +18,7 @@ class Material(models.Model):
 class EntryInvoiceQueue(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     provider = models.CharField(max_length=255)
+    close_popup = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         max_length=50,

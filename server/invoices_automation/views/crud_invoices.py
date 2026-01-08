@@ -49,6 +49,10 @@ def create_invoice(request, invoice_pk=None):
 
             # Create Invoice
             invoice = invoice_form.save(commit=False)
+            if invoice_form.data.get("closePopup") == "on":
+                invoice.close_popup = True
+            else:
+                invoice.close_popup = False
             invoice.user = request.user
             invoice.status = "pending"
             invoice.save()

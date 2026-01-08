@@ -1,14 +1,15 @@
+from typing import Optional
 from playwright.sync_api._generated import Page
 
 from . import BaseAutomation
 from core.settings import RECIMINAS_CNPJ, RECIMINAS_USERNAME, RECIMINAS_PASSWORD
-from invoices_automation.utils.page_coordinates import PageAttributesCoordinates
+from invoices_automation.utils.page_coordinates import EntryInvoicePageCoordinates
 
 CANCEL_FLAGS = {}
 TO_PDF_APPROVAL = {}  # Ex.: {"<taskID>": {"path": "downloads/path.pdf", "status": "pending", "job_id": "JOB_001"}}
 
 
-class EntryInvoiceService(BaseAutomation, PageAttributesCoordinates):
+class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
     name = "ENTRADA"
 
     def __init__(
@@ -17,6 +18,7 @@ class EntryInvoiceService(BaseAutomation, PageAttributesCoordinates):
         materials: list[dict],
         job_id: str,
         current_iter: str = "",
+        close_popup_confirmation: bool = False,
     ) -> None:
         """Initialize Entry Invoices Automation.
 
@@ -32,6 +34,7 @@ class EntryInvoiceService(BaseAutomation, PageAttributesCoordinates):
         self.materials = materials
         self.job_id = job_id
         self.current_iter = current_iter
+        self.close_popup_confirmation = close_popup_confirmation
         self.task_id = f"{self.job_id}_{'-'.join(self.current_iter.split('/'))}"
 
         CANCEL_FLAGS[self.job_id] = False
@@ -42,14 +45,14 @@ class EntryInvoiceService(BaseAutomation, PageAttributesCoordinates):
             raise RuntimeError("Automação cancelada pelo usuário.")
 
     # TODO: REMOVE HEADFUL
-    def run(self, headless: bool = False, devtools: bool = True) -> str:
+    def run(self, headless: bool = False, devtools: bool = True) -> Optional[str]:
         """Run the Entry Invoices Automation.
 
         Args:
             headless (bool, optional): Whether to run the browser in headless mode. Defaults to False.
             devtools (bool, optional): Whether to open devtools. Defaults to False.
         Returns:
-            str: Path to the generated invoice PDF.
+            Optional[str]: Path to the generated invoice PDF.
         """
         try:
             self.logger.info(f"Iniciando processo '{self.task_id}'. NF-{self.provider}")
@@ -124,16 +127,17 @@ class EntryInvoiceService(BaseAutomation, PageAttributesCoordinates):
                 self.check_cancelled()
 
                 # Include Provider
-                self.logger.info(f"Selecionando e incluindo {self.provider}...")
+                self.logger.info(f"Selecionando {self.provider}...")
                 self._click_element(page=logged_page, element_to_click=self.coord_provider_selection, use_dblclick=True)
-                self._click_element(page=logged_page, element_to_click=self.coord_include_provider)
+                if self.close_popup_confirmation:
+                    self._click_element(page=logged_page, element_to_click=self.coord_close_unwanted_popup)
                 self.check_cancelled()
 
                 # Inserting Material Specifications
                 self.logger.info("Inserindo especificações de material.")
                 for mat in self.materials:
-                    # TODO: Need Fixes here...
-                    import pdb; pdb.set_trace()
+                    self.logger.info("Incluindo material")
+                    self._click_element(page=logged_page, element_to_click=self.coord_include_provider)
                     self.logger.info(f"Registrando material: {mat}")
 
                     self._insert_data(
@@ -142,20 +146,23 @@ class EntryInvoiceService(BaseAutomation, PageAttributesCoordinates):
                         data_to_insert=mat["material_code"],
                     )
                     self._click_element(page=logged_page, element_to_click=self.coord_quantity_selection)
+                    self._click_element(page=logged_page, element_to_click=self.coord_empty_space)
                     self._click_element(page=logged_page, element_to_click=self.coord_confirm_mat, use_dblclick=True)
+                    self._click_element(page=logged_page, element_to_click=self.coord_close_mat_confirmation)
                     self._insert_data(
                         page=logged_page,
                         element_to_click=self.coord_quantity_selection,
                         data_to_insert=str(mat["material_quantity"]),
                     )
+                    self.check_cancelled()
                     self._insert_data(
                         page=logged_page, element_to_click=self.coord_price, data_to_insert=str(mat["material_price"])
                     )
+                    self.check_cancelled()
                     self._insert_data(
                         page=logged_page, element_to_click=self.coord_discount, data_to_insert=str(mat["discount"])
                     )
 
-                    # TODO: Check if need to click on another element to register multiple items
                     self._click_element(page=logged_page, element_to_click=self.coord_store_progress)
                     self.check_cancelled()
 
@@ -171,7 +178,11 @@ class EntryInvoiceService(BaseAutomation, PageAttributesCoordinates):
                 # Cancelling is no longer supported here
                 self.logger.info("Baixando NF em PDF...")
                 self._click_element(page=logged_page, element_to_click=self.coord_see_invoice)
+                if self.close_popup_confirmation:
+                    self._click_element(page=logged_page, element_to_click=self.coord_close_unwanted_popup_alt)
+
                 self._click_element(page=logged_page, element_to_click=self.coord_confirm_storage, delay=25)
+                self._insert_data(page=logged_page, element_to_click=self.coord_adapt_visibility, data_to_insert="105")
                 self._click_element(page=logged_page, element_to_click=self.coord_see_fullscreen, delay=10)
                 invoice_path = f"downloads/NF-{self.name}-{self.provider}-{self.task_id}.pdf".replace(" ", "-")
                 logged_page.pdf(
