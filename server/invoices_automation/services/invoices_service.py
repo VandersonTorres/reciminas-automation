@@ -176,7 +176,7 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
                 self.check_cancelled()
 
                 # Cancelling is no longer supported here
-                self.logger.info("Baixando NF em PDF...")
+                self.logger.info("Preparando NF em PDF...")
                 self._click_element(page=logged_page, element_to_click=self.coord_see_invoice)
                 if self.close_popup_confirmation:
                     self._click_element(page=logged_page, element_to_click=self.coord_close_unwanted_popup_alt)
