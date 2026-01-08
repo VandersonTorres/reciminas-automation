@@ -8,6 +8,7 @@
   <div id="automationConfig"
       data-get-logs-url="{% url 'get_logs' %}"
       data-clear-logs-url="{% url 'clear_logs' %}"
+      data-follow-logs-url="{% url 'follow_automation_logs' %}"
       data-cancel-url="{% url 'cancel_automation' %}"
       data-dashboard-url="{% url 'dashboard' %}"
       data-get-pdfs-url="{% url 'get_pending_pdfs' %}"
@@ -66,6 +67,6 @@
     <a href="{% url 'dashboard' %}" class="btn btn-secondary">🔙 Voltar</a>
 </div>
 
-<script src="{% static 'js/automation.js' %}"></script>
+<script src="{% static 'js/client_side_automation_manager.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/follow_automation_logs.css' %}">
 {% endblock %}

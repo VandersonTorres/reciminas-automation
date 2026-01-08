@@ -30,15 +30,48 @@
                             <td>{{ invoice.user.get_full_name|default:invoice.user.username }}</td>
                             <td>{{ invoice.created_at|localtime|date:"d/m/Y H:i" }}</td>
                             <td>{{ invoice.provider }}</td>
-                            <td>{{ invoice.material.name }}</td>
-                            <td>{{ invoice.material_quantity }}</td>
-                            <td>R$ {{ invoice.material_price|floatformat:2 }}</td>
-                            <td>R$ {{ invoice.discount|floatformat:2 }}</td>
+
+                            <!-- Materials list -->
+                            <td>
+                                <ul class="list-unstyled">
+                                    {% for m in invoice.items.all %}
+                                        <li><span class="material-chip">{{ m.material }}</span></li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+
+                            <!-- Quantities -->
+                            <td>
+                                <ul class="list-unstyled">
+                                    {% for m in invoice.items.all %}
+                                        <li><span class="material-chip">{{ m.material_quantity }}</span></li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+
+                            <!-- Prices -->
+                            <td>
+                                <ul class="list-unstyled">
+                                    {% for m in invoice.items.all %}
+                                        <li><span class="material-chip">R$ {{ m.material_price|floatformat:2 }}</span></li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+
+                            <!-- Discounts -->
+                            <td>
+                                <ul class="list-unstyled">
+                                    {% for m in invoice.items.all %}
+                                        <li><span class="material-chip">R$ {{ m.discount|floatformat:2 }}</span></li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+
                             <td>{{ invoice.get_status_display }}</td>
                             <td class="text-center">
                                 {% if invoice.status == "pending" %}
                                     <a href="{% url 'edit_invoice' invoice.pk %}" class="btn btn-sm btn-warning">✏️ Editar</a>
-                                    <form method="post" action="{% url 'create_invoice' invoice.pk %}" style="display:inline;">
+                                    <form method="post" action="{% url 'emit_invoice' invoice.pk %}" style="display:inline;">
                                         {% csrf_token %}
                                         <button class="btn btn-sm btn-success">🚀 Emitir</button>
                                     </form>
@@ -54,7 +87,7 @@
                                     <form method="post" action="{% url 'delete_invoice' invoice.pk %}" style="display:inline;">
                                         {% csrf_token %}
                                         <button class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja remover esta nota?');">
-                                            🗑️ Excluir Registro
+                                            🗑️ Excluir
                                         </button>
                                     </form>
                                 {% endif %}
@@ -65,9 +98,7 @@
             </table>
         </div>
 
-        <div class="mt-3 d-flex justify-content-between align-items-center">
-            <a href="{% url 'create_invoice' %}" class="btn btn-secondary">➕ Adicionar nova</a>
-
+        <div class="mt-3 d-flex justify-content-center align-items-center">
             <form method="post" action="{% url 'start_batch_automation' %}">
                 {% csrf_token %}
                 <button class="btn btn-success">🚀 Iniciar Emissão</button>
@@ -76,47 +107,49 @@
 
         <!-- PAGINATE -->
         {% if page_obj.has_other_pages %}
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">« Anterior</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">« Anterior</span>
-                    </li>
-                {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ num }}</span>
-                        </li>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">« Anterior</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">« Anterior</span>
                         </li>
                     {% endif %}
-                {% endfor %}
 
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima »</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">Próxima »</span>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima »</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Próxima »</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
         {% endif %}
+
     {% else %}
         <p class="text-muted">Nenhuma nota adicionada à fila.</p>
-        <a href="{% url 'create_invoice' %}" class="btn btn-primary">➕ Adicionar nota</a>
     {% endif %}
+
+    <a href="{% url 'create_invoice' %}" class="btn btn-secondary">➕ Adicionar nova nota</a>
 </div>
 
-<link rel="stylesheet" href="{% static 'css/invoices_queue.css' %}">
+<link rel="stylesheet" href="{% static 'css/invoices_queue.css' %}?v=2">
 {% endblock %}

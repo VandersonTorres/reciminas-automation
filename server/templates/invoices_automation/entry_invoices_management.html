@@ -23,33 +23,141 @@
 
             <form method="post" class="p-3">
                 {% csrf_token %}
-                {{ form.as_p }}
 
-                {% if is_edit %}
-                    <div class="d-flex gap-2 mt-3">
-                        <button type="submit" class="btn btn-warning">
-                            💾 Salvar Alterações
+                <h5 class="mb-4 text-white">Dados da Nota</h5>
+
+                {{ form.as_p }}
+                <div class="form-check">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="closePopup"
+                        name="closePopup"
+                        style="width: 0.9em; height: 0.9em; margin-top: 0.1em;"
+                    >
+                    <label class="form-check-label ms-1" for="closePopup" style="font-size: 0.85em;">
+                        Fechar popup de inclusão de NF para fornecedor
+                    </label>
+                    &nbsp;
+                    <small
+                        class="btn btn-warning btn-sm py-0 px-2 position-relative"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="right"
+                        title="Necessário apenas se houver uma emissão anterior pendente para o mesmo fornecedor."
+                        style="font-size: 0.85em;">
+                        ⚠️ Atenção
+                    </small>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                                new bootstrap.Tooltip(tooltipTriggerEl)
+                            })
+                        });
+                    </script>
+                </div>
+
+                <hr>
+                <h5 class="mb-4 text-white">MATERIAIS</h5>
+
+                {{ formset.management_form }}
+                <div id="empty-form" class="d-none">
+                    <div class="card p-3 mb-2 material-item-form">
+                        {% for hidden in formset.empty_form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+
+                        {% for field in formset.empty_form.visible_fields %}
+                            {% if field.name != "DELETE" %}
+                                <div class="mb-2">
+                                    {{ field.label_tag }} {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small">{{ field.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-material">
+                            🗑 Remover
                         </button>
                     </div>
-                {% else %}
-                    <div class="d-flex gap-2 mt-3">
-                        <button type="submit" name="action" value="emit_now" class="btn btn-success">
-                            ⚡ Emitir Agora
-                        </button>
-                        <button type="submit" name="action" value="add_to_queue" class="btn btn-primary">
+                </div>
+
+                <div id="materials-container">
+                    {% if formset.non_form_errors %}
+                        <div class="alert alert-danger">
+                            {{ formset.non_form_errors }}
+                        </div>
+                    {% endif %}
+
+                    {% for item_form in formset %}
+                        <div class="card p-3 mb-2 material-item-form">
+                            {% for hidden in item_form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+
+                            {% for field in item_form.visible_fields %}
+                                {% if field.name != "DELETE" %}
+                                    <div class="mb-2">
+                                        {{ field.label_tag }} {{ field }}
+                                        {% if field.errors %}
+                                            <div class="text-danger small">{{ field.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if item_form.instance.pk %}
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-danger remove-material-persistent"
+                                    data-delete-id="{{ item_form.prefix }}">
+                                    🗑 Remover
+                                </button>
+                                {{ item_form.DELETE }}
+                            {% else %}
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-material">
+                                    🗑 Remover
+                                </button>
+                            {% endif %}
+
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button type="button" id="add-material" class="btn btn-outline-primary">
+                    ➕ Adicionar novo material
+                </button>
+
+                <hr>
+                <div class="d-flex gap-2 mt-3 justify-content-center">
+                    <button type="submit" name="action" value="emit_now" class="btn btn-success">
+                        ⚡ Emitir Agora
+                    </button>
+
+                    <button type="submit" name="action" value="add_to_queue" class="btn btn-primary">
+                        {% if is_edit %}
+                            ➕ Salvar alterações
+                        {% else %}
                             ➕ Adicionar à Fila
-                        </button>
-                    </div>
-                {% endif %}
+                        {% endif %}
+                    </button>
+                </div>
             </form>
+
             <hr>
             <div class="d-flex gap-2 mt-3 p-3">
                 <a href="{% url 'access_invoices_queue' %}" class="btn btn-secondary">📋 Ir para Fila</a>
-                <a href="{% url 'dashboard' %}" class="btn btn-secondary">🔙 Voltar</a>
+                {% if is_edit %}
+                    <a href="{% url 'access_invoices_queue' %}" class="btn btn-secondary">🔙 Voltar</a>
+                {% else %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">🔙 Voltar</a>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'css/entry_invoices.css' %}">
+<script src="{% static 'js/add_item_formset.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/entry_invoices.css' %}?v=2">
 {% endblock %}

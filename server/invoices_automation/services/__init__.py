@@ -9,7 +9,7 @@ from .log_buffer import InMemoryLogHandler
 
 class BaseAutomation:
     company_name = "RECIMINAS"
-    reciminas_url = "https://cloud3.sygecom.com.br/sgr_reciminas.html"
+    reciminas_url = "https://cloud.gruposygecom.com.br/sgr_reciminas.html"
 
     def __init__(self) -> None:
         # Set logger

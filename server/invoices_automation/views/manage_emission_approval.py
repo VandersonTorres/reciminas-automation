@@ -6,7 +6,7 @@ from django.http import FileResponse, Http404, JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 
-from invoices_automation.services.invoices_generator import TO_PDF_APPROVAL
+from invoices_automation.services.invoices_service import TO_PDF_APPROVAL
 
 
 @login_required

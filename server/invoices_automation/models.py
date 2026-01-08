@@ -14,14 +14,11 @@ class Material(models.Model):
         return f"{self.name} ({self.code})"
 
 
-# Invoices Model
+# Invoice Model
 class EntryInvoiceQueue(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     provider = models.CharField(max_length=255)
-    material = models.ForeignKey(Material, on_delete=models.PROTECT)
-    material_quantity = models.FloatField()
-    material_price = models.FloatField()
-    discount = models.FloatField(default=0.0)
+    close_popup = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         max_length=50,
@@ -36,4 +33,15 @@ class EntryInvoiceQueue(models.Model):
     invoice_path = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.provider} - {self.material.name}"
+        return f"{self.provider} - {self.id}"
+
+
+class EntryInvoiceItem(models.Model):
+    invoice = models.ForeignKey(EntryInvoiceQueue, related_name="items", on_delete=models.CASCADE)
+    material = models.ForeignKey(Material, on_delete=models.PROTECT)
+    material_quantity = models.FloatField()
+    material_price = models.FloatField()
+    discount = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return f"{self.material.name} - {self.material_quantity}kg"

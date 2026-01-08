@@ -92,3 +92,7 @@ textarea[disabled] {
 .container {
     max-width: 900px;
 }
+
+input[type="checkbox"][name$="-DELETE"] {
+    display: none;
+}

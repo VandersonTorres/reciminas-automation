@@ -1,103 +1,115 @@
-import threading
-import uuid
-
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 
-from invoices_automation.forms import EntryInvoiceForm
+from invoices_automation.forms import EntryInvoiceForm, EntryInvoiceItemFormSet
 from invoices_automation.models import EntryInvoiceQueue
-from invoices_automation.services.invoices_generator import EntryInvoicesAutomation
 from invoices_automation.services.lock_manager import automation_lock
 
 
 # Create invoice entry
 @login_required
 def create_invoice(request, invoice_pk=None):
+    invoice = None
+    if invoice_pk:
+        invoice = get_object_or_404(EntryInvoiceQueue, pk=invoice_pk)
+
+    is_edit = invoice is not None
+
     if request.method == "POST":
-        action = request.POST.get("action")  # Get which button was pressed
-        form = EntryInvoiceForm(request.POST)
-        invoice_data = {}
-        if form.is_valid():
-            invoice_data = {
-                "provider": form.cleaned_data["provider"],
-                "material": form.cleaned_data["material"],
-                "material_quantity": form.cleaned_data["material_quantity"],
-                "material_price": form.cleaned_data["material_price"],
-                "discount": form.cleaned_data.get("discount", 0.0),
-            }
-            print(f">>>> {invoice_data.get('material').code}")
-        elif invoice_pk:
-            invoice = get_object_or_404(EntryInvoiceQueue, pk=invoice_pk)
-            action = "emit_now"
-            invoice_data = {
-                "provider": invoice.provider,
-                "material": invoice.material,
-                "material_quantity": invoice.material_quantity,
-                "material_price": invoice.material_price,
-                "discount": invoice.discount,
-            }
+        action = request.POST.get("action")
 
-        if invoice_data:
-            # Action: Emit now
-            if action == "emit_now":
-                if automation_lock.locked():
-                    messages.error(request, "Outra automação já está em andamento. Aguarde finalizar.")
-                    return redirect("dashboard")
+        invoice_form = EntryInvoiceForm(request.POST, instance=invoice)
+        material_formset = EntryInvoiceItemFormSet(
+            request.POST,
+            instance=invoice if is_edit else None,
+            prefix="items",
+        )
 
-                job_id = str(uuid.uuid4())
-                request.session["job_id"] = job_id
-                queue_item = EntryInvoiceQueue.objects.create(
-                    user=request.user,
-                    status="processing",
-                    **invoice_data,
+        if invoice_form.is_valid() and material_formset.is_valid():
+            valid_materials = [
+                f
+                for f in material_formset
+                if not f.cleaned_data.get("DELETE", False) and f.cleaned_data.get("material")
+            ]
+
+            if not valid_materials:
+                material_formset.non_form_errors = "Adicione pelo menos um material"
+                # re-render template
+                return render(
+                    request,
+                    "invoices_automation/entry_invoices_management.html",
+                    {
+                        "form": invoice_form,
+                        "formset": material_formset,
+                        "is_edit": invoice is not None,
+                    },
                 )
 
-                def run_unique_automation():
-                    with automation_lock:
-                        automation = EntryInvoicesAutomation(
-                            provider=invoice_data.get("provider"),
-                            material_code=invoice_data.get("material").code,
-                            material_quantity=invoice_data.get("material_quantity"),
-                            material_price=invoice_data.get("material_price"),
-                            discount=invoice_data.get("discount"),
-                            job_id=job_id,
-                        )
-                        try:
-                            invoice = automation.run()
-                            if invoice:
-                                queue_item.status = "done"
-                                queue_item.invoice_path = invoice.replace("downloads/", "")
-                            else:
-                                queue_item.status = "cancelled"
-                        except Exception:
-                            queue_item.status = "cancelled"
-                        finally:
-                            queue_item.save()
+            # Create Invoice
+            invoice = invoice_form.save(commit=False)
+            if invoice_form.data.get("closePopup") == "on":
+                invoice.close_popup = True
+            else:
+                invoice.close_popup = False
+            invoice.user = request.user
+            invoice.status = "pending"
+            invoice.save()
 
-                threading.Thread(target=run_unique_automation, daemon=True).start()
-                return redirect("follow_automation_logs")
+            # Store invoice materials
+            material_formset.instance = invoice
+            material_formset.save()
 
-            # Action: Add to queue
+            if action == "emit_now":
+                return redirect("emit_invoice", invoice_pk=invoice.pk)
+
             elif action == "add_to_queue":
-                EntryInvoiceQueue.objects.create(user=request.user, **invoice_data)
-                messages.success(request, "Nota adicionada à fila com sucesso!")
+                messages.success(request, "Nota adicionada à fila!")
                 return redirect("create_invoice")
+        else:
+            if material_formset.error_messages.get("missing_management_form"):
+                material_formset.non_form_errors = "Material sem especificações"
+                # re-render template
+                return render(
+                    request,
+                    "invoices_automation/entry_invoices_management.html",
+                    {
+                        "form": invoice_form,
+                        "formset": material_formset,
+                        "is_edit": is_edit,
+                    },
+                )
 
-            # Action: Go to queue
-            elif action == "go_to_queue":
-                return redirect("access_invoices_queue")
     else:
-        form = EntryInvoiceForm()
+        invoice_form = EntryInvoiceForm(instance=invoice)
+        material_formset = EntryInvoiceItemFormSet(
+            instance=invoice if is_edit else None,
+            prefix="items",
+        )
 
-    return render(request, "invoices_automation/entry_invoices_management.html", {"form": form})
+    return render(
+        request,
+        "invoices_automation/entry_invoices_management.html",
+        {
+            "form": invoice_form,
+            "formset": material_formset,
+            "is_edit": is_edit,
+        },
+    )
 
 
 # Read invoices
 @login_required
 def access_invoices_queue(request):
-    queue = EntryInvoiceQueue.objects.filter().order_by("created_at")
+    # Check if there are any invoices with status "processing" and automation is not running
+    processing_invoices = EntryInvoiceQueue.objects.filter(status="processing")
+    if not automation_lock.locked():
+        for invoice in processing_invoices:
+            invoice.status = "cancelled"
+            invoice.save()
+
+    queue = EntryInvoiceQueue.objects.all().order_by("created_at")
     paginator = Paginator(queue, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -115,13 +127,28 @@ def edit_invoice(request, pk):
     invoice = get_object_or_404(EntryInvoiceQueue, pk=pk)
     if request.method == "POST":
         form = EntryInvoiceForm(request.POST, instance=invoice)
-        if form.is_valid():
+        formset = EntryInvoiceItemFormSet(request.POST, instance=invoice, prefix="items")
+
+        if form.is_valid() and formset.is_valid():
             form.save()
+            formset.save()
             messages.success(request, "Nota atualizada com sucesso!")
             return redirect("access_invoices_queue")
+        else:
+            messages.error(request, "Corrija os erros do formulário e tente novamente.")
     else:
         form = EntryInvoiceForm(instance=invoice)
-    return render(request, "invoices_automation/entry_invoices_management.html", {"form": form, "is_edit": True})
+        formset = EntryInvoiceItemFormSet(instance=invoice, prefix="items")
+
+    return render(
+        request,
+        "invoices_automation/entry_invoices_management.html",
+        {
+            "form": form,
+            "formset": formset,
+            "is_edit": True,
+        },
+    )
 
 
 # Delete Invoice
