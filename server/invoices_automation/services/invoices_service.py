@@ -2,7 +2,7 @@ from typing import Optional
 from playwright.sync_api._generated import Page
 
 from . import BaseAutomation
-from core.settings import RECIMINAS_CNPJ, RECIMINAS_USERNAME, RECIMINAS_PASSWORD
+from core.settings import COMPANY_CNPJ, COMPANY_USERNAME, COMPANY_PASSWORD
 from invoices_automation.utils.page_coordinates import EntryInvoicePageCoordinates
 
 CANCEL_FLAGS = {}
@@ -60,7 +60,7 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
                 self.check_cancelled()
                 page: Page = _page
                 ticker_sel = page.locator("input[name='Password']")
-                ticker_sel.fill(RECIMINAS_CNPJ)
+                ticker_sel.fill(COMPANY_CNPJ)
                 self._sleep_between_actions()
                 self.check_cancelled()
                 with page.context.expect_page() as logged_page_event:
@@ -81,16 +81,16 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
                 self.check_cancelled()
 
                 # Insert Username
-                self.logger.info(f"Inserindo nome de usuário (conta: {RECIMINAS_USERNAME})...")
+                self.logger.info(f"Inserindo usuário (conta: {COMPANY_USERNAME})...")
                 self._insert_data(
-                    page=logged_page, element_to_click=self.coord_user_insertion, data_to_insert=RECIMINAS_USERNAME
+                    page=logged_page, element_to_click=self.coord_user_insertion, data_to_insert=COMPANY_USERNAME
                 )
                 self.check_cancelled()
 
                 # Insert Password
                 self.logger.info("Inserindo Senha...")
                 self._insert_data(
-                    page=logged_page, element_to_click=self.coord_password_insertion, data_to_insert=RECIMINAS_PASSWORD
+                    page=logged_page, element_to_click=self.coord_password_insertion, data_to_insert=COMPANY_PASSWORD
                 )
                 self.check_cancelled()
 

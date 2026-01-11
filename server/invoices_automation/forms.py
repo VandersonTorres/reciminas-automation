@@ -98,7 +98,7 @@ class EntryInvoiceItemForm(forms.ModelForm):
         material = cleaned.get("material")
         q = cleaned.get("material_quantity")
         p = cleaned.get("material_price")
-        d = cleaned.get("discount")
+        d = cleaned.get("discount") or 0
 
         if any(v in [None, ""] for v in [material, q, p]):
             raise forms.ValidationError("Preencha todos os campos do material.")

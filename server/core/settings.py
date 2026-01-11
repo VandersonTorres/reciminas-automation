@@ -47,10 +47,13 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = True
 
 # TODO: Add the domain here
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*", ".ngrok-free.app", ".trycloudflare.com"]
 
 # TODO: Remove this in production
-CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.app"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.ngrok-free.app",
+    "https://*.trycloudflare.com",
+]
 
 # TODO: Uncomment this line for PROD
 # STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
@@ -151,9 +154,9 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Reciminas Configs
-RECIMINAS_CNPJ = os.getenv("RECIMINAS_CNPJ")
-RECIMINAS_USERNAME = os.getenv("RECIMINAS_USERNAME")
-RECIMINAS_PASSWORD = os.getenv("RECIMINAS_PASSWORD")
+COMPANY_CNPJ = os.getenv("COMPANY_CNPJ")
+COMPANY_USERNAME = os.getenv("COMPANY_USERNAME")
+COMPANY_PASSWORD = os.getenv("COMPANY_PASSWORD")
 
 # Login
 LOGIN_REDIRECT_URL = "/dashboard/"
