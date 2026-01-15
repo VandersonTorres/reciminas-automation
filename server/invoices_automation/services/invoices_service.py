@@ -206,8 +206,11 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
                     raise RuntimeError("Automação cancelada.")
 
                 self.logger.info("Aprovado. Prosseguindo com transmissão...")
-                self._click_element(page=logged_page, element_to_click=self.coord_close_visualization, delay=10)
+                logged_page.keyboard.press("Escape")
+                self._sleep_between_actions(seconds=10)
                 self._click_element(page=logged_page, element_to_click=self.coord_save_job, delay=10)
+                # Need confirmation below
+                # import pdb; pdb.set_trace()
                 self._click_element(page=logged_page, element_to_click=self.coord_transmit_invoice, delay=10)
                 self._click_element(page=logged_page, element_to_click=self.coord_dont_see, delay=10)
                 self._click_element(page=logged_page, element_to_click=self.coord_dont_send_email, delay=10)
