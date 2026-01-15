@@ -48,6 +48,6 @@ class EntryInvoicePageCoordinates(BasePageCoordinates):
     coord_see_fullscreen = (500, 37)
     # coord_close_visualization = (761, 42)  # No longer needed
     coord_save_job = (943, 662)
-    coord_transmit_invoice = (712, 413)
-    coord_dont_see = (763, 414)
-    coord_dont_send_email = (791, 415)
+    coord_transmit_invoice = (712, 430)
+    coord_dont_see = (763, 430)
+    coord_dont_send_email = (791, 430)

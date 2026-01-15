@@ -209,11 +209,9 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
                 logged_page.keyboard.press("Escape")
                 self._sleep_between_actions(seconds=10)
                 self._click_element(page=logged_page, element_to_click=self.coord_save_job, delay=10)
-                # Need confirmation below
-                # import pdb; pdb.set_trace()
-                self._click_element(page=logged_page, element_to_click=self.coord_transmit_invoice, delay=10)
-                self._click_element(page=logged_page, element_to_click=self.coord_dont_see, delay=10)
-                self._click_element(page=logged_page, element_to_click=self.coord_dont_send_email, delay=10)
+                self._click_element(page=logged_page, element_to_click=self.coord_transmit_invoice)
+                self._click_element(page=logged_page, element_to_click=self.coord_dont_see)
+                self._click_element(page=logged_page, element_to_click=self.coord_dont_send_email)
                 self.logger.info(f"NF 'Entrada' para '{self.provider}' Transmitida com sucesso.")
         except RuntimeError as e:
             self.logger.warning(str(e))
