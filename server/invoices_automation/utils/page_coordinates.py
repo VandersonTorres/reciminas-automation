@@ -13,7 +13,7 @@ class BasePageCoordinates:
 
     coord_initial_ticker_selection = (72, 384)
     coord_user_insertion = (366, 365)
-    coord_password_insertion = (390, 421)
+    coord_password_insertion = (430, 430)
     coord_log_in = (365, 583)
     coord_fiscal_tab = (511, 30)
     coord_empty_space = (30, 10)

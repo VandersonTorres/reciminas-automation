@@ -51,7 +51,7 @@ class BaseAutomation:
             def __enter__(inner_self):
                 self._pw = sync_playwright().start()
                 self._browser = self._pw.chromium.launch(headless=headless, devtools=devtools)
-                self._context = self._browser.new_context(viewport={"width": 1280, "height": 720})
+                self._context = self._browser.new_context()
                 self._page = self._context.new_page()
                 self.logger.info(f"Navegando para {url}...")
                 self._page.goto(url, wait_until="load", timeout=60000)
@@ -79,7 +79,6 @@ class BaseAutomation:
 
         self._sleep_between_actions(seconds=delay)
 
-    def _insert_data(self, page: Page, element_to_click: tuple[int], data_to_insert: str) -> None:
-        self._click_element(page=page, element_to_click=element_to_click)
+    def _insert_data(self, page: Page, element_to_click: tuple[int], data_to_insert: str, delay: int = 5) -> None:
+        self._click_element(page=page, element_to_click=element_to_click, delay=delay)
         page.keyboard.type(data_to_insert)
-        self._sleep_between_actions()
