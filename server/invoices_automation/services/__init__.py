@@ -13,14 +13,16 @@ class BaseAutomation:
 
     def __init__(self) -> None:
         # Set logger
-        self.logger = logging.getLogger("Reciminas - SYGECOM")
+        self.logger = logging.getLogger("SYGECOM")
 
         # Clean old handlers to avoid duplicates
         self.logger.handlers.clear()
 
         # Connect logger to a memory buffer
         self.log_handler = InMemoryLogHandler()
-        self.log_handler.setFormatter(logging.Formatter("[%(asctime)s] [%(name)s] - %(levelname)s - %(message)s"))
+        self.log_handler.setFormatter(
+            logging.Formatter("[%(asctime)s] [%(name)s] - %(levelname)s - %(message)s", datefmt="%d/%m/%y %H:%M:%S"),
+        )
         self.logger.addHandler(self.log_handler)
         self.logger.setLevel(logging.INFO)
 
@@ -65,7 +67,7 @@ class BaseAutomation:
         return PageContext()
 
     def _click_element(
-        self, page: Page, element_to_click: tuple[int], use_dblclick: bool = False, delay: int = 5
+        self, page: Page, element_to_click: tuple[int], use_dblclick: bool = False, delay: int = 4
     ) -> None:
         x_ax, y_ax = element_to_click
         if use_dblclick:
@@ -79,6 +81,6 @@ class BaseAutomation:
 
         self._sleep_between_actions(seconds=delay)
 
-    def _insert_data(self, page: Page, element_to_click: tuple[int], data_to_insert: str, delay: int = 5) -> None:
+    def _insert_data(self, page: Page, element_to_click: tuple[int], data_to_insert: str, delay: int = 4) -> None:
         self._click_element(page=page, element_to_click=element_to_click, delay=delay)
         page.keyboard.type(data_to_insert)
