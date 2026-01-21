@@ -6,10 +6,22 @@ from playwright.sync_api._generated import Page
 
 from .log_buffer import InMemoryLogHandler
 
+# Shared registries for services: base URL, cancellation flags and PDF-approval workflow
+RECIMINAS_URL = "https://cloud.gruposygecom.com.br/sgr_reciminas.html"
+CANCEL_FLAGS = {}
+TO_PDF_APPROVAL = {
+    # "<taskID>": {
+    #     "path": "downloads/path.pdf",
+    #     "status": "pending",  # ("pending", "cancelled" or "approved")
+    #     "job_id": "JOB_001",
+    # }
+}
 
-class BaseAutomation:
+
+class AutomationControl:
+    """Base class for automation control responsibilities."""
+
     company_name = "RECIMINAS"
-    reciminas_url = "https://cloud.gruposygecom.com.br/sgr_reciminas.html"
 
     def __init__(self) -> None:
         # Set logger
@@ -30,17 +42,12 @@ class BaseAutomation:
         self.log_handler.clear()
 
     def _sleep_between_actions(self, seconds: int = 3) -> None:
-        """
-        Apply a delay between actions to avoid being detected.
-
-        Args:
-            seconds (int): Number of seconds to sleep.
-        """
+        """Apply a delay between actions to avoid being detected."""
         time.sleep(seconds)
 
-    def start_navigation(self, url: str, headless: bool = True, devtools: bool = False) -> object:
-        """
-        Context manager to start a Playwright Page.
+    def start_navigation(self, url: str = RECIMINAS_URL, headless: bool = True, devtools: bool = False) -> object:
+        """Context manager to start a Playwright Page.
+
         Args:
             url (str): URL to be started.
             headless (bool): Do not show the browser.
@@ -69,6 +76,14 @@ class BaseAutomation:
     def _click_element(
         self, page: Page, element_to_click: tuple[int], use_dblclick: bool = False, delay: int = 4
     ) -> None:
+        """Click or double-click on a specific element.
+
+        Args:
+            page (Page): Playwright Page object.
+            element_to_click (tuple[int]): X and Y axis coordinates to click.
+            use_dblclick (bool): Whether to use double-click.
+            delay (int): Delay after the click action.
+        """
         x_ax, y_ax = element_to_click
         if use_dblclick:
             page.mouse.move(x_ax, y_ax)
@@ -82,5 +97,53 @@ class BaseAutomation:
         self._sleep_between_actions(seconds=delay)
 
     def _insert_data(self, page: Page, element_to_click: tuple[int], data_to_insert: str, delay: int = 4) -> None:
+        """Insert data into a field by clicking and typing.
+
+        Args:
+            page (Page): Playwright Page object.
+            element_to_click (tuple[int]): X and Y axis coordinates to click.
+            data_to_insert (str): Data to be typed.
+            delay (int): Delay after clicking before typing.
+        """
         self._click_element(page=page, element_to_click=element_to_click, delay=delay)
         page.keyboard.type(data_to_insert)
+
+
+class BaseService(AutomationControl):
+    """Base class for automation services that centralizes job/task logic.
+
+    Responsibilities:
+    - Initialize and expose self.job_id, self.current_iter and self.task_id
+    - Register the job in CANCEL_FLAGS
+    - Provide check_cancelled helper
+    - Helpers to register a PDF as pending and wait for a user decision
+    """
+
+    def __init__(self, job_id: str, current_iter: str = "") -> None:
+        super().__init__()
+
+        self.job_id = job_id
+        self.current_iter = current_iter or ""
+        # Build a stable task id joined by '-' from the iteration (e.g. "JOB_1_1-2")
+        self.task_id = (
+            f"{self.job_id}_{'-'.join(self.current_iter.split('/'))}" if self.current_iter else f"{self.job_id}_1"
+        )
+        # Ensure a flag is present for this job
+        CANCEL_FLAGS.setdefault(self.job_id, False)
+
+    def check_cancelled(self) -> None:
+        """Raise RuntimeError when the job or the global flag was set to cancel."""
+        if CANCEL_FLAGS.get(self.job_id) or CANCEL_FLAGS.get("__GLOBAL_CANCEL__"):
+            raise RuntimeError("Automação cancelada pelo usuário.")
+
+    def register_pdf_pending(self, invoice_path: str) -> None:
+        """Register the generated invoice PDF and set it to pending approval."""
+        TO_PDF_APPROVAL[self.task_id] = {"path": invoice_path, "status": "pending", "job_id": self.job_id}
+
+    def wait_for_transmit_decision(self, sleep_seconds: int = 2) -> str:
+        """Block until the PDF is approved/cancelled by the user. Returns the final status."""
+        while TO_PDF_APPROVAL[self.task_id]["status"] == "pending":
+            self._sleep_between_actions(sleep_seconds)
+            self.check_cancelled()
+
+        return TO_PDF_APPROVAL[self.task_id]["status"]

@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
 from invoices_automation.models import EntryInvoiceQueue
-from invoices_automation.services.invoices_service import CANCEL_FLAGS
+from invoices_automation.services import CANCEL_FLAGS
 from invoices_automation.services.lock_manager import automation_lock
 from invoices_automation.services.log_buffer import current_logs
 
