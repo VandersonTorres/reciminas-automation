@@ -89,6 +89,7 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
                     page=logged_page,
                     element_to_click=self.coord_initial_ticker_selection,
                     use_dblclick=True,
+                    add_redundance=True,
                     delay=10,
                 )
                 self.check_cancelled()
@@ -110,6 +111,7 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
                     page=logged_page,
                     element_to_click=self.coord_password_insertion,
                     use_dblclick=True,
+                    add_redundance=True,
                     delay=2,
                 )
                 self.logger.info("Inserindo Senha.")
@@ -123,7 +125,13 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
 
                 # Enter the account
                 self.logger.info("Acessando conta.\n")
-                self._click_element(page=logged_page, element_to_click=self.coord_log_in, use_dblclick=True, delay=10)
+                self._click_element(
+                    page=logged_page,
+                    element_to_click=self.coord_log_in,
+                    use_dblclick=True,
+                    add_redundance=True,
+                    delay=10,
+                )
                 self.check_cancelled()
 
                 self.logger.info("PREPARAÇÃO DA NF DE ENTRADA:")

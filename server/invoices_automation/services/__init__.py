@@ -67,7 +67,12 @@ class BaseAutomation:
         return PageContext()
 
     def _click_element(
-        self, page: Page, element_to_click: tuple[int], use_dblclick: bool = False, delay: int = 4
+        self,
+        page: Page,
+        element_to_click: tuple[int],
+        use_dblclick: bool = False,
+        add_redundance: bool = False,
+        delay: int = 4,
     ) -> None:
         x_ax, y_ax = element_to_click
         if use_dblclick:
@@ -77,6 +82,11 @@ class BaseAutomation:
             page.mouse.up()
             page.mouse.dblclick(x_ax, y_ax)
         else:
+            page.mouse.click(x_ax, y_ax)
+
+        if add_redundance:
+            # Click again to ensure the action
+            self._sleep_between_actions(seconds=1)
             page.mouse.click(x_ax, y_ax)
 
         self._sleep_between_actions(seconds=delay)
