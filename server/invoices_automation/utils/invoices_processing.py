@@ -2,7 +2,7 @@ import time
 
 from invoices_automation.services.lock_manager import automation_lock
 from invoices_automation.services import CANCEL_FLAGS
-from invoices_automation.services.invoices_service import EntryInvoiceService
+from invoices_automation.services.entry_invoices_service import EntryInvoiceService
 
 
 def build_material_payload(invoice):
