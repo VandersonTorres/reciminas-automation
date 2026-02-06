@@ -7,6 +7,11 @@ from invoices_automation.utils.page_coordinates import EntryInvoicePageCoordinat
 
 
 class EntryInvoiceService(BaseService, EntryInvoicePageCoordinates):
+    """Service class for automating entry invoice processing.
+
+    Handles the automation of entry invoices (Notas Fiscais de Entrada) in the system.
+    """
+
     name = "ENTRADA"
 
     def __init__(
@@ -16,6 +21,7 @@ class EntryInvoiceService(BaseService, EntryInvoicePageCoordinates):
         job_id: str,
         current_iter: str = "",
         close_popup_confirmation: bool = False,
+        **kwargs,
     ) -> None:
         """Initialize Entry Invoices Automation.
 

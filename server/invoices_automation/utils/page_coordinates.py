@@ -11,24 +11,23 @@ class BasePageCoordinates:
         ```
     """
 
+    # Initial login process
     coord_initial_ticker_selection = (72, 384)
     coord_user_insertion = (366, 365)
     coord_password_insertion = (430, 430)
     coord_log_in = (365, 583)
+
+    # Main page operations
     coord_fiscal_tab = (511, 30)
-    coord_empty_space = (30, 10)
-    coord_close_unwanted_popup = (782, 441)
-    coord_close_unwanted_popup_alt = (713, 444)
-
-
-class EntryInvoicePageCoordinates(BasePageCoordinates):
-    """Entry Invoices specific page operational coordinates."""
-
     coord_invoice_control = (534, 55)
     coord_register = (30, 627)
+
+    # Provider selection process
     coord_locate_provider = (1122, 138)
     coord_provider_search_bar = (417, 533)
     coord_provider_selection = (414, 236)
+
+    # Material inclusion process
     coord_include_provider = (199, 478)
     coord_insert_mat_code = (248, 63)
     coord_quantity_selection = (322, 212)
@@ -37,17 +36,91 @@ class EntryInvoicePageCoordinates(BasePageCoordinates):
     coord_price = (463, 210)
     coord_discount = (666, 212)
     coord_store_progress = (618, 703)
+
+    # Charging and payment process
     coord_charging = (517, 174)
     coord_exclude = (961, 476)
     coord_confirm_exclusion = (671, 440)
     coord_payments = (904, 236)
     coord_no_payments = (791, 496)
+
+    # Invoice visualization process
     coord_see_invoice = (822, 662)
     coord_confirm_storage = (709, 445)
     coord_adapt_visibility = (351, 38)
     coord_see_fullscreen = (500, 37)
-    # coord_close_visualization = (761, 42)  # No longer needed
+
+    # Invoice saving and transmission process
     coord_save_job = (943, 662)
     coord_transmit_invoice = (712, 430)
     coord_dont_see = (763, 430)
     coord_dont_send_email = (791, 430)
+
+    # Utils coordinates
+    coord_empty_space = (30, 10)
+    coord_close_unwanted_popup = (782, 441)
+    coord_close_unwanted_popup_alt = (713, 444)
+
+
+class EntryInvoicePageCoordinates(BasePageCoordinates):
+    """Entry Invoices specific page operational coordinates."""
+
+    pass
+
+
+class ExitInvoicePageCoordinates(BasePageCoordinates):
+    """Exit Invoices specific page operational coordinates.
+
+    In State Sale (Venda comum) process.
+    """
+
+    # Venda comum (dentro do Estado)
+
+    # Main page operations
+
+    # Set operation type
+    # 2. Selecionar Operação: Coordinates (viewport): ( 434 , 78 )
+    coord_operation = (450, 79)
+    # 3. Selecionar SAÍDA: Coordinates (viewport): ( 411 , 118 )
+    coord_select_exit = (409, 119)
+
+    # Provider selection process
+
+    # Material inclusion process
+
+    # Set transport and freight information
+    # 6. Clicar em Transporte/Volumes: Coordinates (viewport): ( 412 , 176 )
+    coord_transport_and_volumes = (412, 176)
+    # 7. Frete por conta: Coordinates (viewport): ( 319 , 252 )
+    coord_freight_by = (319, 252)
+    # 7.1. ver image.png -> adicionar opções numericas (1 pra cada opção)
+    # 7.2. clicar de novo no 'Frete por conta'
+    # 8. selecionar transportadora (lupa): Coordinates (viewport): ( 1111 , 258 )
+    coord_select_carrier = (1114, 254)
+    # 9. dar duas opções de consulta (por código ou por nome)
+    # 9.1. por código: Coordinates (viewport): ( 328 , 259 )
+    coord_search_by_code = (328, 259)
+    # 9.2. por nome: Coordinates (viewport): ( 520 , 260 )
+    coord_search_by_name = (520, 260)
+    # 10. consultar transportadora: Coordinates (viewport): ( 463 , 486 )
+    coord_search_carrier = (417, 487)
+    # 11. clicar 2x na transportadora: Coordinates (viewport): ( 499 , 280 ) ( 443 , 279 )
+    coord_confirm_carrier = (443, 279)
+
+    # Charging and payment process
+
+    # Observation inclusion process
+    # 13. pesquisar observação: Coordinates (viewport): ( 674 , 175 )
+    coord_observation = (674, 175)
+    # 14. clicar na lupinha: Coordinates (viewport): ( 1116 , 224 )
+    coord_search_observation = (1116, 224)
+    # 15. Selecionar nome: Coordinates (viewport):  ( 184 , 157 )
+    coord_search_observation_by_name = (184, 157)
+    # 16. pesquisar nome: Coordinates (viewport): ( 214 , 560 )
+    coord_search_observation = (214, 560)
+    # 17. Fechar aba: Coordinates (viewport): ( 1214 , 104 )
+    coord_close_observation_tab = (1214, 104)
+
+    # Invoice visualization process
+
+    # Invoice saving and transmission process
