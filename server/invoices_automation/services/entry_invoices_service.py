@@ -1,18 +1,18 @@
 from typing import Optional
 from playwright.sync_api._generated import Page
 
-from . import BaseService
+from . import BaseServiceManager
 from core.settings import COMPANY_CNPJ, COMPANY_USERNAME, COMPANY_PASSWORD
 from invoices_automation.utils.page_coordinates import EntryInvoicePageCoordinates
 
 
-class EntryInvoiceService(BaseService, EntryInvoicePageCoordinates):
+class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
     """Service class for automating entry invoice processing.
 
     Handles the automation of entry invoices (Notas Fiscais de Entrada) in the system.
     """
 
-    name = "ENTRADA"
+    name: str = "ENTRADA"
 
     def __init__(
         self,
@@ -47,10 +47,13 @@ class EntryInvoiceService(BaseService, EntryInvoicePageCoordinates):
             Optional[str]: Path to the generated invoice PDF.
         """
         try:
+            context_manager, page, logged_page = self.start_service(headless=headless, devtools=devtools)
+            import pdb
+
+            pdb.set_trace()
             self.logger.info(
-                f"Iniciando Entrada '{self.current_iter}'. NF: {self.provider}\n\t" f"- CONTA: {COMPANY_USERNAME}\n"
+                f"Iniciando {self.name} '{self.current_iter}'. NF: {self.provider}\n\t" f"- CONTA: {COMPANY_USERNAME}\n"
             )
-            self.approval_status = "inactive"
             with self.start_navigation(headless=headless, devtools=devtools) as _page:
                 self.check_cancelled()
                 page: Page = _page
