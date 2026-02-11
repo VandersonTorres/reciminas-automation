@@ -70,8 +70,8 @@
                             <td>{{ invoice.get_status_display }}</td>
                             <td class="text-center">
                                 {% if invoice.status == "pending" %}
-                                    <a href="{% url 'edit_invoice' invoice.pk %}" class="btn btn-sm btn-warning">✏️ Editar</a>
-                                    <form method="post" action="{% url 'emit_invoice' invoice.pk %}" style="display:inline;">
+                                    <a href="{% url 'edit_entry_invoice' invoice.pk %}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                                    <form method="post" action="{% url 'emit_entry_invoice' invoice.pk %}" style="display:inline;">
                                         {% csrf_token %}
                                         <button class="btn btn-sm btn-success">🚀 Emitir</button>
                                     </form>
@@ -84,7 +84,7 @@
                                 {% endif %}
 
                                 {% if user.is_superuser %}
-                                    <form method="post" action="{% url 'delete_invoice' invoice.pk %}" style="display:inline;">
+                                    <form method="post" action="{% url 'delete_entry_invoice' invoice.pk %}" style="display:inline;">
                                         {% csrf_token %}
                                         <button class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja remover esta nota?');">
                                             🗑️ Excluir
@@ -99,7 +99,7 @@
         </div>
 
         <div class="mt-3 d-flex justify-content-center align-items-center">
-            <form method="post" action="{% url 'start_batch_automation' %}">
+            <form method="post" action="{% url 'start_entry_batch_automation' %}">
                 {% csrf_token %}
                 <button class="btn btn-success">🚀 Iniciar Emissão</button>
             </form>
@@ -148,7 +148,7 @@
         <p class="text-muted">Nenhuma nota adicionada à fila.</p>
     {% endif %}
 
-    <a href="{% url 'create_invoice' %}" class="btn btn-secondary">➕ Adicionar nova nota</a>
+    <a href="{% url 'create_entry_invoice' %}" class="btn btn-secondary">➕ Adicionar nova nota</a>
 </div>
 
 <link rel="stylesheet" href="{% static 'css/invoices_queue.css' %}?v=2">

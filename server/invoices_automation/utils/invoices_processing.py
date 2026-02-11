@@ -20,8 +20,8 @@ def build_material_payload(invoice: EntryInvoiceQueue | ExitInvoiceQueue):
 
 
 def process_single_invoice(
-    invoice: EntryInvoiceQueue | ExitInvoiceQueue,
     service_class: EntryInvoiceService | ExitInvoiceService,
+    invoice: EntryInvoiceQueue | ExitInvoiceQueue,
     job_id: str,
     current_iter=None,
 ):
@@ -53,8 +53,8 @@ def process_single_invoice(
 
 
 def process_invoice_batch(
-    invoices: list[EntryInvoiceQueue | ExitInvoiceQueue],
     service_class: EntryInvoiceService | ExitInvoiceService,
+    invoices: list[EntryInvoiceQueue | ExitInvoiceQueue],
     job_id: str,
 ):
     with automation_lock:
@@ -65,7 +65,7 @@ def process_invoice_batch(
                 break
 
             current_iter = f"{idx + 1}/{len(invoices)}"
-            process_single_invoice(invoice, job_id, service_class, current_iter)
+            process_single_invoice(service_class, invoice, job_id, current_iter)
 
             time.sleep(2)
 

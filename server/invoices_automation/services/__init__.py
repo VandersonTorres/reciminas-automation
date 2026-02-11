@@ -5,7 +5,6 @@ from playwright.sync_api import sync_playwright
 from playwright.sync_api._generated import Page
 
 from .log_buffer import InMemoryLogHandler
-from core.settings import COMPANY_CNPJ, COMPANY_USERNAME, COMPANY_PASSWORD
 from invoices_automation.utils.page_coordinates import BasePageCoordinates
 
 # Shared registries for services: base URL, cancellation flags and PDF-approval workflow
@@ -168,91 +167,3 @@ class BaseServiceManager(AutomationControl, BasePageCoordinates):
             self.check_cancelled()
 
         return TO_PDF_APPROVAL[self.task_id]["status"]
-
-    def start_service(self, headless=True, devtools=False):
-        """Start the service by performing login and navigating to the correct page.
-
-        :Important: This method returns a context manager that must be closed by the caller
-        by calling context_manager.__exit__(None, None, None) after finishing the service's tasks,
-        or in a try/finally block to ensure proper cleanup.
-
-        Args:
-            headless (bool): Whether to run the browser in headless mode. Defaults to True.
-            devtools (bool): Whether to open devtools. Defaults to False.
-        Returns:
-            tuple: (context_manager, page, logged_page) where
-            - "context_manager" is the Playwright context manager,
-            - "page" is the initial page after login, and
-            - "logged_page" is the page after navigating to the ticker content.
-        """
-        self.logger.info(f"Iniciando {self.name} '{self.current_iter}'.\n\t- CONTA: {COMPANY_USERNAME}\n")
-        context_manager = self.start_navigation(headless=headless, devtools=devtools)
-        page: Page = context_manager.__enter__()
-        ticker_sel = page.locator("input[name='Password']")
-        ticker_sel.fill(COMPANY_CNPJ)
-        self.check_cancelled()
-        self._sleep_between_actions()
-        with page.context.expect_page() as logged_page_event:
-            self.logger.info(f"Inicializando CNPJ {self.company_name}.")
-            page.locator("#buttonLogOn").click()
-            self.check_cancelled()
-            self._sleep_between_actions(seconds=15)
-
-        # Capturing new tab
-        logged_page = logged_page_event.value
-        logged_page.wait_for_load_state("load", timeout=60000)
-        self.check_cancelled()
-        self._sleep_between_actions()
-
-        # Go to Reciminas ticker content
-        self.logger.info(f"Selecionando ticker {self.company_name}.\n")
-        self._click_element(
-            page=logged_page,
-            element_to_click=self.coord_initial_ticker_selection,
-            use_dblclick=True,
-            add_redundance=True,
-            delay=10,
-        )
-        self.check_cancelled()
-
-        self.logger.info("LOGIN:")
-
-        # Insert Username
-        self.logger.info("Inserindo usuário.")
-        self._insert_data(
-            page=logged_page,
-            element_to_click=self.coord_user_insertion,
-            data_to_insert=COMPANY_USERNAME,
-            delay=2,
-        )
-        self.check_cancelled()
-
-        # It was needed to add redundance on clicking the correct element
-        self._click_element(
-            page=logged_page,
-            element_to_click=self.coord_password_insertion,
-            use_dblclick=True,
-            add_redundance=True,
-            delay=2,
-        )
-        self.logger.info("Inserindo Senha.")
-        self._insert_data(
-            page=logged_page,
-            element_to_click=self.coord_password_insertion,
-            data_to_insert=COMPANY_PASSWORD,
-            delay=2,
-        )
-        self.check_cancelled()
-
-        # Enter the account
-        self.logger.info("Acessando conta.\n")
-        self._click_element(
-            page=logged_page,
-            element_to_click=self.coord_log_in,
-            use_dblclick=True,
-            add_redundance=True,
-            delay=10,
-        )
-        self.check_cancelled()
-
-        return context_manager, page, logged_page

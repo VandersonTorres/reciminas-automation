@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from invoices_automation.models import EntryInvoiceQueue
 from invoices_automation.services import CANCEL_FLAGS
+from invoices_automation.services.entry_invoices_service import EntryInvoiceService
 from invoices_automation.services.lock_manager import automation_lock
 from invoices_automation.services.log_buffer import current_logs
 
@@ -16,7 +17,7 @@ from invoices_automation.utils.invoices_processing import process_invoice_batch
 
 
 @login_required
-def emit_invoice(request, invoice_pk):
+def emit_entry_invoice(request, invoice_pk):
     if automation_lock.locked():
         messages.error(request, "Outra automação já está em andamento.")
         return redirect("dashboard")
@@ -24,13 +25,13 @@ def emit_invoice(request, invoice_pk):
     invoice = get_object_or_404(EntryInvoiceQueue, pk=invoice_pk)
     if invoice.status != "pending":
         messages.error(request, "Nota não está pendente.")
-        return redirect("access_invoices_queue")
+        return redirect("access_entry_invoices_queue")
 
     job_id = str(uuid.uuid4())
     request.session["job_id"] = job_id
 
     threading.Thread(
-        target=lambda: process_invoice_batch([invoice], job_id),
+        target=lambda: process_invoice_batch(EntryInvoiceService, [invoice], job_id),
         daemon=True,
     ).start()
 
@@ -38,7 +39,7 @@ def emit_invoice(request, invoice_pk):
 
 
 @login_required
-def start_batch_automation(request):
+def start_entry_batch_automation(request):
     if automation_lock.locked():
         messages.error(request, "Outra automação já está em andamento.")
         return redirect("dashboard")
@@ -47,13 +48,13 @@ def start_batch_automation(request):
 
     if not invoices:
         messages.info(request, "Nenhuma nota pendente.")
-        return redirect("access_invoices_queue")
+        return redirect("access_entry_invoices_queue")
 
     job_id = str(uuid.uuid4())
     request.session["job_id"] = job_id
 
     threading.Thread(
-        target=lambda: process_invoice_batch(invoices, job_id),
+        target=lambda: process_invoice_batch(EntryInvoiceService, invoices, job_id),
         daemon=True,
     ).start()
 

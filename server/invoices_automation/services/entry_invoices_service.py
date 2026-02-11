@@ -47,10 +47,6 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
             Optional[str]: Path to the generated invoice PDF.
         """
         try:
-            context_manager, page, logged_page = self.start_service(headless=headless, devtools=devtools)
-            import pdb
-
-            pdb.set_trace()
             self.logger.info(
                 f"Iniciando {self.name} '{self.current_iter}'. NF: {self.provider}\n\t" f"- CONTA: {COMPANY_USERNAME}\n"
             )

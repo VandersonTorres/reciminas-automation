@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 
@@ -42,16 +40,23 @@ class BaseInvoiceModel(models.Model):
 
 # Entry Invoice
 class EntryInvoiceQueue(BaseInvoiceModel):
-    items = GenericRelation("InvoiceItem")
-
     def __str__(self):
         return f"{self.provider} - {self.id} (Entrada)"
 
 
+class EntryInvoiceItem(models.Model):
+    invoice = models.ForeignKey(EntryInvoiceQueue, related_name="items", on_delete=models.CASCADE)
+    material = models.ForeignKey(Material, on_delete=models.PROTECT)
+    material_quantity = models.FloatField()
+    material_price = models.FloatField()
+    discount = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return f"{self.material.name} - {self.material_quantity}kg"
+
+
 # Exit Invoice
 class ExitInvoiceQueue(BaseInvoiceModel):
-    items = GenericRelation("InvoiceItem")
-
     freight = models.CharField(
         max_length=255,
         choices=[
@@ -62,6 +67,7 @@ class ExitInvoiceQueue(BaseInvoiceModel):
             ("4", "Próprio p/ conta Destinatário"),
             ("9", "Sem Frete"),
         ],
+        default="0",
     )
     search_carrier_by = models.CharField(
         max_length=50,
@@ -91,11 +97,8 @@ class ExitInvoiceQueue(BaseInvoiceModel):
             raise ValidationError({"carrier_name": "Informe o nome do transportador."})
 
 
-# Generic Invoice Item
-class InvoiceItem(models.Model):
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    invoice = GenericForeignKey("content_type", "object_id")
+class ExitInvoiceItem(models.Model):
+    invoice = models.ForeignKey(ExitInvoiceQueue, related_name="items", on_delete=models.CASCADE)
     material = models.ForeignKey(Material, on_delete=models.PROTECT)
     material_quantity = models.FloatField()
     material_price = models.FloatField()
