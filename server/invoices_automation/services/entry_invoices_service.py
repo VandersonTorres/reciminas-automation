@@ -1,22 +1,18 @@
 from typing import Optional
 from playwright.sync_api._generated import Page
 
-from . import BaseAutomation
+from . import BaseServiceManager
 from core.settings import COMPANY_CNPJ, COMPANY_USERNAME, COMPANY_PASSWORD
 from invoices_automation.utils.page_coordinates import EntryInvoicePageCoordinates
 
-CANCEL_FLAGS = {}
-TO_PDF_APPROVAL = {
-    # "<taskID>": {
-    #     "path": "downloads/path.pdf",
-    #     "status": "pending",  ("pending", "cancelled" or "approved")
-    #     "job_id": "JOB_001",
-    # }
-}
 
+class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
+    """Service class for automating entry invoice processing.
 
-class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
-    name = "ENTRADA"
+    Handles the automation of entry invoices (Notas Fiscais de Entrada) in the system.
+    """
+
+    name: str = "ENTRADA"
 
     def __init__(
         self,
@@ -25,6 +21,7 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
         job_id: str,
         current_iter: str = "",
         close_popup_confirmation: bool = False,
+        **kwargs,
     ) -> None:
         """Initialize Entry Invoices Automation.
 
@@ -34,21 +31,10 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
             job_id (str): Unique job identifier.
             current_iter (str, optional): Current iteration in batch processing. Defaults to "".
         """
-        super().__init__()
-        # Automation Inputs
+        super().__init__(job_id=job_id, current_iter=current_iter)
         self.provider = provider
         self.materials = materials
-        self.job_id = job_id
-        self.current_iter = current_iter
         self.close_popup_confirmation = close_popup_confirmation
-        self.task_id = f"{self.job_id}_{'-'.join(self.current_iter.split('/'))}"
-
-        CANCEL_FLAGS[self.job_id] = False
-
-    def check_cancelled(self) -> None:
-        """Check if the automation has been cancelled."""
-        if CANCEL_FLAGS.get(self.job_id) or CANCEL_FLAGS.get("__GLOBAL_CANCEL__"):
-            raise RuntimeError("Automação cancelada pelo usuário.")
 
     # TODO: REMOVE HEADFUL
     def run(self, headless: bool = False, devtools: bool = True) -> Optional[str]:
@@ -62,9 +48,9 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
         """
         try:
             self.logger.info(
-                f"Iniciando processo '{self.current_iter}'. NF: {self.provider}\n\t" f"- CONTA: {COMPANY_USERNAME}\n"
+                f"Iniciando {self.name} '{self.current_iter}'. NF: {self.provider}\n\t" f"- CONTA: {COMPANY_USERNAME}\n"
             )
-            with self.start_navigation(url=self.reciminas_url, headless=headless, devtools=devtools) as _page:
+            with self.start_navigation(headless=headless, devtools=devtools) as _page:
                 self.check_cancelled()
                 page: Page = _page
                 ticker_sel = page.locator("input[name='Password']")
@@ -250,14 +236,12 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
                 )
 
                 # Allow pre visualization of the NF emitted
-                TO_PDF_APPROVAL[self.task_id] = {"path": invoice_path, "status": "pending", "job_id": self.job_id}
+                self.register_pdf_pending(invoice_path=invoice_path)
                 self.logger.info(f"Pré visualização da NF salva em '{invoice_path}'. Aguardando aprovação.\n")
-                while TO_PDF_APPROVAL[self.task_id]["status"] == "pending":
-                    # Wait for the User decision
-                    self._sleep_between_actions(seconds=2)
-                    self.check_cancelled()
 
-                if TO_PDF_APPROVAL[self.task_id]["status"] == "cancelled":
+                # Wait for the User decision
+                self.approval_status = self.wait_for_transmit_decision()
+                if self.approval_status == "cancelled":
                     # Interrupt the flow
                     self.logger.warning("Transmissão abortada pelo usuário.")
                     raise RuntimeError("Automação cancelada.")
@@ -290,41 +274,7 @@ class EntryInvoiceService(BaseAutomation, EntryInvoicePageCoordinates):
                 # This logger trigger an action on the caller view function
                 self.logger.info(f"Término do processo '{self.job_id}'. NF-{self.provider}")
 
-            if TO_PDF_APPROVAL[self.task_id]["status"] == "cancelled":
+            if self.approval_status == "cancelled" or self.approval_status == "inactive":
                 return
 
         return invoice_path
-
-
-# TODO: Remove this debug snippet
-# python -m server.invoices_automation.services.invoices_service
-# if __name__ == "__main__":
-#     provider = "Ramon Azevedo"
-#     materials = [
-#         {
-#             "material_code": "50",
-#             "material_quantity": 10.0,
-#             "material_price": 56.0,
-#             "discount": 0.0,
-#         },
-#         {
-#             "material_code": "52",
-#             "material_quantity": 98.0,
-#             "material_price": 2.0,
-#             "discount": 1.8,
-#         },
-#         {
-#             "material_code": "51",
-#             "material_quantity": 65.0,
-#             "material_price": 4.0,
-#             "discount": 1.4,
-#         },
-#     ]
-
-#     entry_invoices_automation = EntryInvoiceService(
-#         provider=provider,
-#         materials=materials,
-#         job_id="DEBUG_JOB_001",
-#     )
-
-#     entry_invoices_automation.run(headless=False, devtools=True)

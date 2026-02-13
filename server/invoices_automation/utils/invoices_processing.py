@@ -1,10 +1,16 @@
 import time
+from typing import Any
 
+from invoices_automation.models import BaseInvoiceModel
+from invoices_automation.services import CANCEL_FLAGS
+from invoices_automation.services.entry_invoices_service import EntryInvoiceService
+from invoices_automation.services.exit_invoices_service import ExitInvoiceService
 from invoices_automation.services.lock_manager import automation_lock
-from invoices_automation.services.invoices_service import EntryInvoiceService, CANCEL_FLAGS
+
+ServiceType = EntryInvoiceService | ExitInvoiceService
 
 
-def build_material_payload(invoice):
+def build_material_payload(invoice: BaseInvoiceModel) -> list[dict[str, Any]]:
     return [
         {
             "material_code": item.material.code,
@@ -17,15 +23,17 @@ def build_material_payload(invoice):
 
 
 def process_single_invoice(
-    invoice,
-    job_id,
+    service_class: ServiceType,
+    invoice: BaseInvoiceModel,
+    job_id: str,
     current_iter=None,
-):
+) -> None:
     try:
         invoice.status = "processing"
         invoice.save()
 
-        automation = EntryInvoiceService(
+        # TODO: Differentiate between entry and exit invoice services if they have different constructors
+        automation = service_class(
             provider=invoice.provider,
             materials=build_material_payload(invoice),
             job_id=job_id,
@@ -47,7 +55,11 @@ def process_single_invoice(
         invoice.save()
 
 
-def process_invoice_batch(invoices, job_id):
+def process_invoice_batch(
+    service_class: ServiceType,
+    invoices: list[BaseInvoiceModel],
+    job_id: str,
+) -> None:
     with automation_lock:
         for idx, invoice in enumerate(invoices):
             if CANCEL_FLAGS.get(job_id) or CANCEL_FLAGS.get("__GLOBAL_CANCEL__"):
@@ -56,7 +68,7 @@ def process_invoice_batch(invoices, job_id):
                 break
 
             current_iter = f"{idx + 1}/{len(invoices)}"
-            process_single_invoice(invoice, job_id, current_iter)
+            process_single_invoice(service_class, invoice, job_id, current_iter)
 
             time.sleep(2)
 

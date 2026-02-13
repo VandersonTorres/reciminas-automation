@@ -3,7 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.forms import inlineformset_factory
 
-from .models import EntryInvoiceQueue, EntryInvoiceItem, Material
+from .models import EntryInvoiceQueue, EntryInvoiceItem, Material, ExitInvoiceQueue, ExitInvoiceItem
 
 
 # Login Form
@@ -116,6 +116,94 @@ EntryInvoiceItemFormSet = inlineformset_factory(
     EntryInvoiceQueue,
     EntryInvoiceItem,
     form=EntryInvoiceItemForm,
+    extra=1,
+    can_delete=True,
+)
+
+
+# Exit Invoices Emission Form
+class ExitInvoiceForm(forms.ModelForm):
+    class Meta:
+        model = ExitInvoiceQueue
+        fields = [
+            "provider",
+            "freight",
+            "search_carrier_by",
+            "carrier_name",
+            "carrier_code",
+            "observation",
+        ]
+        labels = {
+            "provider": "Fornecedor",
+            "freight": "Tipo de Frete",
+            "search_carrier_by": "Buscar Transportador por",
+            "carrier_name": "Nome do Transportador",
+            "carrier_code": "Código do Transportador",
+            "observation": "Observação",
+        }
+        widgets = {
+            "provider": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome completo"}),
+            "freight": forms.Select(attrs={"class": "form-select"}),
+            "search_carrier_by": forms.Select(attrs={"class": "form-select"}),
+            "carrier_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome do transportador"}),
+            "carrier_code": forms.TextInput(attrs={"class": "form-control", "placeholder": "Código do transportador"}),
+            "observation": forms.Textarea(attrs={"class": "form-control", "placeholder": "Observações", "rows": 2}),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        search_by = cleaned.get("search_carrier_by")
+        carrier_name = cleaned.get("carrier_name")
+        carrier_code = cleaned.get("carrier_code")
+        if search_by == "code" and not carrier_code:
+            raise forms.ValidationError({"carrier_code": "Informe o código do transportador."})
+        if search_by == "name" and not carrier_name:
+            raise forms.ValidationError({"carrier_name": "Informe o nome do transportador."})
+        return cleaned
+
+
+class ExitInvoiceItemForm(forms.ModelForm):
+    class Meta:
+        model = ExitInvoiceItem
+        fields = ["material", "material_quantity", "material_price", "discount"]
+        labels = {
+            "material": "Material",
+            "material_quantity": "Quantidade (Kg)",
+            "material_price": "Preço Unitário (R$)",
+            "discount": "Desconto (R$)",
+        }
+        widgets = {
+            "material": forms.Select(attrs={"class": "form-select"}),
+            "material_quantity": forms.NumberInput(
+                attrs={"class": "form-control", "step": "0.01", "min": "0", "placeholder": "Ex: 10.2"}
+            ),
+            "material_price": forms.NumberInput(
+                attrs={"class": "form-control", "step": "0.01", "min": "0", "placeholder": "Ex: 50.10"}
+            ),
+            "discount": forms.NumberInput(
+                attrs={"class": "form-control", "step": "0.01", "min": "0", "placeholder": "Ex: 0"}
+            ),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        material = cleaned.get("material")
+        q = cleaned.get("material_quantity")
+        p = cleaned.get("material_price")
+        d = cleaned.get("discount") or 0
+        if any(v in [None, ""] for v in [material, q, p]):
+            raise forms.ValidationError("Preencha todos os campos do material.")
+        if any(v <= 0 for v in [q, p]):
+            raise forms.ValidationError("Quantidade e preço devem ser maiores que zero.")
+        if d < 0:
+            raise forms.ValidationError("O desconto não pode ser negativo.")
+        return cleaned
+
+
+ExitInvoiceItemFormSet = inlineformset_factory(
+    ExitInvoiceQueue,
+    ExitInvoiceItem,
+    form=ExitInvoiceItemForm,
     extra=1,
     can_delete=True,
 )

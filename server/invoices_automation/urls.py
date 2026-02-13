@@ -4,24 +4,24 @@ from django.urls import path
 from invoices_automation.forms import CustomAuthenticationForm
 from invoices_automation.views.core import dashboard, register
 from invoices_automation.views.manage_emission_approval import approve_pdf, get_pending_pdfs, serve_pdf
-from invoices_automation.views.crud_invoices import (
-    create_invoice,
-    access_invoices_queue,
-    edit_invoice,
-    delete_invoice,
+from invoices_automation.views.entry_module.crud_entry_invoices import (
+    create_entry_invoice,
+    access_entry_invoices_queue,
+    edit_entry_invoice,
+    delete_entry_invoice,
+)
+from invoices_automation.views.entry_module.manage_entry_automation import (
+    emit_entry_invoice,
+    start_entry_batch_automation,
+    cancel_automation,
+    follow_automation_logs,
+    get_logs,
+    clear_logs,
 )
 from invoices_automation.views.crud_materials import (
     list_materials,
     add_new_material,
     delete_material,
-)
-from invoices_automation.views.manage_automation import (
-    emit_invoice,
-    start_batch_automation,
-    cancel_automation,
-    follow_automation_logs,
-    get_logs,
-    clear_logs,
 )
 
 urlpatterns = [
@@ -32,21 +32,21 @@ urlpatterns = [
         name="login",
     ),
     path("sair/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
-    path("cadastro/", register, name="register"),
     path("dashboard/", dashboard, name="dashboard"),
-    path("registro-nf-entrada/", create_invoice, name="create_invoice"),
-    path("emissoes-nfs-entrada/", start_batch_automation, name="start_batch_automation"),
-    path("controle-nfs/", access_invoices_queue, name="access_invoices_queue"),
-    path("fila/excluir/<int:pk>/", delete_invoice, name="delete_invoice"),
-    path("fila/editar/<int:pk>/", edit_invoice, name="edit_invoice"),
+    path("cadastro/", register, name="register"),
+    path("aprovar-nota/", approve_pdf, name="approve_pdf"),
+    path("pdfs-pendentes/", get_pending_pdfs, name="get_pending_pdfs"),
+    path("downloads/<path:filename>", serve_pdf, name="serve_pdf"),
+    path("registro-nf-entrada/", create_entry_invoice, name="create_entry_invoice"),
+    path("controle-nfs-entrada/", access_entry_invoices_queue, name="access_entry_invoices_queue"),
+    path("fila/editar/entrada/<int:pk>/", edit_entry_invoice, name="edit_entry_invoice"),
+    path("fila/excluir/entrada/<int:pk>/", delete_entry_invoice, name="delete_entry_invoice"),
+    path("emitir-nota/entrada/<int:invoice_pk>/", emit_entry_invoice, name="emit_entry_invoice"),
+    path("emissoes-nfs-entrada/", start_entry_batch_automation, name="start_entry_batch_automation"),
+    path("cancelar-processo/", cancel_automation, name="cancel_automation"),
     path("logs-automacao/", follow_automation_logs, name="follow_automation_logs"),
     path("get-logs/", get_logs, name="get_logs"),
-    path("cancelar-processo/", cancel_automation, name="cancel_automation"),
-    path("pdfs-pendentes/", get_pending_pdfs, name="get_pending_pdfs"),
-    path("aprovar-nota/", approve_pdf, name="approve_pdf"),
-    path("downloads/<path:filename>", serve_pdf, name="serve_pdf"),
     path("limpar-logs/", clear_logs, name="clear_logs"),
-    path("emitir-nota/<int:invoice_pk>/", emit_invoice, name="emit_invoice"),
     path("materiais/", list_materials, name="list_materials"),
     path("materiais/cadastro/", add_new_material, name="add_new_material"),
     path("materiais/excluir/<int:pk>/", delete_material, name="delete_material"),
