@@ -254,7 +254,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                 self._click_element(page=logged_page, element_to_click=self.coord_transmit_invoice)
                 self._click_element(page=logged_page, element_to_click=self.coord_dont_see)
                 self._click_element(page=logged_page, element_to_click=self.coord_dont_send_email)
-                self.logger.info(f"NF 'Entrada' para '{self.provider}' Transmitida com sucesso.")
+                self.logger.info(f"NF '{self.name}' para '{self.provider}' Transmitida com sucesso.")
         except RuntimeError as e:
             self.logger.warning(str(e))
         except Exception as e:
