@@ -36,8 +36,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
         self.materials = materials
         self.close_popup_confirmation = close_popup_confirmation
 
-    # TODO: REMOVE HEADFUL
-    def run(self, headless: bool = False, devtools: bool = True) -> Optional[str]:
+    def run(self, headless: bool = True, devtools: bool = False) -> Optional[str]:
         """Run the Entry Invoices Automation.
 
         Args:
@@ -120,7 +119,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                 )
                 self.check_cancelled()
 
-                self.logger.info("PREPARAÇÃO DA NF DE ENTRADA:")
+                self.logger.info(f"PREPARAÇÃO DA NF {self.name}:")
 
                 # Open Fiscal Tab
                 self.logger.info("Abrindo guia 'Opções | Fiscal'.")
@@ -152,7 +151,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                 )
                 self.check_cancelled()
 
-                # Include Provider
+                # Provider selection process
                 self.logger.info(f"Selecionando {self.provider}.\n")
                 self._click_element(
                     page=logged_page, element_to_click=self.coord_provider_selection, use_dblclick=True, delay=3
@@ -161,7 +160,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                     self._click_element(page=logged_page, element_to_click=self.coord_close_unwanted_popup, delay=2)
                 self.check_cancelled()
 
-                # Inserting Material Specifications
+                # Material inclusion process
                 for mat in self.materials:
                     self.logger.info("INCLUSÃO DE MATERIAL:")
                     self._click_element(page=logged_page, element_to_click=self.coord_include_provider)
@@ -206,9 +205,9 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                     self._click_element(page=logged_page, element_to_click=self.coord_store_progress, delay=3)
                     self.check_cancelled()
 
-                self.logger.info("FINALIZAÇÃO DE NF DE ENTRADA:")
+                self.logger.info(f"FINALIZAÇÃO DE NF {self.name}:")
 
-                # Manage charge and payments
+                # Charging and payment process
                 self.logger.info("Excluindo cobrança e selecionando 'Sem Pagamentos'.")
                 self._click_element(page=logged_page, element_to_click=self.coord_charging, delay=2)
                 self._click_element(page=logged_page, element_to_click=self.coord_exclude, delay=3)
@@ -217,6 +216,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                 self._click_element(page=logged_page, element_to_click=self.coord_no_payments, delay=2)
                 self.check_cancelled()
 
+                # Invoice visualization process
                 # Cancelling is no longer supported here
                 self.logger.info("Preparando PDF para confirmação.")
                 self._click_element(page=logged_page, element_to_click=self.coord_see_invoice)
@@ -246,6 +246,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                     self.logger.warning("Transmissão abortada pelo usuário.")
                     raise RuntimeError("Automação cancelada.")
 
+                # Invoice saving and transmission process
                 self.logger.info("Aprovado. Prosseguindo com transmissão.")
                 logged_page.keyboard.press("Escape")
                 self._sleep_between_actions(seconds=10)
