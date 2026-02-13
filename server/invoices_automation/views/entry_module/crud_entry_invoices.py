@@ -10,7 +10,7 @@ from invoices_automation.services.lock_manager import automation_lock
 
 # Create invoice entry
 @login_required
-def create_invoice(request, invoice_pk=None):
+def create_entry_invoice(request, invoice_pk=None):
     invoice = None
     if invoice_pk:
         invoice = get_object_or_404(EntryInvoiceQueue, pk=invoice_pk)
@@ -39,7 +39,7 @@ def create_invoice(request, invoice_pk=None):
                 # re-render template
                 return render(
                     request,
-                    "invoices_automation/entry_invoices_management.html",
+                    "invoices_automation/entry_module/entry_invoices_management.html",
                     {
                         "form": invoice_form,
                         "formset": material_formset,
@@ -62,18 +62,18 @@ def create_invoice(request, invoice_pk=None):
             material_formset.save()
 
             if action == "emit_now":
-                return redirect("emit_invoice", invoice_pk=invoice.pk)
+                return redirect("emit_entry_invoice", invoice_pk=invoice.pk)
 
             elif action == "add_to_queue":
                 messages.success(request, "Nota adicionada à fila!")
-                return redirect("create_invoice")
+                return redirect("create_entry_invoice")
         else:
             if material_formset.error_messages.get("missing_management_form"):
                 material_formset.non_form_errors = "Material sem especificações"
                 # re-render template
                 return render(
                     request,
-                    "invoices_automation/entry_invoices_management.html",
+                    "invoices_automation/entry_module/entry_invoices_management.html",
                     {
                         "form": invoice_form,
                         "formset": material_formset,
@@ -90,7 +90,7 @@ def create_invoice(request, invoice_pk=None):
 
     return render(
         request,
-        "invoices_automation/entry_invoices_management.html",
+        "invoices_automation/entry_module/entry_invoices_management.html",
         {
             "form": invoice_form,
             "formset": material_formset,
@@ -101,7 +101,7 @@ def create_invoice(request, invoice_pk=None):
 
 # Read invoices
 @login_required
-def access_invoices_queue(request):
+def access_entry_invoices_queue(request):
     # Check if there are any invoices with status "processing" and automation is not running
     processing_invoices = EntryInvoiceQueue.objects.filter(status="processing")
     if not automation_lock.locked():
@@ -118,12 +118,12 @@ def access_invoices_queue(request):
         "invoices_queue": page_obj.object_list,
     }
 
-    return render(request, "invoices_automation/access_invoices_queue.html", context)
+    return render(request, "invoices_automation/entry_module/entry_invoices_queue_access.html", context)
 
 
 # Update invoice
 @login_required
-def edit_invoice(request, pk):
+def edit_entry_invoice(request, pk):
     invoice = get_object_or_404(EntryInvoiceQueue, pk=pk)
     if request.method == "POST":
         form = EntryInvoiceForm(request.POST, instance=invoice)
@@ -133,7 +133,7 @@ def edit_invoice(request, pk):
             form.save()
             formset.save()
             messages.success(request, "Nota atualizada com sucesso!")
-            return redirect("access_invoices_queue")
+            return redirect("access_entry_invoices_queue")
         else:
             messages.error(request, "Corrija os erros do formulário e tente novamente.")
     else:
@@ -142,7 +142,7 @@ def edit_invoice(request, pk):
 
     return render(
         request,
-        "invoices_automation/entry_invoices_management.html",
+        "invoices_automation/entry_module/entry_invoices_management.html",
         {
             "form": form,
             "formset": formset,
@@ -153,12 +153,12 @@ def edit_invoice(request, pk):
 
 # Delete Invoice
 @login_required
-def delete_invoice(request, pk):
+def delete_entry_invoice(request, pk):
     invoice = get_object_or_404(EntryInvoiceQueue, pk=pk)
     if not request.user.is_superuser:
         messages.error(request, "Você não tem permissão para excluir notas.")
-        return redirect("access_invoices_queue")
+        return redirect("access_entry_invoices_queue")
 
     invoice.delete()
     messages.success(request, "Nota removida da fila com sucesso!")
-    return redirect("access_invoices_queue")
+    return redirect("access_entry_invoices_queue")

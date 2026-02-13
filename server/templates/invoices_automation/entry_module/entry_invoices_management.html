@@ -147,9 +147,9 @@
 
             <hr>
             <div class="d-flex gap-2 mt-3 p-3">
-                <a href="{% url 'access_invoices_queue' %}" class="btn btn-secondary">📋 Ir para Fila</a>
+                <a href="{% url 'access_entry_invoices_queue' %}" class="btn btn-secondary">📋 Ir para Fila</a>
                 {% if is_edit %}
-                    <a href="{% url 'access_invoices_queue' %}" class="btn btn-secondary">🔙 Voltar</a>
+                    <a href="{% url 'access_entry_invoices_queue' %}" class="btn btn-secondary">🔙 Voltar</a>
                 {% else %}
                     <a href="{% url 'dashboard' %}" class="btn btn-secondary">🔙 Voltar</a>
                 {% endif %}
