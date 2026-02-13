@@ -5,7 +5,6 @@ from playwright.sync_api import sync_playwright
 from playwright.sync_api._generated import Page
 
 from .log_buffer import InMemoryLogHandler
-from invoices_automation.utils.page_coordinates import BasePageCoordinates
 
 # Shared registries for services: base URL, cancellation flags and PDF-approval workflow
 RECIMINAS_URL = "https://cloud.gruposygecom.com.br/sgr_reciminas.html"
@@ -126,7 +125,7 @@ class AutomationControl:
         page.keyboard.type(data_to_insert)
 
 
-class BaseServiceManager(AutomationControl, BasePageCoordinates):
+class BaseServiceManager(AutomationControl):
     """Base class for automation services that centralizes job/task logic.
 
     Responsibilities:
