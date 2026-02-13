@@ -39,7 +39,7 @@ def create_entry_invoice(request, invoice_pk=None):
                 # re-render template
                 return render(
                     request,
-                    "invoices_automation/entry_invoices_management.html",
+                    "invoices_automation/entry_module/entry_invoices_management.html",
                     {
                         "form": invoice_form,
                         "formset": material_formset,
@@ -73,7 +73,7 @@ def create_entry_invoice(request, invoice_pk=None):
                 # re-render template
                 return render(
                     request,
-                    "invoices_automation/entry_invoices_management.html",
+                    "invoices_automation/entry_module/entry_invoices_management.html",
                     {
                         "form": invoice_form,
                         "formset": material_formset,
@@ -90,7 +90,7 @@ def create_entry_invoice(request, invoice_pk=None):
 
     return render(
         request,
-        "invoices_automation/entry_invoices_management.html",
+        "invoices_automation/entry_module/entry_invoices_management.html",
         {
             "form": invoice_form,
             "formset": material_formset,
@@ -118,7 +118,7 @@ def access_entry_invoices_queue(request):
         "invoices_queue": page_obj.object_list,
     }
 
-    return render(request, "invoices_automation/access_entry_invoices_queue.html", context)
+    return render(request, "invoices_automation/entry_module/entry_invoices_queue_access.html", context)
 
 
 # Update invoice
@@ -142,7 +142,7 @@ def edit_entry_invoice(request, pk):
 
     return render(
         request,
-        "invoices_automation/entry_invoices_management.html",
+        "invoices_automation/entry_module/entry_invoices_management.html",
         {
             "form": form,
             "formset": formset,

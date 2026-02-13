@@ -1,13 +1,16 @@
 import time
+from typing import Any
 
-from invoices_automation.models import EntryInvoiceQueue, ExitInvoiceQueue
+from invoices_automation.models import BaseInvoiceModel
 from invoices_automation.services import CANCEL_FLAGS
 from invoices_automation.services.entry_invoices_service import EntryInvoiceService
 from invoices_automation.services.exit_invoices_service import ExitInvoiceService
 from invoices_automation.services.lock_manager import automation_lock
 
+ServiceType = EntryInvoiceService | ExitInvoiceService
 
-def build_material_payload(invoice: EntryInvoiceQueue | ExitInvoiceQueue):
+
+def build_material_payload(invoice: BaseInvoiceModel) -> list[dict[str, Any]]:
     return [
         {
             "material_code": item.material.code,
@@ -20,11 +23,11 @@ def build_material_payload(invoice: EntryInvoiceQueue | ExitInvoiceQueue):
 
 
 def process_single_invoice(
-    service_class: EntryInvoiceService | ExitInvoiceService,
-    invoice: EntryInvoiceQueue | ExitInvoiceQueue,
+    service_class: ServiceType,
+    invoice: BaseInvoiceModel,
     job_id: str,
     current_iter=None,
-):
+) -> None:
     try:
         invoice.status = "processing"
         invoice.save()
@@ -53,10 +56,10 @@ def process_single_invoice(
 
 
 def process_invoice_batch(
-    service_class: EntryInvoiceService | ExitInvoiceService,
-    invoices: list[EntryInvoiceQueue | ExitInvoiceQueue],
+    service_class: ServiceType,
+    invoices: list[BaseInvoiceModel],
     job_id: str,
-):
+) -> None:
     with automation_lock:
         for idx, invoice in enumerate(invoices):
             if CANCEL_FLAGS.get(job_id) or CANCEL_FLAGS.get("__GLOBAL_CANCEL__"):
