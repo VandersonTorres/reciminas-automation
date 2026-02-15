@@ -1,5 +1,6 @@
 import logging
 import time
+from typing import Any, Literal, Optional
 
 from playwright.sync_api import sync_playwright
 from playwright.sync_api._generated import Page
@@ -12,7 +13,7 @@ CANCEL_FLAGS = {}
 TO_PDF_APPROVAL = {
     # "<taskID>": {
     #     "path": "downloads/path.pdf",
-    #     "status": "pending",  # ("pending", "cancelled" or "approved")
+    #     "status": "inactive",  # ("inactive", "pending", "cancelled" or "approved")
     #     "job_id": "JOB_001",
     # }
 }
@@ -136,7 +137,7 @@ class BaseServiceManager(AutomationControl):
     """
 
     name: str  # Name of the service
-    approval_status: str = "inactive"  # ("inactive", "pending", "approved" or "cancelled")
+    approval_status: Literal["inactive", "pending", "approved", "cancelled"] = "inactive"
 
     def __init__(self, job_id: str, current_iter: str = "") -> None:
         super().__init__()
@@ -147,11 +148,14 @@ class BaseServiceManager(AutomationControl):
         self.task_id = (
             f"{self.job_id}_{'-'.join(self.current_iter.split('/'))}" if self.current_iter else f"{self.job_id}_1"
         )
-        # Ensure a flag is present for this job
+
+        # Ensure the Job starts with the CANCEL Flag set to False
         CANCEL_FLAGS.setdefault(self.job_id, False)
 
     def check_cancelled(self) -> None:
-        """Raise RuntimeError when the job or the global flag was set to cancel."""
+        """Interrupt the Playwright automation process, by deliberately raising RuntimeError
+        when a single job or the global flag is set to CANCEL.
+        """
         if CANCEL_FLAGS.get(self.job_id) or CANCEL_FLAGS.get("__GLOBAL_CANCEL__"):
             raise RuntimeError("Automação cancelada pelo usuário.")
 
@@ -166,3 +170,273 @@ class BaseServiceManager(AutomationControl):
             self.check_cancelled()
 
         return TO_PDF_APPROVAL[self.task_id]["status"]
+
+    # --- Base Page Actions ---
+
+    def set_account(
+        self,
+        page_to_use: Page,
+        initial_ticker_selection: tuple[int],
+        user_insertion: tuple[int],
+        password_insertion: tuple[int],
+        log_in_button: tuple[int],
+        username: str,
+        password: str,
+    ) -> None:
+        """Isolate actions for setting account on the ERP Environment"""
+
+        # Go to Reciminas ticker content
+        self.logger.info(f"Selecionando ticker {self.company_name}.\n")
+        self._click_element(page=page_to_use, element_to_click=initial_ticker_selection, delay=1)
+        # Ensure the previous click works
+        self._click_element(
+            page=page_to_use,
+            element_to_click=initial_ticker_selection,
+            use_dblclick=True,
+            add_redundance=True,
+            delay=9,
+        )
+        self.check_cancelled()
+
+        self.logger.info("LOGIN:")
+
+        # Insert Username
+        self.logger.info("Inserindo usuário.")
+        self._insert_data(
+            page=page_to_use,
+            element_to_click=user_insertion,
+            data_to_insert=username,
+            delay=2,
+        )
+        self.check_cancelled()
+
+        # It was needed to add redundance on clicking the correct element
+        self._click_element(
+            page=page_to_use,
+            element_to_click=password_insertion,
+            use_dblclick=True,
+            add_redundance=True,
+            delay=2,
+        )
+
+        # Insert Password
+        self.logger.info("Inserindo Senha.")
+        self._insert_data(
+            page=page_to_use,
+            element_to_click=password_insertion,
+            data_to_insert=password,
+            delay=2,
+        )
+        self.check_cancelled()
+
+        # Enter the account
+        self.logger.info("Acessando conta.\n")
+        self._click_element(
+            page=page_to_use,
+            element_to_click=log_in_button,
+            use_dblclick=True,
+            add_redundance=True,
+            delay=10,
+        )
+        self.check_cancelled()
+
+    def prepare_options(
+        self,
+        page_to_use: Page,
+        fiscal_tab: tuple[int],
+        invoice_control: tuple[int],
+        register: tuple[int],
+    ) -> None:
+        """Isolate actions for preparing options on the initial ERP Page"""
+
+        # Open Fiscal Tab
+        self.logger.info("Abrindo guia 'Opções | Fiscal'.")
+        self._click_element(page=page_to_use, element_to_click=fiscal_tab, delay=1)
+        self.check_cancelled()
+
+        # Open Invoice Control
+        self.logger.info("Abrindo guia 'Controle de Nota Fiscal'.")
+        self._click_element(page=page_to_use, element_to_click=invoice_control, delay=1)
+        self.check_cancelled()
+
+        # Open Registry
+        self.logger.info("Abrindo 'Cadastro'.")
+        self._click_element(page=page_to_use, element_to_click=register, use_dblclick=True, delay=1)
+        self.check_cancelled()
+
+    def set_provider(
+        self,
+        page_to_use: Page,
+        provider: str,
+        locate_provider: tuple[int],
+        provider_search_bar: tuple[int],
+        provider_selection: tuple[int],
+        close_popup_confirmation: bool = False,
+        close_unwanted_popup: Optional[tuple[int]] = None,
+    ) -> None:
+        """Isolate actions for setting the provider"""
+
+        # Locate provider
+        self.logger.info("Expandindo lista de fornecedores.")
+        self._click_element(page=page_to_use, element_to_click=locate_provider, delay=1)
+        self.check_cancelled()
+
+        # Fill the search bar with the provider name
+        self.logger.info(f"Procurando pelo fornecedor {provider}.")
+        self._insert_data(
+            page=page_to_use,
+            element_to_click=provider_search_bar,
+            data_to_insert=provider,
+            delay=1,
+        )
+        self.check_cancelled()
+
+        # Provider selection process
+        self.logger.info(f"Selecionando {provider}.\n")
+        self._click_element(page=page_to_use, element_to_click=provider_selection, use_dblclick=True, delay=3)
+        if close_popup_confirmation:
+            self._click_element(page=page_to_use, element_to_click=close_unwanted_popup, delay=2)
+
+        self.check_cancelled()
+
+    def include_materials(
+        self,
+        page_to_use: Page,
+        materials: list[dict[str, Any]],
+        include_provider: tuple[int],
+        insert_mat_code: tuple[int],
+        quantity_selection: tuple[int],
+        empty_space: tuple[int],
+        confirm_mat: tuple[int],
+        close_mat_confirmation: tuple[int],
+        price: tuple[int],
+        discount: tuple[int],
+        store_progress: tuple[int],
+    ) -> None:
+        """Isolate actions for including materials on the Invoice"""
+
+        for mat in materials:
+            self.logger.info("INCLUSÃO DE MATERIAL:")
+            self._click_element(page=page_to_use, element_to_click=include_provider)
+            self.logger.info(
+                "Registrando:\n\t"
+                f"Código {mat['material_code']}\n\t"
+                f"Quantidade {mat['material_quantity']}\n\t"
+                f"Preço {mat['material_price']}\n\t"
+                f"Desconto {mat['discount']}.\n"
+            )
+
+            self._insert_data(
+                page=page_to_use,
+                element_to_click=insert_mat_code,
+                data_to_insert=mat["material_code"],
+            )
+            self._click_element(page=page_to_use, element_to_click=quantity_selection)
+            self._click_element(page=page_to_use, element_to_click=empty_space)
+            self._click_element(page=page_to_use, element_to_click=confirm_mat, use_dblclick=True)
+            self._click_element(page=page_to_use, element_to_click=close_mat_confirmation)
+            self._insert_data(
+                page=page_to_use,
+                element_to_click=quantity_selection,
+                data_to_insert=str(mat["material_quantity"]),
+                delay=2,
+            )
+            self.check_cancelled()
+            self._insert_data(
+                page=page_to_use,
+                element_to_click=price,
+                data_to_insert=str(mat["material_price"]),
+                delay=2,
+            )
+            self.check_cancelled()
+            self._insert_data(
+                page=page_to_use,
+                element_to_click=discount,
+                data_to_insert=str(mat["discount"]),
+                delay=2,
+            )
+
+            self._click_element(page=page_to_use, element_to_click=store_progress, delay=3)
+            self.check_cancelled()
+
+    def preview_invoice(
+        self,
+        page_to_use: Page,
+        see_invoice: tuple[int],
+        confirm_storage: tuple[int],
+        adapt_visibility: tuple[int],
+        see_fullscreen: tuple[int],
+        provider: str,
+        close_popup_confirmation: bool = False,
+        close_unwanted_popup_alt: Optional[tuple[int]] = None,
+    ) -> Optional[str]:
+        """Isolate actions for preparing Invoice visualization."""
+
+        self.logger.info("Preparando PDF para confirmação.")
+        self._click_element(page=page_to_use, element_to_click=see_invoice)
+        if close_popup_confirmation:
+            self._click_element(page=page_to_use, element_to_click=close_unwanted_popup_alt)
+
+        self._click_element(page=page_to_use, element_to_click=confirm_storage, delay=25)
+        self._insert_data(page=page_to_use, element_to_click=adapt_visibility, data_to_insert="105")
+        self._click_element(page=page_to_use, element_to_click=see_fullscreen, delay=10)
+        invoice_path = f"downloads/NF-{self.name}-{provider}-{self.task_id}.pdf".replace(" ", "-")
+        page_to_use.pdf(
+            path=invoice_path,
+            format="A4",
+            margin={"top": "1cm", "right": "1cm", "bottom": "1cm", "left": "1cm"},
+            scale=0.9,
+            print_background=False,
+        )
+
+        # Allow pre visualization of the NF emitted
+        self.register_pdf_pending(invoice_path=invoice_path)
+        self.logger.info(f"Pré visualização da NF salva em '{invoice_path}'. Aguardando aprovação.\n")
+
+        # Wait for the User decision
+        self.approval_status = self.wait_for_transmit_decision()
+        if self.approval_status == "cancelled":
+            # Interrupt the flow
+            self.logger.warning("Transmissão abortada pelo usuário.")
+            raise RuntimeError("Automação cancelada.")
+
+        return invoice_path
+
+    def transmit_invoice(
+        self,
+        page_to_use: Page,
+        save_job: tuple[int],
+        transmit_invoice: tuple[int],
+        dont_see: tuple[int],
+        dont_send_email: tuple[int],
+    ) -> None:
+        """Isolate actions for transmiting Invoice"""
+
+        self.logger.info("Aprovado. Prosseguindo com transmissão.")
+        page_to_use.keyboard.press("Escape")
+        self._sleep_between_actions(seconds=10)
+        self._click_element(page=page_to_use, element_to_click=save_job, delay=10)
+        self._click_element(page=page_to_use, element_to_click=transmit_invoice)
+        self._click_element(page=page_to_use, element_to_click=dont_see)
+        self._click_element(page=page_to_use, element_to_click=dont_send_email)
+        self.logger.info(f"NF '{self.name}' para '{self.provider}' Transmitida com sucesso.")
+
+    # TODO: This is a poor way to warn client-side to finish the Log Fetcher(Handler) process.
+    # Despite we are using sync playwright, when trying to manage the finishing process through django.Models,
+    # we get a Django Error pointing to a sync-async operation
+    def gracefully_terminate_process(self, provider) -> None:
+        """Triggers the finish flag on:
+        `server/invoices_automation/static/js/client_side_automation_manager.js L38`
+        """
+        terminate_process = False
+        if (n_of_nn := self.current_iter.split("/")) and len(n_of_nn) == 2:
+            if n_of_nn[0] == n_of_nn[1]:
+                # Example: '2/2' -> It means the service is finished
+                terminate_process = True
+        else:
+            # This means an unique finished execution
+            terminate_process = True
+
+        if terminate_process:
+            # THIS LOGGER TRIGGER AN ACTION ON THE CALLER VIEW FUNCTION
+            self.logger.info(f"Término do processo '{self.job_id}'. NF-{provider}")

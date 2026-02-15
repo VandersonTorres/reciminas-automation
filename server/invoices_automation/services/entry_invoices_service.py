@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 from playwright.sync_api._generated import Page
 
 from . import BaseServiceManager
@@ -17,7 +17,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
     def __init__(
         self,
         provider: str,
-        materials: list[dict],
+        materials: list[dict[str, Any]],
         job_id: str,
         current_iter: str = "",
         close_popup_confirmation: bool = False,
@@ -36,7 +36,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
         self.materials = materials
         self.close_popup_confirmation = close_popup_confirmation
 
-    def run(self, headless: bool = True, devtools: bool = False) -> Optional[str]:
+    def run(self, headless: bool = False, devtools: bool = False) -> Optional[str]:
         """Run the Entry Invoices Automation.
 
         Args:
@@ -68,142 +68,50 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                 self.check_cancelled()
                 self._sleep_between_actions()
 
-                # Go to Reciminas ticker content
-                self.logger.info(f"Selecionando ticker {self.company_name}.\n")
-                self._click_element(
-                    page=logged_page,
-                    element_to_click=self.coord_initial_ticker_selection,
-                    use_dblclick=True,
-                    add_redundance=True,
-                    delay=10,
+                # Set Account
+                self.set_account(
+                    page_to_use=logged_page,
+                    initial_ticker_selection=self.coord_initial_ticker_selection,
+                    user_insertion=self.coord_user_insertion,
+                    password_insertion=self.coord_password_insertion,
+                    log_in_button=self.coord_log_in,
+                    username=COMPANY_USERNAME,
+                    password=COMPANY_PASSWORD,
                 )
-                self.check_cancelled()
-
-                self.logger.info("LOGIN:")
-
-                # Insert Username
-                self.logger.info("Inserindo usuário.")
-                self._insert_data(
-                    page=logged_page,
-                    element_to_click=self.coord_user_insertion,
-                    data_to_insert=COMPANY_USERNAME,
-                    delay=2,
-                )
-                self.check_cancelled()
-
-                # It was needed to add redundance on clicking the correct element
-                self._click_element(
-                    page=logged_page,
-                    element_to_click=self.coord_password_insertion,
-                    use_dblclick=True,
-                    add_redundance=True,
-                    delay=2,
-                )
-                self.logger.info("Inserindo Senha.")
-                self._insert_data(
-                    page=logged_page,
-                    element_to_click=self.coord_password_insertion,
-                    data_to_insert=COMPANY_PASSWORD,
-                    delay=2,
-                )
-                self.check_cancelled()
-
-                # Enter the account
-                self.logger.info("Acessando conta.\n")
-                self._click_element(
-                    page=logged_page,
-                    element_to_click=self.coord_log_in,
-                    use_dblclick=True,
-                    add_redundance=True,
-                    delay=10,
-                )
-                self.check_cancelled()
 
                 self.logger.info(f"PREPARAÇÃO DA NF {self.name}:")
 
-                # Open Fiscal Tab
-                self.logger.info("Abrindo guia 'Opções | Fiscal'.")
-                self._click_element(page=logged_page, element_to_click=self.coord_fiscal_tab, delay=1)
-                self.check_cancelled()
-
-                # Open Invoice Control
-                self.logger.info("Abrindo guia 'Controle de Nota Fiscal'.")
-                self._click_element(page=logged_page, element_to_click=self.coord_invoice_control, delay=1)
-                self.check_cancelled()
-
-                # Open Registry
-                self.logger.info("Abrindo 'Cadastro'.")
-                self._click_element(page=logged_page, element_to_click=self.coord_register, use_dblclick=True, delay=1)
-                self.check_cancelled()
-
-                # Locate provider
-                self.logger.info("Expandindo lista de fornecedores.")
-                self._click_element(page=logged_page, element_to_click=self.coord_locate_provider, delay=1)
-                self.check_cancelled()
-
-                # Fill the search bar with the provider name
-                self.logger.info(f"Procurando pelo fornecedor {self.provider}.")
-                self._insert_data(
-                    page=logged_page,
-                    element_to_click=self.coord_provider_search_bar,
-                    data_to_insert=self.provider,
-                    delay=1,
+                self.prepare_options(
+                    page_to_use=logged_page,
+                    fiscal_tab=self.coord_fiscal_tab,
+                    invoice_control=self.coord_invoice_control,
+                    register=self.coord_register,
                 )
-                self.check_cancelled()
 
-                # Provider selection process
-                self.logger.info(f"Selecionando {self.provider}.\n")
-                self._click_element(
-                    page=logged_page, element_to_click=self.coord_provider_selection, use_dblclick=True, delay=3
+                self.set_provider(
+                    page_to_use=logged_page,
+                    provider=self.provider,
+                    locate_provider=self.coord_locate_provider,
+                    provider_search_bar=self.coord_provider_search_bar,
+                    provider_selection=self.coord_provider_selection,
+                    close_popup_confirmation=True,
+                    close_unwanted_popup=self.coord_close_unwanted_popup,
                 )
-                if self.close_popup_confirmation:
-                    self._click_element(page=logged_page, element_to_click=self.coord_close_unwanted_popup, delay=2)
-                self.check_cancelled()
 
                 # Material inclusion process
-                for mat in self.materials:
-                    self.logger.info("INCLUSÃO DE MATERIAL:")
-                    self._click_element(page=logged_page, element_to_click=self.coord_include_provider)
-                    self.logger.info(
-                        "Registrando:\n\t"
-                        f"Código {mat['material_code']}\n\t"
-                        f"Quantidade {mat['material_quantity']}\n\t"
-                        f"Preço {mat['material_price']}\n\t"
-                        f"Desconto {mat['discount']}.\n"
-                    )
-
-                    self._insert_data(
-                        page=logged_page,
-                        element_to_click=self.coord_insert_mat_code,
-                        data_to_insert=mat["material_code"],
-                    )
-                    self._click_element(page=logged_page, element_to_click=self.coord_quantity_selection)
-                    self._click_element(page=logged_page, element_to_click=self.coord_empty_space)
-                    self._click_element(page=logged_page, element_to_click=self.coord_confirm_mat, use_dblclick=True)
-                    self._click_element(page=logged_page, element_to_click=self.coord_close_mat_confirmation)
-                    self._insert_data(
-                        page=logged_page,
-                        element_to_click=self.coord_quantity_selection,
-                        data_to_insert=str(mat["material_quantity"]),
-                        delay=2,
-                    )
-                    self.check_cancelled()
-                    self._insert_data(
-                        page=logged_page,
-                        element_to_click=self.coord_price,
-                        data_to_insert=str(mat["material_price"]),
-                        delay=2,
-                    )
-                    self.check_cancelled()
-                    self._insert_data(
-                        page=logged_page,
-                        element_to_click=self.coord_discount,
-                        data_to_insert=str(mat["discount"]),
-                        delay=2,
-                    )
-
-                    self._click_element(page=logged_page, element_to_click=self.coord_store_progress, delay=3)
-                    self.check_cancelled()
+                self.include_materials(
+                    page_to_use=logged_page,
+                    materials=self.materials,
+                    include_provider=self.coord_include_provider,
+                    insert_mat_code=self.coord_insert_mat_code,
+                    quantity_selection=self.coord_quantity_selection,
+                    empty_space=self.coord_empty_space,
+                    confirm_mat=self.coord_confirm_mat,
+                    close_mat_confirmation=self.coord_close_mat_confirmation,
+                    price=self.coord_price,
+                    discount=self.coord_discount,
+                    store_progress=self.coord_store_progress,
+                )
 
                 self.logger.info(f"FINALIZAÇÃO DE NF {self.name}:")
 
@@ -218,62 +126,34 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
 
                 # Invoice visualization process
                 # Cancelling is no longer supported here
-                self.logger.info("Preparando PDF para confirmação.")
-                self._click_element(page=logged_page, element_to_click=self.coord_see_invoice)
-                if self.close_popup_confirmation:
-                    self._click_element(page=logged_page, element_to_click=self.coord_close_unwanted_popup_alt)
-
-                self._click_element(page=logged_page, element_to_click=self.coord_confirm_storage, delay=25)
-                self._insert_data(page=logged_page, element_to_click=self.coord_adapt_visibility, data_to_insert="105")
-                self._click_element(page=logged_page, element_to_click=self.coord_see_fullscreen, delay=10)
-                invoice_path = f"downloads/NF-{self.name}-{self.provider}-{self.task_id}.pdf".replace(" ", "-")
-                logged_page.pdf(
-                    path=invoice_path,
-                    format="A4",
-                    margin={"top": "1cm", "right": "1cm", "bottom": "1cm", "left": "1cm"},
-                    scale=0.9,
-                    print_background=False,
+                invoice_path = self.preview_invoice(
+                    page_to_use=logged_page,
+                    see_invoice=self.coord_see_invoice,
+                    confirm_storage=self.coord_confirm_storage,
+                    adapt_visibility=self.coord_adapt_visibility,
+                    see_fullscreen=self.coord_see_fullscreen,
+                    provider=self.provider,
+                    close_popup_confirmation=self.close_popup_confirmation,
+                    close_unwanted_popup_alt=self.coord_close_unwanted_popup_alt,
                 )
 
-                # Allow pre visualization of the NF emitted
-                self.register_pdf_pending(invoice_path=invoice_path)
-                self.logger.info(f"Pré visualização da NF salva em '{invoice_path}'. Aguardando aprovação.\n")
-
-                # Wait for the User decision
-                self.approval_status = self.wait_for_transmit_decision()
-                if self.approval_status == "cancelled":
-                    # Interrupt the flow
-                    self.logger.warning("Transmissão abortada pelo usuário.")
-                    raise RuntimeError("Automação cancelada.")
-
                 # Invoice saving and transmission process
-                self.logger.info("Aprovado. Prosseguindo com transmissão.")
-                logged_page.keyboard.press("Escape")
-                self._sleep_between_actions(seconds=10)
-                self._click_element(page=logged_page, element_to_click=self.coord_save_job, delay=10)
-                self._click_element(page=logged_page, element_to_click=self.coord_transmit_invoice)
-                self._click_element(page=logged_page, element_to_click=self.coord_dont_see)
-                self._click_element(page=logged_page, element_to_click=self.coord_dont_send_email)
-                self.logger.info(f"NF '{self.name}' para '{self.provider}' Transmitida com sucesso.")
+                self.transmit_invoice(
+                    page_to_use=logged_page,
+                    save_job=self.coord_save_job,
+                    transmit_invoice=self.coord_transmit_invoice,
+                    dont_see=self.coord_dont_see,
+                    dont_send_email=self.coord_dont_send_email,
+                )
         except RuntimeError as e:
+            # Controlled Cancelling Action
             self.logger.warning(str(e))
         except Exception as e:
             self.check_cancelled()
-            self.logger.warning(str(e))
+            self.logger.error(str(e))
 
         finally:
-            terminate_process = False
-            if (n_of_nn := self.current_iter.split("/")) and len(n_of_nn) == 2:
-                if n_of_nn[0] == n_of_nn[1]:
-                    # Example: '2/2' -> It means the service is finished
-                    terminate_process = True
-            else:
-                # This means an unique finished execution
-                terminate_process = True
-
-            if terminate_process:
-                # This logger trigger an action on the caller view function
-                self.logger.info(f"Término do processo '{self.job_id}'. NF-{self.provider}")
+            self.gracefully_terminate_process(self.provider)
 
             if self.approval_status == "cancelled" or self.approval_status == "inactive":
                 return

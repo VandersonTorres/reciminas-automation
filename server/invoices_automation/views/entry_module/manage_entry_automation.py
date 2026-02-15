@@ -86,7 +86,7 @@ def cancel_automation(request):
         if job_id:
             if job_id in CANCEL_FLAGS:
                 CANCEL_FLAGS[job_id] = True
-                messages.info(request, f"Cancelando processo '{job_id}'.")
+                messages.info(request, f"Cancelando processo '{job_id}', aguarde...")
             else:
                 # If job_id no longer exists, create a global flag as a fallback
                 CANCEL_FLAGS["__GLOBAL_CANCEL__"] = True

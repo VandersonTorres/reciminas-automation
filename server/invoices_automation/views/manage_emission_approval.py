@@ -20,6 +20,10 @@ def approve_pdf(request):
             TO_PDF_APPROVAL[task_id]["status"] = "approved"
         elif action == "cancel":
             TO_PDF_APPROVAL[task_id]["status"] = "cancelled"
+        else:
+            return JsonResponse(
+                {"status": "error", "message": "Ação inválida enviada via 'client_side_automation_manager.js'"}
+            )
         return JsonResponse({"status": "ok"})
     return JsonResponse({"status": "error", "message": "Job não encontrado"}, status=404)
 
