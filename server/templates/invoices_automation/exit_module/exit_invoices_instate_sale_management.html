@@ -1,0 +1,181 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}NF de Saída (Venda dentro do Estado) - Reciminas{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">
+                {% if is_edit %}
+                    ✏️ Editar Nota Fiscal de Venda dentro do Estado
+                {% else %}
+                    📥 Adicionar Nota Fiscal de Venda dentro do Estado
+                {% endif %}
+            </h4>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">
+                Preencha os dados abaixo para emitir uma nova Nota Fiscal de Venda dentro do Estado
+                ou adicioná-la em uma fila para emissão encadeada.
+            </p>
+
+            <form method="post" class="p-3">
+                {% csrf_token %}
+
+                <h5 class="mb-4 text-white">Dados da Nota</h5>
+
+                <div class="mb-3">
+                    {{ form.provider.label_tag }} {{ form.provider }}
+                </div>
+                <div class="mb-3">
+                    {{ form.freight.label_tag }} {{ form.freight }}
+                </div>
+                <div class="mb-3">
+                    {{ form.search_carrier_by.label_tag }} {{ form.search_carrier_by }}
+                </div>
+                <div class="mb-3" id="carrier_code_field">
+                    {{ form.carrier_code.label_tag }} {{ form.carrier_code }}
+                    {% if form.carrier_code.errors %}
+                        <div class="text-danger small">{{ form.carrier_code.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-3" id="carrier_name_field">
+                    {{ form.carrier_name.label_tag }} {{ form.carrier_name }}
+                    {% if form.carrier_name.errors %}
+                        <div class="text-danger small">{{ form.carrier_name.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    {{ form.observation.label_tag }} {{ form.observation }}
+                </div>
+
+                <h5 class="mb-4 text-white">MATERIAIS</h5>
+
+                {{ formset.management_form }}
+                <div id="empty-form" class="d-none">
+                    <div class="card p-3 mb-2 material-item-form">
+                        {% for hidden in formset.empty_form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+
+                        {% for field in formset.empty_form.visible_fields %}
+                            {% if field.name != "DELETE" %}
+                                <div class="mb-2">
+                                    {{ field.label_tag }} {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small">{{ field.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-material">
+                            🗑 Remover
+                        </button>
+                    </div>
+                </div>
+
+                <div id="materials-container">
+                    {% if formset.non_form_errors %}
+                        <div class="alert alert-danger">
+                            {{ formset.non_form_errors }}
+                        </div>
+                    {% endif %}
+
+                    {% for item_form in formset %}
+                        <div class="card p-3 mb-2 material-item-form">
+                            {% for hidden in item_form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+
+                            {% for field in item_form.visible_fields %}
+                                {% if field.name != "DELETE" %}
+                                    <div class="mb-2">
+                                        {{ field.label_tag }} {{ field }}
+                                        {% if field.errors %}
+                                            <div class="text-danger small">{{ field.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if item_form.instance.pk %}
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-danger remove-material-persistent"
+                                    data-delete-id="{{ item_form.prefix }}">
+                                    🗑 Remover
+                                </button>
+                                {{ item_form.DELETE }}
+                            {% else %}
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-material">
+                                    🗑 Remover
+                                </button>
+                            {% endif %}
+
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button type="button" id="add-material" class="btn btn-outline-primary">
+                    ➕ Adicionar novo material
+                </button>
+
+                <hr>
+                <div class="d-flex gap-2 mt-3 justify-content-center">
+                    <button type="submit" name="action" value="emit_now" class="btn btn-success">
+                        ⚡ Emitir Agora
+                    </button>
+
+                    <button type="submit" name="action" value="add_to_queue" class="btn btn-primary">
+                        {% if is_edit %}
+                            ➕ Salvar alterações
+                        {% else %}
+                            ➕ Adicionar à Fila
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+
+            <hr>
+            <div class="d-flex gap-2 mt-3 p-3">
+                <a href="#" class="btn btn-secondary">📋 Ir para Fila</a>
+                {% if is_edit %}
+                    <a href="#" class="btn btn-secondary">🔙 Voltar</a>
+                {% else %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">🔙 Voltar</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    function toggleCarrierFields() {
+        var searchBy = document.getElementById("id_search_carrier_by").value;
+        var nameField = document.getElementById("carrier_name_field");
+        var codeField = document.getElementById("carrier_code_field");
+        if (searchBy === "name") {
+            nameField.style.display = "";
+            codeField.style.display = "none";
+        } else if (searchBy === "code") {
+            nameField.style.display = "none";
+            codeField.style.display = "";
+        } else {
+            // Show invalid message
+            alert("Selecione um critério de pesquisa válido.");
+        }
+    }
+    var searchBySelect = document.getElementById("id_search_carrier_by");
+    if (searchBySelect) {
+        searchBySelect.addEventListener("change", toggleCarrierFields);
+        toggleCarrierFields();
+    }
+});
+</script>
+
+<script src="{% static 'js/add_item_formset.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/entry_invoices.css' %}?v=2">
+{% endblock %}
