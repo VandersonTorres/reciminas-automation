@@ -21,6 +21,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
         job_id: str,
         current_iter: str = "",
         close_popup_confirmation: bool = False,
+        *args,
         **kwargs,
     ) -> None:
         """Initialize Entry Invoices Automation.
@@ -37,14 +38,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
         self.close_popup_confirmation = close_popup_confirmation
 
     def run(self, headless: bool = False, devtools: bool = False) -> Optional[str]:
-        """Run the Entry Invoices Automation.
-
-        Args:
-            headless (bool, optional): Whether to run the browser in headless mode. Defaults to False.
-            devtools (bool, optional): Whether to open devtools. Defaults to False.
-        Returns:
-            Optional[str]: Path to the generated invoice PDF.
-        """
+        """Run the Entry Invoices Automation"""
         try:
             self.logger.info(
                 f"Iniciando {self.name} '{self.current_iter}'. NF: {self.provider}\n\t" f"- CONTA: {COMPANY_USERNAME}\n"

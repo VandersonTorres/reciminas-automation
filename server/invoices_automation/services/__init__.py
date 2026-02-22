@@ -80,6 +80,18 @@ class AutomationControl:
 
         return PageContext()
 
+    def run(self, headless: bool = True, devtools: bool = False) -> Optional[str]:
+        """Business logic for orchestrating Automation execution
+
+        Args:
+            headless (bool, optional): Whether to run the browser in headless mode. Defaults to False.
+            devtools (bool, optional): Whether to open devtools. Defaults to True.
+
+        Returns:
+            Optional[str]: Path to the generated invoice PDF if successful, None otherwise.
+        """
+        raise NotImplementedError("Method run() must be implemented")
+
     def _click_element(
         self,
         page: Page,
@@ -141,9 +153,9 @@ class BaseServiceManager(AutomationControl):
 
     def __init__(self, job_id: str, current_iter: str = "") -> None:
         super().__init__()
-
         self.job_id = job_id
         self.current_iter = current_iter or ""
+
         # Build a stable task id joined by '-' from the iteration (e.g. "JOB_1_1-2")
         self.task_id = (
             f"{self.job_id}_{'-'.join(self.current_iter.split('/'))}" if self.current_iter else f"{self.job_id}_1"

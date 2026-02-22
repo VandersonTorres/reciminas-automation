@@ -30,6 +30,7 @@ class ExitInvoiceService(BaseServiceManager, ExitInvoicePageCoordinates):
         observation: str,
         job_id: str,
         current_iter: str = "",
+        *args,
         **kwargs,
     ) -> None:
         """Initialize Exit Invoices Automation.
@@ -54,15 +55,7 @@ class ExitInvoiceService(BaseServiceManager, ExitInvoicePageCoordinates):
 
     # TODO: REMOVE HEADFUL
     def run(self, headless: bool = False, devtools: bool = True) -> Optional[str]:
-        """Run the exit invoice automation process (Common Sale - Within State).
-
-        Args:
-            headless (bool, optional): Whether to run the browser in headless mode. Defaults to False.
-            devtools (bool, optional): Whether to open devtools. Defaults to True.
-
-        Returns:
-            Optional[str]: Path to the generated invoice PDF if successful, None otherwise.
-        """
+        """Run the exit invoice automation process (Common Sale - Within State)"""
         try:
             self.logger.info(
                 f"Iniciando {self.name} '{self.current_iter}'. NF: {self.provider}\n\t" f"- CONTA: {COMPANY_USERNAME}\n"
