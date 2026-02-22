@@ -22,25 +22,41 @@ def build_material_payload(invoice: BaseInvoiceModel) -> list[dict[str, Any]]:
     ]
 
 
-def process_single_invoice(
-    service_class: ServiceType,
-    invoice: BaseInvoiceModel,
-    job_id: str,
-    current_iter=None,
-) -> None:
-    try:
-        invoice.status = "processing"
-        invoice.save()
-
-        # TODO: Differentiate between entry and exit invoice services if they have different constructors
-        automation = service_class(
+def build_service(service_class: ServiceType, invoice: BaseInvoiceModel, job_id: str, current_iter: str) -> ServiceType:
+    if service_class is EntryInvoiceService:
+        return service_class(
             provider=invoice.provider,
             materials=build_material_payload(invoice),
             job_id=job_id,
             current_iter=current_iter,
             close_popup_confirmation=invoice.close_popup,
         )
+    elif service_class is ExitInvoiceService:
+        return service_class(
+            provider=invoice.provider,
+            materials=build_material_payload(invoice),
+            job_id=job_id,
+            current_iter=current_iter,
+            freight=invoice.freight,
+            search_carrier_by=invoice.search_carrier_by,
+            carrier_target=invoice.carrier_name or invoice.carrier_code,
+            observation=invoice.observation,
+        )
 
+    raise ValueError("Invalid service class")
+
+
+def process_single_invoice(
+    service_class: ServiceType,
+    invoice: BaseInvoiceModel,
+    job_id: str,
+    current_iter: str,
+) -> None:
+    try:
+        invoice.status = "processing"
+        invoice.save()
+
+        automation = build_service(service_class, invoice, job_id, current_iter)
         invoice_path = automation.run()
 
         if invoice_path:

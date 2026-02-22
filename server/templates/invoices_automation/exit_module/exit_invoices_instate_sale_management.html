@@ -1,7 +1,7 @@
 {% extends "core/base.html" %}
 {% load static %}
 
-{% block title %}NF de Entrada - Reciminas{% endblock %}
+{% block title %}NF de Saída (Venda dentro do Estado) - Reciminas{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -9,15 +9,15 @@
         <div class="card-header bg-success text-white">
             <h4 class="mb-0">
                 {% if is_edit %}
-                    ✏️ Editar Nota Fiscal de <strong>Entrada</strong>
+                    ✏️ Editar Nota Fiscal de <strong>Venda dentro do Estado</strong>
                 {% else %}
-                    📥 Adicionar Nota Fiscal de <strong>Entrada</strong>
+                    📥 Adicionar Nota Fiscal de <strong>Venda dentro do Estado</strong>
                 {% endif %}
             </h4>
         </div>
         <div class="card-body">
             <p class="text-muted">
-                Preencha os dados abaixo para emitir uma nova Nota Fiscal de Entrada
+                Preencha os dados abaixo para emitir uma nova Nota Fiscal de Venda dentro do Estado
                 ou adicioná-la em uma fila para emissão encadeada.
             </p>
 
@@ -26,38 +26,31 @@
 
                 <h5 class="mb-4 text-white">Dados da Nota</h5>
 
-                {{ form.as_p }}
-                <div class="form-check">
-                    <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="closePopup"
-                        name="closePopup"
-                        style="width: 0.9em; height: 0.9em; margin-top: 0.1em;"
-                    >
-                    <label class="form-check-label ms-1" for="closePopup" style="font-size: 0.85em;">
-                        Fechar popup de inclusão de NF para fornecedor
-                    </label>
-                    &nbsp;
-                    <small
-                        class="btn btn-warning btn-sm py-0 px-2 position-relative"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="right"
-                        title="Necessário apenas se houver uma emissão anterior pendente para o mesmo fornecedor."
-                        style="font-size: 0.85em;">
-                        ⚠️ Atenção
-                    </small>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function () {
-                            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-                            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-                                new bootstrap.Tooltip(tooltipTriggerEl)
-                            })
-                        });
-                    </script>
+                <div class="mb-3">
+                    {{ form.provider.label_tag }} {{ form.provider }}
+                </div>
+                <div class="mb-3">
+                    {{ form.freight.label_tag }} {{ form.freight }}
+                </div>
+                <div class="mb-3">
+                    {{ form.search_carrier_by.label_tag }} {{ form.search_carrier_by }}
+                </div>
+                <div class="mb-3" id="carrier_code_field">
+                    {{ form.carrier_code.label_tag }} {{ form.carrier_code }}
+                    {% if form.carrier_code.errors %}
+                        <div class="text-danger small">{{ form.carrier_code.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-3" id="carrier_name_field">
+                    {{ form.carrier_name.label_tag }} {{ form.carrier_name }}
+                    {% if form.carrier_name.errors %}
+                        <div class="text-danger small">{{ form.carrier_name.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    {{ form.observation.label_tag }} {{ form.observation }}
                 </div>
 
-                <hr>
                 <h5 class="mb-4 text-white">MATERIAIS</h5>
 
                 {{ formset.management_form }}
@@ -147,9 +140,9 @@
 
             <hr>
             <div class="d-flex gap-2 mt-3 p-3">
-                <a href="{% url 'access_entry_invoices_queue' %}" class="btn btn-secondary">📋 Ir para Fila</a>
+                <a href="{% url 'access_exit_invoices_queue' %}" class="btn btn-secondary">📋 Ir para Fila</a>
                 {% if is_edit %}
-                    <a href="{% url 'access_entry_invoices_queue' %}" class="btn btn-secondary">🔙 Voltar</a>
+                    <a href="{% url 'access_exit_invoices_queue' %}" class="btn btn-secondary">🔙 Voltar</a>
                 {% else %}
                     <a href="{% url 'dashboard' %}" class="btn btn-secondary">🔙 Voltar</a>
                 {% endif %}
@@ -157,6 +150,31 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    function toggleCarrierFields() {
+        var searchBy = document.getElementById("id_search_carrier_by").value;
+        var nameField = document.getElementById("carrier_name_field");
+        var codeField = document.getElementById("carrier_code_field");
+        if (searchBy === "name") {
+            nameField.style.display = "";
+            codeField.style.display = "none";
+        } else if (searchBy === "code") {
+            nameField.style.display = "none";
+            codeField.style.display = "";
+        } else {
+            // Show invalid message
+            alert("Selecione um critério de pesquisa válido.");
+        }
+    }
+    var searchBySelect = document.getElementById("id_search_carrier_by");
+    if (searchBySelect) {
+        searchBySelect.addEventListener("change", toggleCarrierFields);
+        toggleCarrierFields();
+    }
+});
+</script>
 
 <script src="{% static 'js/add_item_formset.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/entry_invoices.css' %}?v=2">

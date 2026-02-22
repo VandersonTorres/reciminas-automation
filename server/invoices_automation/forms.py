@@ -126,6 +126,7 @@ class ExitInvoiceForm(forms.ModelForm):
     class Meta:
         model = ExitInvoiceQueue
         fields = [
+            "modality",
             "provider",
             "freight",
             "search_carrier_by",
@@ -134,6 +135,7 @@ class ExitInvoiceForm(forms.ModelForm):
             "observation",
         ]
         labels = {
+            "modality": "Modalidade",
             "provider": "Fornecedor",
             "freight": "Tipo de Frete",
             "search_carrier_by": "Buscar Transportador por",
@@ -142,6 +144,7 @@ class ExitInvoiceForm(forms.ModelForm):
             "observation": "Observação",
         }
         widgets = {
+            "modality": forms.Select(attrs={"class": "form-select"}),
             "provider": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome completo"}),
             "freight": forms.Select(attrs={"class": "form-select"}),
             "search_carrier_by": forms.Select(attrs={"class": "form-select"}),
@@ -149,17 +152,6 @@ class ExitInvoiceForm(forms.ModelForm):
             "carrier_code": forms.TextInput(attrs={"class": "form-control", "placeholder": "Código do transportador"}),
             "observation": forms.Textarea(attrs={"class": "form-control", "placeholder": "Observações", "rows": 2}),
         }
-
-    def clean(self):
-        cleaned = super().clean()
-        search_by = cleaned.get("search_carrier_by")
-        carrier_name = cleaned.get("carrier_name")
-        carrier_code = cleaned.get("carrier_code")
-        if search_by == "code" and not carrier_code:
-            raise forms.ValidationError({"carrier_code": "Informe o código do transportador."})
-        if search_by == "name" and not carrier_name:
-            raise forms.ValidationError({"carrier_name": "Informe o nome do transportador."})
-        return cleaned
 
 
 class ExitInvoiceItemForm(forms.ModelForm):

@@ -21,6 +21,16 @@ class BaseInvoiceModel(models.Model):
     class Meta:
         abstract = True
 
+    modality = models.CharField(
+        max_length=50,
+        choices=[
+            ("entry", "Entrada"),
+            ("exit_instate", "Saída (Dentro do Estado)"),
+            ("exit_outstate", "Saída (Fora do Estado)"),
+            ("exit_stock_transfer", "Saída (Transferência de Estoque)"),
+            ("exit_triangular_sale", "Saída (Venda Triangular)"),
+        ],
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     provider = models.CharField(max_length=255)
     close_popup = models.BooleanField(default=False)
@@ -40,6 +50,8 @@ class BaseInvoiceModel(models.Model):
 
 # Entry Invoice
 class EntryInvoiceQueue(BaseInvoiceModel):
+    modality = "entry"
+
     def __str__(self):
         return f"{self.provider} - {self.id} (Entrada)"
 

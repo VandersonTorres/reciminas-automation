@@ -7,31 +7,53 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
-from invoices_automation.models import EntryInvoiceQueue
+from invoices_automation.models import EntryInvoiceQueue, ExitInvoiceQueue
 from invoices_automation.services import CANCEL_FLAGS
 from invoices_automation.services.entry_invoices_service import EntryInvoiceService
+from invoices_automation.services.exit_invoices_service import ExitInvoiceService
 from invoices_automation.services.lock_manager import automation_lock
 from invoices_automation.services.log_buffer import current_logs
 
 from invoices_automation.utils.invoices_processing import process_invoice_batch
 
+service_class_map = {
+    "EntryInvoiceService": EntryInvoiceService,
+    "ExitInvoiceService": ExitInvoiceService,
+}
+
+invoice_model_map = {
+    "EntryInvoiceQueue": EntryInvoiceQueue,
+    "ExitInvoiceQueue": ExitInvoiceQueue,
+}
+
 
 @login_required
-def emit_entry_invoice(request, invoice_pk):
+def emit_invoice(request, invoice_pk):
     if automation_lock.locked():
         messages.error(request, "Outra automação já está em andamento.")
         return redirect("dashboard")
 
-    invoice = get_object_or_404(EntryInvoiceQueue, pk=invoice_pk)
+    service_class_name = request.GET.get("service_class")
+    invoice_model_name = request.GET.get("invoice_model")
+    access_invoices_view = request.GET.get("access_invoices_view")
+
+    try:
+        invoice_model = invoice_model_map[invoice_model_name]
+        service_class = service_class_map[service_class_name]
+    except KeyError:
+        messages.error(request, f"Serviço {service_class_name} não implementado")
+        return redirect("dashboard")
+
+    invoice = get_object_or_404(invoice_model, pk=invoice_pk)
     if invoice.status != "pending":
         messages.error(request, "Nota não está pendente.")
-        return redirect("access_entry_invoices_queue")
+        return redirect(access_invoices_view)
 
     job_id = str(uuid.uuid4())
     request.session["job_id"] = job_id
 
     threading.Thread(
-        target=lambda: process_invoice_batch(EntryInvoiceService, [invoice], job_id),
+        target=lambda: process_invoice_batch(service_class, [invoice], job_id),
         daemon=True,
     ).start()
 
@@ -39,22 +61,32 @@ def emit_entry_invoice(request, invoice_pk):
 
 
 @login_required
-def start_entry_batch_automation(request):
+def start_batch_automation(request):
     if automation_lock.locked():
         messages.error(request, "Outra automação já está em andamento.")
         return redirect("dashboard")
 
-    invoices = list(EntryInvoiceQueue.objects.filter(user=request.user, status="pending"))
+    service_class_name = request.GET.get("service_class")
+    invoice_model_name = request.GET.get("invoice_model")
+    access_invoices_view = request.GET.get("access_invoices_view")
 
+    try:
+        invoice_model = invoice_model_map[invoice_model_name]
+        service_class = service_class_map[service_class_name]
+    except KeyError:
+        messages.error(request, f"Serviço {service_class_name} não implementado")
+        return redirect("dashboard")
+
+    invoices = list(invoice_model.objects.filter(user=request.user, status="pending"))
     if not invoices:
         messages.info(request, "Nenhuma nota pendente.")
-        return redirect("access_entry_invoices_queue")
+        return redirect(access_invoices_view)
 
     job_id = str(uuid.uuid4())
     request.session["job_id"] = job_id
 
     threading.Thread(
-        target=lambda: process_invoice_batch(EntryInvoiceService, invoices, job_id),
+        target=lambda: process_invoice_batch(service_class, invoices, job_id),
         daemon=True,
     ).start()
 
@@ -86,7 +118,7 @@ def cancel_automation(request):
         if job_id:
             if job_id in CANCEL_FLAGS:
                 CANCEL_FLAGS[job_id] = True
-                messages.info(request, f"Cancelando processo '{job_id}'.")
+                messages.info(request, f"Cancelando processo '{job_id}', aguarde...")
             else:
                 # If job_id no longer exists, create a global flag as a fallback
                 CANCEL_FLAGS["__GLOBAL_CANCEL__"] = True

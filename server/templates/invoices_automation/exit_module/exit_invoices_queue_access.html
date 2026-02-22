@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="container mt-4 queue-view">
-    <h3 class="mb-4">📋 Fila de Notas a Emitir (Entrada)</h3>
+    <h3 class="mb-4">📋 Fila de Notas a Emitir (Saída)</h3>
 
     {% if invoices_queue %}
         <div class="table-responsive">
@@ -15,7 +15,9 @@
                     <tr>
                         <th>Usuário</th>
                         <th>Data de Criação</th>
+                        <th>Modalidade</th>
                         <th>Fornecedor</th>
+                        <th>Transportador</th>
                         <th>Tipo de Material</th>
                         <th>Quantidade (Kg)</th>
                         <th>Preço</th>
@@ -29,7 +31,18 @@
                         <tr>
                             <td style="text-align: center;">{{ invoice.user.get_full_name|default:invoice.user.username }}</td>
                             <td style="text-align: center;">{{ invoice.created_at|localtime|date:"d/m/Y H:i" }}</td>
+                            <td style="text-align: center;"><strong>{{ invoice.get_modality_display }}</strong></td>
                             <td style="text-align: center;">{{ invoice.provider }}</td>
+                            <!-- Carrier: show carrier_name if present, else carrier_code -->
+                            <td style="text-align: center;">
+                                {% if invoice.carrier_name %}
+                                    {{ invoice.carrier_name }}
+                                {% elif invoice.carrier_code %}
+                                    <span>Cód: </span>{{ invoice.carrier_code }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
 
                             <!-- Materials list -->
                             <td>
@@ -70,10 +83,10 @@
                             <td style="text-align: center;">{{ invoice.get_status_display }}</td>
                             <td class="text-center">
                                 {% if invoice.status == "pending" %}
-                                    <a href="{% url 'edit_entry_invoice' invoice.pk %}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                                    <a href="{% url 'edit_exit_invoice' invoice.pk %}" class="btn btn-sm btn-warning">✏️ Editar</a>
                                     <form
                                         method="post"
-                                        action="{% url 'emit_invoice' invoice.pk %}?service_class=EntryInvoiceService&invoice_model=EntryInvoiceQueue&access_invoices_view=access_entry_invoices_queue"
+                                        action="{% url 'emit_invoice' invoice.pk %}?service_class=ExitInvoiceService&invoice_model=ExitInvoiceQueue&access_invoices_view=access_exit_invoices_queue"
                                         style="display:inline;"
                                     >
                                         {% csrf_token %}
@@ -88,7 +101,7 @@
                                 {% endif %}
 
                                 {% if user.is_superuser %}
-                                    <form method="post" action="{% url 'delete_entry_invoice' invoice.pk %}" style="display:inline;">
+                                    <form method="post" action="{% url 'delete_exit_invoice' invoice.pk %}" style="display:inline;">
                                         {% csrf_token %}
                                         <button class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja remover esta nota?');">
                                             🗑️ Excluir
@@ -105,7 +118,7 @@
         <div class="mt-3 d-flex justify-content-center align-items-center">
             <form
                 method="post"
-                action="{% url 'start_batch_automation' %}?service_class=EntryInvoiceService&invoice_model=EntryInvoiceQueue&access_invoices_view=access_entry_invoices_queue"
+                action="{% url 'start_batch_automation' %}?service_class=ExitInvoiceService&invoice_model=ExitInvoiceQueue&access_invoices_view=access_exit_invoices_queue"
             >
                 {% csrf_token %}
                 <button class="btn btn-success">🚀 Iniciar Emissão</button>
@@ -155,7 +168,13 @@
         <p class="text-muted">Nenhuma nota adicionada à fila.</p>
     {% endif %}
 
-    <a href="{% url 'create_entry_invoice' %}" class="btn btn-secondary">➕ Adicionar nova nota</a>
+    <!-- Each <a> on its own line for better spacing -->
+    <div class="d-flex flex-column gap-2 mt-4">
+        <a href="{% url 'create_instate_sale_invoice' %}" class="btn btn-secondary">➕ Adicionar nova nota (Venda Comum dentro do Estado)</a>
+        <a href="#" class="btn btn-secondary">➕ Adicionar NF (Venda Comum fora do Estado)</a>
+        <a href="#" class="btn btn-secondary">➕ Adicionar NF (Transferência de Estoque)</a>
+        <a href="#" class="btn btn-secondary">➕ Adicionar NF (Venda Triangular)</a>
+    </div>
 </div>
 
 <link rel="stylesheet" href="{% static 'css/invoices_queue.css' %}?v=2">
