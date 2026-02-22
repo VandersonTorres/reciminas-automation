@@ -126,6 +126,7 @@ class ExitInvoiceForm(forms.ModelForm):
     class Meta:
         model = ExitInvoiceQueue
         fields = [
+            "modality",
             "provider",
             "freight",
             "search_carrier_by",
@@ -134,6 +135,7 @@ class ExitInvoiceForm(forms.ModelForm):
             "observation",
         ]
         labels = {
+            "modality": "Modalidade",
             "provider": "Fornecedor",
             "freight": "Tipo de Frete",
             "search_carrier_by": "Buscar Transportador por",
@@ -142,6 +144,7 @@ class ExitInvoiceForm(forms.ModelForm):
             "observation": "Observação",
         }
         widgets = {
+            "modality": forms.Select(attrs={"class": "form-select"}),
             "provider": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome completo"}),
             "freight": forms.Select(attrs={"class": "form-select"}),
             "search_carrier_by": forms.Select(attrs={"class": "form-select"}),

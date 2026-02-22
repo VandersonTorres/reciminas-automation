@@ -12,6 +12,9 @@ from invoices_automation.views.entry_module.crud_entry_invoices import (
 )
 from invoices_automation.views.exit_module.crud_exit_invoices_instate import (
     create_instate_sale_invoice,
+    access_exit_invoices_queue,
+    edit_exit_invoice,
+    delete_exit_invoice,
 )
 from invoices_automation.views.manage_automation_process import (
     emit_invoice,
@@ -45,6 +48,9 @@ urlpatterns = [
     path("fila/editar/entrada/<int:pk>/", edit_entry_invoice, name="edit_entry_invoice"),
     path("fila/excluir/entrada/<int:pk>/", delete_entry_invoice, name="delete_entry_invoice"),
     path("registro-nf-venda-dentro-do-estado/", create_instate_sale_invoice, name="create_instate_sale_invoice"),
+    path("controle-nfs-saida/", access_exit_invoices_queue, name="access_exit_invoices_queue"),
+    path("fila/editar/saida/<int:pk>/", edit_exit_invoice, name="edit_exit_invoice"),
+    path("fila/excluir/saida/<int:pk>/", delete_exit_invoice, name="delete_exit_invoice"),
     path("cancelar-processo/", cancel_automation, name="cancel_automation"),
     path("emitir-nota/<int:invoice_pk>/", emit_invoice, name="emit_invoice"),
     path("emissoes-nfs/", start_batch_automation, name="start_batch_automation"),

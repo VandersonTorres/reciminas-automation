@@ -9,9 +9,9 @@
         <div class="card-header bg-success text-white">
             <h4 class="mb-0">
                 {% if is_edit %}
-                    ✏️ Editar Nota Fiscal de Venda dentro do Estado
+                    ✏️ Editar Nota Fiscal de <strong>Venda dentro do Estado</strong>
                 {% else %}
-                    📥 Adicionar Nota Fiscal de Venda dentro do Estado
+                    📥 Adicionar Nota Fiscal de <strong>Venda dentro do Estado</strong>
                 {% endif %}
             </h4>
         </div>
@@ -140,9 +140,9 @@
 
             <hr>
             <div class="d-flex gap-2 mt-3 p-3">
-                <a href="#" class="btn btn-secondary">📋 Ir para Fila</a>
+                <a href="{% url 'access_exit_invoices_queue' %}" class="btn btn-secondary">📋 Ir para Fila</a>
                 {% if is_edit %}
-                    <a href="#" class="btn btn-secondary">🔙 Voltar</a>
+                    <a href="{% url 'access_exit_invoices_queue' %}" class="btn btn-secondary">🔙 Voltar</a>
                 {% else %}
                     <a href="{% url 'dashboard' %}" class="btn btn-secondary">🔙 Voltar</a>
                 {% endif %}

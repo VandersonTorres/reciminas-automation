@@ -1,14 +1,14 @@
 from django.contrib import messages
 
-# from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 
 from invoices_automation.forms import ExitInvoiceForm, ExitInvoiceItemFormSet
 from invoices_automation.models import ExitInvoiceQueue
 
-# from invoices_automation.services.lock_manager import automation_lock
+from invoices_automation.services.lock_manager import automation_lock
 
 
 # Create invoice Exit - In State Sale
@@ -23,7 +23,11 @@ def create_instate_sale_invoice(request, invoice_pk=None):
     if request.method == "POST":
         action = request.POST.get("action")
 
-        invoice_form = ExitInvoiceForm(request.POST, instance=invoice)
+        post_data = request.POST.copy()
+        if not post_data.get("modality"):
+            post_data["modality"] = "exit_instate"
+
+        invoice_form = ExitInvoiceForm(post_data, instance=invoice)
         material_formset = ExitInvoiceItemFormSet(
             request.POST,
             instance=invoice if is_edit else None,
@@ -108,66 +112,70 @@ def create_instate_sale_invoice(request, invoice_pk=None):
     )
 
 
-# # Read invoices Exit - In State Sale
-# @login_required
-# def access_entry_invoices_queue(request):
-#     # Check if there are any invoices with status "processing" and automation is not running
-#     processing_invoices = ExitInvoiceQueue.objects.filter(status="processing")
-#     if not automation_lock.locked():
-#         for invoice in processing_invoices:
-#             invoice.status = "cancelled"
-#             invoice.save()
+# Read invoices Exit - In State Sale
+@login_required
+def access_exit_invoices_queue(request):
+    # Check if there are any invoices with status "processing" and automation is not running
+    processing_invoices = ExitInvoiceQueue.objects.filter(status="processing")
+    if not automation_lock.locked():
+        for invoice in processing_invoices:
+            invoice.status = "cancelled"
+            invoice.save()
 
-#     queue = ExitInvoiceQueue.objects.all().order_by("created_at")
-#     paginator = Paginator(queue, 10)
-#     page_number = request.GET.get("page")
-#     page_obj = paginator.get_page(page_number)
-#     context = {
-#         "page_obj": page_obj,
-#         "invoices_queue": page_obj.object_list,
-#     }
+    queue = ExitInvoiceQueue.objects.all().order_by("created_at")
+    paginator = Paginator(queue, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    context = {
+        "page_obj": page_obj,
+        "invoices_queue": page_obj.object_list,
+    }
 
-#     return render(request, "invoices_automation/exit_module/exit_invoices_queue_access.html", context)
-
-
-# # Update invoice
-# @login_required
-# def edit_exit_invoice(request, pk):
-#     invoice = get_object_or_404(ExitInvoiceQueue, pk=pk)
-#     if request.method == "POST":
-#         form = ExitInvoiceForm(request.POST, instance=invoice)
-#         formset = ExitInvoiceItemFormSet(request.POST, instance=invoice, prefix="items")
-
-#         if form.is_valid() and formset.is_valid():
-#             form.save()
-#             formset.save()
-#             messages.success(request, "Nota atualizada com sucesso!")
-#             return redirect("access_exit_invoices_queue")
-#         else:
-#             messages.error(request, "Corrija os erros do formulário e tente novamente.")
-#     else:
-#         form = ExitInvoiceForm(instance=invoice)
-#         formset = ExitInvoiceItemFormSet(instance=invoice, prefix="items")
-
-#     return render(
-#         request,
-#         "invoices_automation/exit_module/entry_invoices_management.html",
-#         {
-#             "form": form,
-#             "formset": formset,
-#             "is_edit": True,
-#         },
-#     )
+    return render(request, "invoices_automation/exit_module/exit_invoices_queue_access.html", context)
 
 
-# # Delete Invoice
-# @login_required
-# def delete_entry_invoice(request, pk):
-#     invoice = get_object_or_404(ExitInvoiceQueue, pk=pk)
-#     if not request.user.is_superuser:
-#         messages.error(request, "Você não tem permissão para excluir notas.")
-#         return redirect("access_entry_invoices_queue")
+# Update invoice
+@login_required
+def edit_exit_invoice(request, pk):
+    invoice = get_object_or_404(ExitInvoiceQueue, pk=pk)
+    if request.method == "POST":
+        post_data = request.POST.copy()
+        if not post_data.get("modality"):
+            post_data["modality"] = invoice.modality
 
-#     invoice.delete()
-#     messages.success(request, "Nota removida da fila com sucesso!")
-#     return redirect("access_entry_invoices_queue")
+        form = ExitInvoiceForm(post_data, instance=invoice)
+        formset = ExitInvoiceItemFormSet(post_data, instance=invoice, prefix="items")
+
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, "Nota atualizada com sucesso!")
+            return redirect("access_exit_invoices_queue")
+        else:
+            messages.error(request, "Corrija os erros do formulário e tente novamente.")
+    else:
+        form = ExitInvoiceForm(instance=invoice)
+        formset = ExitInvoiceItemFormSet(instance=invoice, prefix="items")
+
+    return render(
+        request,
+        "invoices_automation/exit_module/exit_invoices_instate_sale_management.html",
+        {
+            "form": form,
+            "formset": formset,
+            "is_edit": True,
+        },
+    )
+
+
+# Delete Invoice
+@login_required
+def delete_exit_invoice(request, pk):
+    invoice = get_object_or_404(ExitInvoiceQueue, pk=pk)
+    if not request.user.is_superuser:
+        messages.error(request, "Você não tem permissão para excluir notas.")
+        return redirect("access_exit_invoices_queue")
+
+    invoice.delete()
+    messages.success(request, "Nota removida da fila com sucesso!")
+    return redirect("access_exit_invoices_queue")
