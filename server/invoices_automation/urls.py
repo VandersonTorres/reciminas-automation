@@ -10,9 +10,12 @@ from invoices_automation.views.entry_module.crud_entry_invoices import (
     edit_entry_invoice,
     delete_entry_invoice,
 )
-from invoices_automation.views.entry_module.manage_entry_automation import (
-    emit_entry_invoice,
-    start_entry_batch_automation,
+from invoices_automation.views.exit_module.crud_exit_invoices_instate import (
+    create_instate_sale_invoice,
+)
+from invoices_automation.views.manage_automation_process import (
+    emit_invoice,
+    start_batch_automation,
     cancel_automation,
     follow_automation_logs,
     get_logs,
@@ -41,9 +44,10 @@ urlpatterns = [
     path("controle-nfs-entrada/", access_entry_invoices_queue, name="access_entry_invoices_queue"),
     path("fila/editar/entrada/<int:pk>/", edit_entry_invoice, name="edit_entry_invoice"),
     path("fila/excluir/entrada/<int:pk>/", delete_entry_invoice, name="delete_entry_invoice"),
-    path("emitir-nota/entrada/<int:invoice_pk>/", emit_entry_invoice, name="emit_entry_invoice"),
-    path("emissoes-nfs-entrada/", start_entry_batch_automation, name="start_entry_batch_automation"),
+    path("registro-nf-venda-dentro-do-estado/", create_instate_sale_invoice, name="create_instate_sale_invoice"),
     path("cancelar-processo/", cancel_automation, name="cancel_automation"),
+    path("emitir-nota/<int:invoice_pk>/", emit_invoice, name="emit_invoice"),
+    path("emissoes-nfs/", start_batch_automation, name="start_batch_automation"),
     path("logs-automacao/", follow_automation_logs, name="follow_automation_logs"),
     path("get-logs/", get_logs, name="get_logs"),
     path("limpar-logs/", clear_logs, name="clear_logs"),

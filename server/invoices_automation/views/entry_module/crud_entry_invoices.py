@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
 
 from invoices_automation.forms import EntryInvoiceForm, EntryInvoiceItemFormSet
 from invoices_automation.models import EntryInvoiceQueue
@@ -62,7 +63,15 @@ def create_entry_invoice(request, invoice_pk=None):
             material_formset.save()
 
             if action == "emit_now":
-                return redirect("emit_entry_invoice", invoice_pk=invoice.pk)
+                # return redirect("emit_invoice", invoice_pk=invoice.pk)
+                url = reverse("emit_invoice", kwargs={"invoice_pk": invoice.pk})
+                emission_url = (
+                    f"{url}?"
+                    "invoice_model=EntryInvoiceQueue&"
+                    "service_class=EntryInvoiceService&"
+                    "access_invoices_view=access_entry_invoices_queue"
+                )
+                return redirect(emission_url)
 
             elif action == "add_to_queue":
                 messages.success(request, "Nota adicionada à fila!")

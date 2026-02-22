@@ -150,17 +150,6 @@ class ExitInvoiceForm(forms.ModelForm):
             "observation": forms.Textarea(attrs={"class": "form-control", "placeholder": "Observações", "rows": 2}),
         }
 
-    def clean(self):
-        cleaned = super().clean()
-        search_by = cleaned.get("search_carrier_by")
-        carrier_name = cleaned.get("carrier_name")
-        carrier_code = cleaned.get("carrier_code")
-        if search_by == "code" and not carrier_code:
-            raise forms.ValidationError({"carrier_code": "Informe o código do transportador."})
-        if search_by == "name" and not carrier_name:
-            raise forms.ValidationError({"carrier_name": "Informe o nome do transportador."})
-        return cleaned
-
 
 class ExitInvoiceItemForm(forms.ModelForm):
     class Meta:
