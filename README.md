@@ -1,5 +1,7 @@
 # Reciminas Automation
 
+![INTERFACE](server/invoices_automation/static/img/interface.png)
+
 ## Overview
 
 **Reciminas Automation** é uma plataforma que centraliza e automatiza processos operacionais da Reciminas, com foco na emissão e gestão de Notas Fiscais.
