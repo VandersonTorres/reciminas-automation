@@ -109,3 +109,52 @@ class ExitInvoicePageCoordinates(BasePageCoordinates):
     # Invoice visualization process
 
     # Invoice saving and transmission process
+
+
+class StockTransferInvoicePageCoordinates(ExitInvoicePageCoordinates):
+    """(Exit) Stock Transfer Invoices specific page operational coordinates.
+
+    Stock Transfer process (Transferência de Estoque).
+    """
+
+    # Initial login process
+
+    # Main page operations
+
+    # Set operation type
+
+    # Provider selection process
+    # Search for code "125" (related to RECIMINAS RJ)
+    coord_select_provider_by_code = (595, 255)
+
+    # Select product transfer
+    # Select code "6152" (related to product transfer)
+    coord_operation_nature = (1025, 80)
+    coord_operation_nature_search_bar = (429, 517)
+    coord_close_selection = (1022, 556)
+
+    # Material inclusion process
+    # No discount to this invoice
+    coord_tax_situation_code = (777, 406)  # - clicar em código de situação tributária CST
+    coord_no_taxation = (703, 537)  # - SELECIONAR O 41 (Não tributada)
+    coord_pis = (288, 344)  # - clicar no PIS
+    coord_tsc_pis = (317, 409)  # - CST
+    coord_no_incidence_pis = (318, 514)  # - Selecionar o 08 que é referente a op sem incidencia de contribuição
+    coord_cofins = (343, 344)  # - clica no COFINS
+    coord_tsc_cofins = (398, 408)  # - CST
+    coord_no_incidence_cofins = (403, 485)  # - Selecionar o 08 que é referente a op tributavel aliquota 0
+    coord_tsc_store_progress = (625, 697)  # - store progress
+
+    # Set freight information
+
+    # Set carrier information by code ("18 - RECIMINAS" || "25 - SUCATRANS")
+
+    # Charging and payment process
+
+    # Observation inclusion process
+    coord_search_observation_by_code = (83, 155)  # - Search for CODE
+    # Enter with the code "4" (referring to the transfer between establishments of the same owner)
+
+    # Invoice visualization process
+
+    # Invoice saving and transmission process

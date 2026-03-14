@@ -25,8 +25,8 @@ class BaseInvoiceModel(models.Model):
         max_length=50,
         choices=[
             ("entry", "Entrada"),
-            ("exit_instate", "Saída (Dentro do Estado)"),
-            ("exit_outstate", "Saída (Fora do Estado)"),
+            ("exit_instate", "Venda Comum (Dentro do Estado)"),
+            ("exit_outstate", "Venda Comum (Fora do Estado)"),
             ("exit_stock_transfer", "Saída (Transferência de Estoque)"),
             ("exit_triangular_sale", "Saída (Venda Triangular)"),
         ],

@@ -69,7 +69,7 @@ def create_instate_sale_invoice(request, invoice_pk=None):
                 emission_url = (
                     f"{url}?"
                     "invoice_model=ExitInvoiceQueue&"
-                    "service_class=ExitInvoiceService&"
+                    "service_class=InStateInvoiceService&"
                     "access_invoices_view=access_exit_invoices_queue"
                 )
                 return redirect(emission_url)

@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from invoices_automation.models import EntryInvoiceQueue, ExitInvoiceQueue
 from invoices_automation.services import CANCEL_FLAGS
 from invoices_automation.services.entry_invoices_service import EntryInvoiceService
-from invoices_automation.services.exit_invoices_service import ExitInvoiceService
+from invoices_automation.services.exit_invoices_service.exit_in_state_sale import InStateInvoiceService
 from invoices_automation.services.lock_manager import automation_lock
 from invoices_automation.services.log_buffer import current_logs
 
@@ -18,7 +18,7 @@ from invoices_automation.utils.invoices_processing import process_invoice_batch
 
 service_class_map = {
     "EntryInvoiceService": EntryInvoiceService,
-    "ExitInvoiceService": ExitInvoiceService,
+    "InStateInvoiceService": InStateInvoiceService,
 }
 
 invoice_model_map = {

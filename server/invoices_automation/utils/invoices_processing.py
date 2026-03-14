@@ -4,10 +4,10 @@ from typing import Any
 from invoices_automation.models import BaseInvoiceModel
 from invoices_automation.services import CANCEL_FLAGS
 from invoices_automation.services.entry_invoices_service import EntryInvoiceService
-from invoices_automation.services.exit_invoices_service import ExitInvoiceService
+from invoices_automation.services.exit_invoices_service.exit_in_state_sale import InStateInvoiceService
 from invoices_automation.services.lock_manager import automation_lock
 
-ServiceType = EntryInvoiceService | ExitInvoiceService
+ServiceType = EntryInvoiceService | InStateInvoiceService
 
 
 def build_material_payload(invoice: BaseInvoiceModel) -> list[dict[str, Any]]:
@@ -31,7 +31,7 @@ def build_service(service_class: ServiceType, invoice: BaseInvoiceModel, job_id:
             current_iter=current_iter,
             close_popup_confirmation=invoice.close_popup,
         )
-    elif service_class is ExitInvoiceService:
+    elif service_class is InStateInvoiceService:
         return service_class(
             provider=invoice.provider,
             materials=build_material_payload(invoice),
