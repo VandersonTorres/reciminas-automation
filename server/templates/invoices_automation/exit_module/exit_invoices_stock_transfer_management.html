@@ -26,20 +26,11 @@
 
                 <h5 class="mb-4 text-white">Dados da Nota</h5>
 
-                <div class="mb-3">
-                    {{ form.provider.label_tag }} {{ form.provider }}
-                </div>
-
                 <div class="mb-3" id="carrier_code_field">
                     {{ form.carrier_code.label_tag }} {{ form.carrier_code }}
                     {% if form.carrier_code.errors %}
                         <div class="text-danger small">{{ form.carrier_code.errors }}</div>
                     {% endif %}
-                </div>
-
-
-                <div class="mb-3">
-                    {{ form.observation.label_tag }} {{ form.observation }}
                 </div>
 
                 <h5 class="mb-4 text-white">MATERIAIS</h5>
