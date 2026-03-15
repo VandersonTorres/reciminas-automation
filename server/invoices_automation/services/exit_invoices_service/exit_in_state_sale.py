@@ -103,14 +103,13 @@ class InStateInvoiceService(ExitInvoiceService, ExitInvoicePageCoordinates):
                 self.check_cancelled()
 
                 # Set carrier information
-                self.logger.info("Definindo informações de transportadora.")
-                self._click_element(page=logged_page, element_to_click=self.coord_select_carrier, delay=1)
-                if self.search_carrier_by == "code":
-                    self.logger.info(f"Buscando transportadora por código: {self.carrier_target}.")
-                    self._click_element(page=logged_page, element_to_click=self.coord_search_by_code, delay=1)
-                else:
-                    self.logger.info(f"Buscando transportadora por nome: {self.carrier_target}.")
-                    self._click_element(page=logged_page, element_to_click=self.coord_search_by_name, delay=1)
+                self.set_carrier_info(
+                    page_to_use=logged_page,
+                    coord_select_carrier=self.coord_select_carrier,
+                    coord_search_by_code=self.coord_search_by_code,
+                    coord_search_by_name=self.coord_search_by_name,
+                    carrier_target=self.carrier_target,
+                )
 
                 self._insert_data(
                     page=logged_page,

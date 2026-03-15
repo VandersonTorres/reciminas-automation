@@ -123,6 +123,20 @@ EntryInvoiceItemFormSet = inlineformset_factory(
 
 # Exit Invoices Emission Form
 class ExitInvoiceForm(forms.ModelForm):
+    CARRIER_CODE_CHOICES = [
+        ("18", "18 - RECIMINAS"),
+        ("25", "25 - SUCATRANS"),
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.initial.get("modality") == "exit_stock_transfer" or (
+            self.instance and getattr(self.instance, "modality", None) == "exit_stock_transfer"
+        ):
+            self.fields["carrier_code"].widget = forms.Select(
+                choices=self.CARRIER_CODE_CHOICES, attrs={"class": "form-select"}
+            )
+
     class Meta:
         model = ExitInvoiceQueue
         fields = [

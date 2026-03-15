@@ -66,3 +66,21 @@ class ExitInvoiceService(BaseServiceManager, ExitInvoicePageCoordinates):
         )
         self._click_element(page=page_to_use, element_to_click=coord_close_observation_tab, delay=2)
         self.check_cancelled()
+
+    def set_carrier_info(
+        self,
+        page_to_use: Page,
+        coord_select_carrier: tuple[int],
+        coord_search_by_code: tuple[int],
+        coord_search_by_name: tuple[int],
+        carrier_target: str,
+    ) -> None:
+        """Isolate actions for setting carrier information."""
+        self.logger.info("Definindo informações de transportadora.")
+        self._click_element(page=page_to_use, element_to_click=coord_select_carrier, delay=1)
+        if self.search_carrier_by == "code":
+            self.logger.info(f"Buscando transportadora por código: {carrier_target}.")
+            self._click_element(page=page_to_use, element_to_click=coord_search_by_code, delay=1)
+        else:
+            self.logger.info(f"Buscando transportadora por nome: {carrier_target}.")
+            self._click_element(page=page_to_use, element_to_click=coord_search_by_name, delay=1)
