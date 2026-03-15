@@ -5,9 +5,10 @@ from invoices_automation.models import BaseInvoiceModel
 from invoices_automation.services import CANCEL_FLAGS
 from invoices_automation.services.entry_invoices_service import EntryInvoiceService
 from invoices_automation.services.exit_invoices_service.exit_in_state_sale import InStateInvoiceService
+from invoices_automation.services.exit_invoices_service.exit_stock_transfer import StockTransferInvoiceService
 from invoices_automation.services.lock_manager import automation_lock
 
-ServiceType = EntryInvoiceService | InStateInvoiceService
+ServiceType = EntryInvoiceService | InStateInvoiceService | StockTransferInvoiceService
 
 
 def build_material_payload(invoice: BaseInvoiceModel) -> list[dict[str, Any]]:
@@ -23,18 +24,20 @@ def build_material_payload(invoice: BaseInvoiceModel) -> list[dict[str, Any]]:
 
 
 def build_service(service_class: ServiceType, invoice: BaseInvoiceModel, job_id: str, current_iter: str) -> ServiceType:
+    serialized_materials = build_material_payload(invoice)
+
     if service_class is EntryInvoiceService:
         return service_class(
             provider=invoice.provider,
-            materials=build_material_payload(invoice),
+            materials=serialized_materials,
             job_id=job_id,
             current_iter=current_iter,
             close_popup_confirmation=invoice.close_popup,
         )
-    elif service_class is InStateInvoiceService:
+    elif service_class in (InStateInvoiceService, StockTransferInvoiceService):
         return service_class(
             provider=invoice.provider,
-            materials=build_material_payload(invoice),
+            materials=serialized_materials,
             job_id=job_id,
             current_iter=current_iter,
             freight=invoice.freight,

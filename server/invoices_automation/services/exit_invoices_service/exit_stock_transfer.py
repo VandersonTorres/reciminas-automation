@@ -68,6 +68,9 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                 self._click_element(page=logged_page, element_to_click=self.coord_operation, delay=1)
                 self._click_element(page=logged_page, element_to_click=self.coord_select_exit, delay=1)
                 self.check_cancelled()
+                import pdb
+
+                pdb.set_trace()
 
                 # Provider selection process
                 self.logger.info("Expandindo lista de fornecedores.")
@@ -84,6 +87,9 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                     page=logged_page, element_to_click=self.coord_provider_selection, use_dblclick=True, delay=3
                 )
                 self.check_cancelled()
+                import pdb
+
+                pdb.set_trace()
 
                 # Select product transfer
                 self._click_element(page=logged_page, element_to_click=self.coord_operation_nature)
@@ -94,6 +100,9 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                 )
                 self._click_element(page=logged_page, element_to_click=self.coord_close_selection)
                 self.check_cancelled()
+                import pdb
+
+                pdb.set_trace()
 
                 # Material inclusion process
                 for mat in self.materials:

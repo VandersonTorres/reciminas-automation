@@ -96,7 +96,7 @@ class ExitInvoiceQueue(BaseInvoiceModel):
         blank=True,
         validators=[RegexValidator(r"^\d+$", "O código deve conter apenas números.")],
     )
-    observation = models.CharField(max_length=500)
+    observation = models.CharField(max_length=500, blank=True)
 
     def __str__(self):
         return f"{self.provider} - {self.id} (Saída)"

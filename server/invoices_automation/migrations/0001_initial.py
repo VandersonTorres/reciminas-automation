@@ -124,7 +124,7 @@ class Migration(migrations.Migration):
                         ],
                     ),
                 ),
-                ("observation", models.CharField(max_length=500)),
+                ("observation", models.CharField(max_length=500, blank=True)),
                 ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={

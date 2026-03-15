@@ -23,8 +23,8 @@ class BasePageCoordinates:
 
     # Provider selection process
     coord_locate_provider = (1122, 138)
-    coord_provider_search_bar = (417, 533)
-    coord_provider_selection = (414, 236)
+    coord_provider_search_bar = (417, 533)  # (417, 498)?
+    coord_provider_selection = (414, 236)  # (414, 245)?
 
     # Material inclusion process
     coord_include_provider = (199, 478)

@@ -11,6 +11,7 @@ from invoices_automation.models import EntryInvoiceQueue, ExitInvoiceQueue
 from invoices_automation.services import CANCEL_FLAGS
 from invoices_automation.services.entry_invoices_service import EntryInvoiceService
 from invoices_automation.services.exit_invoices_service.exit_in_state_sale import InStateInvoiceService
+from invoices_automation.services.exit_invoices_service.exit_stock_transfer import StockTransferInvoiceService
 from invoices_automation.services.lock_manager import automation_lock
 from invoices_automation.services.log_buffer import current_logs
 
@@ -19,6 +20,7 @@ from invoices_automation.utils.invoices_processing import process_invoice_batch
 service_class_map = {
     "EntryInvoiceService": EntryInvoiceService,
     "InStateInvoiceService": InStateInvoiceService,
+    "StockTransferInvoiceService": StockTransferInvoiceService,
 }
 
 invoice_model_map = {
