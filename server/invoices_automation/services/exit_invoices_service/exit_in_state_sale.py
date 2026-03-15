@@ -1,57 +1,18 @@
-from typing import Any, Literal, Optional
+from typing import Optional
 from playwright.sync_api._generated import Page
 
-from . import BaseServiceManager
 from core.settings import COMPANY_CNPJ, COMPANY_USERNAME, COMPANY_PASSWORD
+from invoices_automation.services.exit_invoices_service import ExitInvoiceService
 from invoices_automation.utils.page_coordinates import ExitInvoicePageCoordinates
 
-# Tipos de Notas de Saídas
-# 1. Transferencia de estoque
-# 2. Venda comum (dentro do Estado)  In Progress
-# 3. Venda comum (fora do Estado)
-# 4. Venda triangular  -  ANA NÃO SABE
+
+# In State (common sale) - Venda comum dentro do Estado
 
 
-class ExitInvoiceService(BaseServiceManager, ExitInvoicePageCoordinates):
-    """Service class for automating exit invoice processing.
-
-    Handles the automation of exit invoices (Notas Fiscais de Saída) in the system.
-    """
+class InStateInvoiceService(ExitInvoiceService, ExitInvoicePageCoordinates):
+    """Service class for automating In State Sale invoice processing."""
 
     name = "SAIDA - Venda comum (dentro do Estado)"
-
-    def __init__(
-        self,
-        provider: str,
-        materials: list[dict[str, Any]],
-        freight: str | int,
-        search_carrier_by: Literal["code", "name"],
-        carrier_target: str | int,
-        observation: str,
-        job_id: str,
-        current_iter: str = "",
-        *args,
-        **kwargs,
-    ) -> None:
-        """Initialize Exit Invoices Automation.
-
-        Args:
-            provider (str): Provider name.
-            materials (list[dict]): List of materials with their details.
-            freight (str | int): Freight by who.
-            search_carrier_by (Literal["code", "name"]): Method to search carrier.
-            carrier_target (str | int): Target value for carrier search (code or name).
-            observation (str): Additional observations for the invoice.
-            job_id (str): Unique job identifier.
-            current_iter (str, optional): Current iteration in batch processing. Defaults to "".
-        """
-        super().__init__(job_id=job_id, current_iter=current_iter)
-        self.provider = provider
-        self.materials = materials
-        self.freight = freight
-        self.search_carrier_by = search_carrier_by
-        self.carrier_target = carrier_target
-        self.observation = observation
 
     # TODO: REMOVE HEADFUL
     def run(self, headless: bool = False, devtools: bool = True) -> Optional[str]:
@@ -142,14 +103,13 @@ class ExitInvoiceService(BaseServiceManager, ExitInvoicePageCoordinates):
                 self.check_cancelled()
 
                 # Set carrier information
-                self.logger.info("Definindo informações de transportadora.")
-                self._click_element(page=logged_page, element_to_click=self.coord_select_carrier, delay=1)
-                if self.search_carrier_by == "code":
-                    self.logger.info(f"Buscando transportadora por código: {self.carrier_target}.")
-                    self._click_element(page=logged_page, element_to_click=self.coord_search_by_code, delay=1)
-                else:
-                    self.logger.info(f"Buscando transportadora por nome: {self.carrier_target}.")
-                    self._click_element(page=logged_page, element_to_click=self.coord_search_by_name, delay=1)
+                self.set_carrier_info(
+                    page_to_use=logged_page,
+                    coord_select_carrier=self.coord_select_carrier,
+                    coord_search_by_code=self.coord_search_by_code,
+                    coord_search_by_name=self.coord_search_by_name,
+                    carrier_target=self.carrier_target,
+                )
 
                 self._insert_data(
                     page=logged_page,
@@ -163,27 +123,25 @@ class ExitInvoiceService(BaseServiceManager, ExitInvoicePageCoordinates):
                 self.check_cancelled()
 
                 # Charging and payment process
-                self.logger.info("Excluindo cobrança e selecionando 'Sem Pagamentos'.")
-                self._click_element(page=logged_page, element_to_click=self.coord_charging, delay=2)
-                self._click_element(page=logged_page, element_to_click=self.coord_exclude, delay=2)
-                self._click_element(page=logged_page, element_to_click=self.coord_confirm_exclusion, delay=2)
-                self._click_element(page=logged_page, element_to_click=self.coord_payments, delay=2)
-                self._click_element(page=logged_page, element_to_click=self.coord_no_payments, delay=2)
-                self.check_cancelled()
+                self.set_charging_and_payment(
+                    page_to_use=logged_page,
+                    coord_charging=self.coord_charging,
+                    coord_exclude=self.coord_exclude,
+                    coord_confirm_exclusion=self.coord_confirm_exclusion,
+                    coord_payments=self.coord_payments,
+                    coord_no_payments=self.coord_no_payments,
+                )
 
                 # Observation inclusion process
-                self.logger.info("Incluindo observação.")
-                self._click_element(page=logged_page, element_to_click=self.coord_observation, delay=2)
-                self._click_element(page=logged_page, element_to_click=self.coord_expand_observation, delay=2)
-                self._click_element(page=logged_page, element_to_click=self.coord_search_observation_by_name, delay=2)
-                self._insert_data(
-                    page=logged_page,
-                    element_to_click=self.coord_search_observation,
-                    data_to_insert=self.observation,
-                    delay=2,
+                self.include_observation(
+                    page_to_use=logged_page,
+                    coord_observation=self.coord_observation,
+                    coord_expand_observation=self.coord_expand_observation,
+                    coord_search_observation_by=self.coord_search_observation_by_name,
+                    coord_search_observation=self.coord_search_observation,
+                    coord_close_observation_tab=self.coord_close_observation_tab,
+                    observation_to_insert=self.observation,
                 )
-                self._click_element(page=logged_page, element_to_click=self.coord_close_observation_tab, delay=2)
-                self.check_cancelled()
 
                 self.logger.info(f"FINALIZAÇÃO DE NF {self.name}:")
 

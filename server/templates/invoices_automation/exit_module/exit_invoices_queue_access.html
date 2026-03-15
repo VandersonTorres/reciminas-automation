@@ -86,7 +86,7 @@
                                     <a href="{% url 'edit_exit_invoice' invoice.pk %}" class="btn btn-sm btn-warning">✏️ Editar</a>
                                     <form
                                         method="post"
-                                        action="{% url 'emit_invoice' invoice.pk %}?service_class=ExitInvoiceService&invoice_model=ExitInvoiceQueue&access_invoices_view=access_exit_invoices_queue"
+                                        action="{% url 'emit_invoice' invoice.pk %}?service_class=InStateInvoiceService&invoice_model=ExitInvoiceQueue&access_invoices_view=access_exit_invoices_queue"
                                         style="display:inline;"
                                     >
                                         {% csrf_token %}
@@ -118,7 +118,7 @@
         <div class="mt-3 d-flex justify-content-center align-items-center">
             <form
                 method="post"
-                action="{% url 'start_batch_automation' %}?service_class=ExitInvoiceService&invoice_model=ExitInvoiceQueue&access_invoices_view=access_exit_invoices_queue"
+                action="{% url 'start_batch_automation' %}?service_class=InStateInvoiceService&invoice_model=ExitInvoiceQueue&access_invoices_view=access_exit_invoices_queue"
             >
                 {% csrf_token %}
                 <button class="btn btn-success">🚀 Iniciar Emissão</button>
