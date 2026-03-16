@@ -36,28 +36,6 @@
                 <h5 class="mb-4 text-white">MATERIAIS</h5>
 
                 {{ formset.management_form }}
-                <div id="empty-form" class="d-none">
-                    <div class="card p-3 mb-2 material-item-form">
-                        {% for hidden in formset.empty_form.hidden_fields %}
-                            {{ hidden }}
-                        {% endfor %}
-
-                        {% for field in formset.empty_form.visible_fields %}
-                            {% if field.name != "DELETE" and field.name != "discount" %}
-                                <div class="mb-2">
-                                    {{ field.label_tag }} {{ field }}
-                                    {% if field.errors %}
-                                        <div class="text-danger small">{{ field.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-
-                        <button type="button" class="btn btn-sm btn-outline-danger remove-material">
-                            🗑 Remover
-                        </button>
-                    </div>
-                </div>
 
                 <div id="materials-container">
                     {% if formset.non_form_errors %}
@@ -73,7 +51,9 @@
                             {% endfor %}
 
                             {% for field in item_form.visible_fields %}
-                                {% if field.name != "DELETE" and field.name != "discount" %}
+                                {% if field.name == "discount" %}
+                                    {{ field.as_hidden }}
+                                {% elif field.name != "DELETE" %}
                                     <div class="mb-2">
                                         {{ field.label_tag }} {{ field }}
                                         {% if field.errors %}
@@ -120,6 +100,30 @@
                 </div>
             </form>
 
+            <template id="empty-form" class="d-none">
+                <div class="card p-3 mb-2 material-item-form">
+                    {% for hidden in formset.empty_form.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+
+                    {% for field in formset.empty_form.visible_fields %}
+                        {% if field.name == "discount" %}
+                            {{ field.as_hidden }}
+                        {% elif field.name != "DELETE" %}
+                            <div class="mb-2">
+                                {{ field.label_tag }} {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-material">
+                        🗑 Remover
+                    </button>
+                </div>
+            </template>
             <hr>
             <div class="d-flex gap-2 mt-3 p-3">
                 <a href="{% url 'access_exit_invoices_queue' %}" class="btn btn-secondary">📋 Ir para Fila</a>

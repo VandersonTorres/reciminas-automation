@@ -34,8 +34,9 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                 with page.context.expect_page() as logged_page_event:
                     self.logger.info(f"Inicializando CNPJ {self.company_name}.")
                     page.locator("#buttonLogOn").click()
+                    page.locator("#buttonLogOn").dblclick()  # Adding redundance
                     self.check_cancelled()
-                    self._sleep_between_actions(seconds=15)
+                    self._sleep_between_actions(seconds=18)
 
                 # Capturing new tab
                 logged_page = logged_page_event.value
@@ -68,9 +69,6 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                 self._click_element(page=logged_page, element_to_click=self.coord_operation, delay=1)
                 self._click_element(page=logged_page, element_to_click=self.coord_select_exit, delay=1)
                 self.check_cancelled()
-                import pdb
-
-                pdb.set_trace()
 
                 # Provider selection process
                 self.logger.info("Expandindo lista de fornecedores.")
@@ -87,11 +85,9 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                     page=logged_page, element_to_click=self.coord_provider_selection, use_dblclick=True, delay=3
                 )
                 self.check_cancelled()
-                import pdb
-
-                pdb.set_trace()
 
                 # Select product transfer
+                self.logger.info("Selecionando natureza da operação.")
                 self._click_element(page=logged_page, element_to_click=self.coord_operation_nature)
                 self._insert_data(
                     page=logged_page,
@@ -100,9 +96,6 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                 )
                 self._click_element(page=logged_page, element_to_click=self.coord_close_selection)
                 self.check_cancelled()
-                import pdb
-
-                pdb.set_trace()
 
                 # Material inclusion process
                 for mat in self.materials:
@@ -123,7 +116,7 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                     )
                     self._click_element(page=logged_page, element_to_click=self.coord_quantity_selection)
                     self._click_element(page=logged_page, element_to_click=self.coord_empty_space)
-                    self._click_element(page=logged_page, element_to_click=self.coord_confirm_mat, use_dblclick=True)
+                    self._click_ele52ment(page=logged_page, element_to_click=self.coord_confirm_mat, use_dblclick=True)
                     self._click_element(page=logged_page, element_to_click=self.coord_close_mat_confirmation)
                     self._insert_data(
                         page=logged_page,
@@ -146,16 +139,13 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                     self._click_element(page=logged_page, element_to_click=self.coord_no_incidence_pis)
                     self._click_element(page=logged_page, element_to_click=self.coord_cofins)
                     self._click_element(page=logged_page, element_to_click=self.coord_tsc_cofins)
-                    self._click_element(page=logged_page, element_to_click=self.coord_no_incidence_cofins)
+                    self._click_element(page=logged_page, element_to_click=self.coord_zero_aliquot_cofins)
                     self._click_element(page=logged_page, element_to_click=self.coord_tsc_store_progress)
                     self.check_cancelled()
 
-                # Set Transport and Volumes
-                self.logger.info("Definindo Transporte e Volumes.")
-                self._click_element(page=logged_page, element_to_click=self.coord_transport_and_volumes, delay=1)
-                self.check_cancelled()
-
                 # Set carrier information
+                self.logger.info("Definindo Transportadora.")
+                self._click_element(page=logged_page, element_to_click=self.coord_transport_and_volumes, delay=1)
                 self.set_carrier_info(
                     page_to_use=logged_page,
                     coord_select_carrier=self.coord_select_carrier,

@@ -95,6 +95,11 @@ class EntryInvoiceItemForm(forms.ModelForm):
     def clean(self):
         cleaned = super().clean()
 
+        if self.cleaned_data.get("DELETE") or not self.has_changed():
+            # If an empty form was submitted.
+            # Which is valid when can_delete=True and the form is marked for deletion.
+            return cleaned
+
         material = cleaned.get("material")
         q = cleaned.get("material_quantity")
         p = cleaned.get("material_price")
@@ -123,9 +128,6 @@ EntryInvoiceItemFormSet = inlineformset_factory(
 
 # Exit Invoices Emission Form
 class ExitInvoiceForm(forms.ModelForm):
-    freight = forms.CharField(required=False, initial="0")
-    search_carrier_by = forms.CharField(required=False, initial="code")
-
     CARRIER_CODE_CHOICES = [
         ("18", "18 - RECIMINAS"),
         ("25", "25 - SUCATRANS"),
@@ -133,13 +135,20 @@ class ExitInvoiceForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.initial.get("modality") == "exit_stock_transfer" or (
-            self.instance and getattr(self.instance, "modality", None) == "exit_stock_transfer"
-        ):
+        modality = self.data.get("modality") or self.initial.get("modality") or getattr(self.instance, "modality", None)
+
+        if modality == "exit_stock_transfer":
             self.fields["carrier_code"].widget = forms.Select(
                 choices=self.CARRIER_CODE_CHOICES, attrs={"class": "form-select"}
             )
-            self.observation = forms.CharField(required=False, initial="")
+            self.fields["freight"].required = False
+            self.fields["freight"].initial = "0"
+            self.fields["search_carrier_by"].required = False
+            self.fields["search_carrier_by"].initial = "code"
+            self.fields["observation"].required = False
+            self.fields["observation"].initial = ""
+        else:
+            self.fields["observation"].required = True
 
     class Meta:
         model = ExitInvoiceQueue
@@ -173,7 +182,9 @@ class ExitInvoiceForm(forms.ModelForm):
 
 
 class ExitInvoiceItemForm(forms.ModelForm):
-    discount = forms.FloatField(required=False, initial=0)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["discount"].required = False
 
     class Meta:
         model = ExitInvoiceItem
@@ -197,12 +208,25 @@ class ExitInvoiceItemForm(forms.ModelForm):
             ),
         }
 
+    def clean_discount(self):
+        return self.cleaned_data.get("discount", 0) or 0.0
+
     def clean(self):
         cleaned = super().clean()
+
+        if self.cleaned_data.get("DELETE"):
+            return cleaned
+
+        if self.cleaned_data.get("DELETE") or not self.has_changed():
+            # If an empty form was submitted.
+            # Which is valid when can_delete=True and the form is marked for deletion.
+            return cleaned
+
         material = cleaned.get("material")
         q = cleaned.get("material_quantity")
         p = cleaned.get("material_price")
-        d = cleaned.get("discount") or 0
+        d = self.clean_discount()
+
         if any(v in [None, ""] for v in [material, q, p]):
             raise forms.ValidationError("Preencha todos os campos do material.")
         if any(v <= 0 for v in [q, p]):

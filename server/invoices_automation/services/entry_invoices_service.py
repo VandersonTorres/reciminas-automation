@@ -54,7 +54,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                     self.logger.info(f"Inicializando CNPJ {self.company_name}.")
                     page.locator("#buttonLogOn").click()
                     self.check_cancelled()
-                    self._sleep_between_actions(seconds=15)
+                    self._sleep_between_actions(seconds=18)
 
                 # Capturing new tab
                 logged_page = logged_page_event.value

@@ -23,8 +23,8 @@ class BasePageCoordinates:
 
     # Provider selection process
     coord_locate_provider = (1122, 138)
-    coord_provider_search_bar = (417, 533)  # (417, 498)?
-    coord_provider_selection = (414, 236)  # (414, 245)?
+    coord_provider_search_bar = (417, 533)
+    coord_provider_selection = (414, 236)
 
     # Material inclusion process
     coord_include_provider = (199, 478)
@@ -82,7 +82,8 @@ class ExitInvoicePageCoordinates(BasePageCoordinates):
     coord_select_exit = (409, 119)
 
     # Provider selection process
-
+    coord_provider_search_bar = (417, 498)
+    coord_provider_selection = (414, 270)
     # Material inclusion process
 
     # Set freight information
@@ -142,8 +143,8 @@ class StockTransferInvoicePageCoordinates(ExitInvoicePageCoordinates):
     coord_no_incidence_pis = (318, 514)
     coord_cofins = (343, 344)
     coord_tsc_cofins = (398, 408)
-    # Select 08 related to tax operation aliquot 0
-    coord_no_incidence_cofins = (403, 485)
+    # Select 06 related to tax operation aliquot 0
+    coord_zero_aliquot_cofins = (403, 485)
     coord_tsc_store_progress = (625, 697)
 
     # Set Transport and Volumes

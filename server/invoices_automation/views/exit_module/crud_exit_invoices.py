@@ -20,7 +20,7 @@ def access_exit_invoices_queue(request):
             invoice.status = "cancelled"
             invoice.save()
 
-    queue = ExitInvoiceQueue.objects.all().order_by("created_at")
+    queue = ExitInvoiceQueue.objects.all().order_by("created_at").reverse()
     paginator = Paginator(queue, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -40,6 +40,8 @@ def edit_exit_invoice(request, pk):
         post_data = request.POST.copy()
         if not post_data.get("modality"):
             post_data["modality"] = invoice.modality
+        if invoice.modality == "exit_stock_transfer":
+            post_data["provider"] = invoice.provider
 
         form = ExitInvoiceForm(post_data, instance=invoice)
         formset = ExitInvoiceItemFormSet(post_data, instance=invoice, prefix="items")
@@ -55,9 +57,15 @@ def edit_exit_invoice(request, pk):
         form = ExitInvoiceForm(instance=invoice)
         formset = ExitInvoiceItemFormSet(instance=invoice, prefix="items")
 
+    template_name = ""
+    if invoice.modality == "exit_stock_transfer":
+        template_name = "invoices_automation/exit_module/exit_invoices_stock_transfer_management.html"
+    elif invoice.modality == "exit_instate":
+        template_name = "invoices_automation/exit_module/exit_invoices_instate_sale_management.html"
+
     return render(
         request,
-        "invoices_automation/exit_module/exit_invoices_instate_sale_management.html",
+        template_name,
         {
             "form": form,
             "formset": formset,
