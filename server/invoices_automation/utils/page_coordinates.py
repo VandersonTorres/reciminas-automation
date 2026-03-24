@@ -39,7 +39,7 @@ class BasePageCoordinates:
     # Charging and payment process
     coord_charging = (517, 174)
     coord_exclude = (961, 476)
-    coord_confirm_exclusion = (671, 440)
+    coord_confirm_exclusion = (709, 483)  # Before: (671, 440)
     coord_payments = (904, 236)
     coord_no_payments = (791, 496)
 
@@ -143,8 +143,8 @@ class StockTransferInvoicePageCoordinates(ExitInvoicePageCoordinates):
     coord_no_incidence_pis = (318, 514)
     coord_cofins = (343, 344)
     coord_tsc_cofins = (398, 408)
-    # Select 06 related to tax operation aliquot 0
-    coord_zero_aliquot_cofins = (403, 485)
+    # Select 08 (No incidence)
+    coord_no_incidence_cofins = (403, 514)
     coord_tsc_store_progress = (625, 697)
 
     # Set Transport and Volumes

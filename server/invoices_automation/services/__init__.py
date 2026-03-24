@@ -199,14 +199,20 @@ class BaseServiceManager(AutomationControl):
 
         # Go to Reciminas ticker content
         self.logger.info(f"Selecionando ticker {self.company_name}.\n")
-        self._click_element(page=page_to_use, element_to_click=initial_ticker_selection, delay=1)
-        # Ensure the previous click works
+        self._click_element(page=page_to_use, element_to_click=initial_ticker_selection, delay=2)
+        self._click_element(
+            page=page_to_use,
+            element_to_click=initial_ticker_selection,
+            add_redundance=True,
+            delay=2,
+        )
+        # Ensure the previous clicks works
         self._click_element(
             page=page_to_use,
             element_to_click=initial_ticker_selection,
             use_dblclick=True,
             add_redundance=True,
-            delay=9,
+            delay=10,
         )
         self.check_cancelled()
 
@@ -226,7 +232,6 @@ class BaseServiceManager(AutomationControl):
         self._click_element(
             page=page_to_use,
             element_to_click=password_insertion,
-            use_dblclick=True,
             add_redundance=True,
             delay=2,
         )

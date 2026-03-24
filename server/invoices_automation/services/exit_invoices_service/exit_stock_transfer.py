@@ -34,7 +34,6 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                 with page.context.expect_page() as logged_page_event:
                     self.logger.info(f"Inicializando CNPJ {self.company_name}.")
                     page.locator("#buttonLogOn").click()
-                    page.locator("#buttonLogOn").dblclick()  # Adding redundance
                     self.check_cancelled()
                     self._sleep_between_actions(seconds=18)
 
@@ -89,6 +88,9 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                 # Select product transfer
                 self.logger.info("Selecionando natureza da operação.")
                 self._click_element(page=logged_page, element_to_click=self.coord_operation_nature)
+                self._click_element(
+                    page=logged_page, element_to_click=self.coord_operation_nature_search_bar, use_dblclick=True
+                )
                 self._insert_data(
                     page=logged_page,
                     element_to_click=self.coord_operation_nature_search_bar,
@@ -116,8 +118,7 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                     )
                     self._click_element(page=logged_page, element_to_click=self.coord_quantity_selection)
                     self._click_element(page=logged_page, element_to_click=self.coord_empty_space)
-                    self._click_ele52ment(page=logged_page, element_to_click=self.coord_confirm_mat, use_dblclick=True)
-                    self._click_element(page=logged_page, element_to_click=self.coord_close_mat_confirmation)
+                    self._click_element(page=logged_page, element_to_click=self.coord_confirm_mat, use_dblclick=True)
                     self._insert_data(
                         page=logged_page,
                         element_to_click=self.coord_quantity_selection,
@@ -139,7 +140,8 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                     self._click_element(page=logged_page, element_to_click=self.coord_no_incidence_pis)
                     self._click_element(page=logged_page, element_to_click=self.coord_cofins)
                     self._click_element(page=logged_page, element_to_click=self.coord_tsc_cofins)
-                    self._click_element(page=logged_page, element_to_click=self.coord_zero_aliquot_cofins)
+                    self._click_element(page=logged_page, element_to_click=self.coord_no_incidence_cofins)
+
                     self._click_element(page=logged_page, element_to_click=self.coord_tsc_store_progress)
                     self.check_cancelled()
 

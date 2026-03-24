@@ -37,7 +37,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
         self.materials = materials
         self.close_popup_confirmation = close_popup_confirmation
 
-    def run(self, headless: bool = False, devtools: bool = False) -> Optional[str]:
+    def run(self, headless: bool = True, devtools: bool = False) -> Optional[str]:
         """Run the Entry Invoices Automation"""
         try:
             self.logger.info(
