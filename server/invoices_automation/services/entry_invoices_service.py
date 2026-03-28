@@ -37,7 +37,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
         self.materials = materials
         self.close_popup_confirmation = close_popup_confirmation
 
-    def run(self, headless: bool = False, devtools: bool = False) -> Optional[str]:
+    def run(self, headless: bool = True, devtools: bool = False) -> Optional[str]:
         """Run the Entry Invoices Automation"""
         try:
             self.logger.info(
@@ -54,7 +54,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                     self.logger.info(f"Inicializando CNPJ {self.company_name}.")
                     page.locator("#buttonLogOn").click()
                     self.check_cancelled()
-                    self._sleep_between_actions(seconds=15)
+                    self._sleep_between_actions(seconds=18)
 
                 # Capturing new tab
                 logged_page = logged_page_event.value
@@ -110,13 +110,14 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                 self.logger.info(f"FINALIZAÇÃO DE NF {self.name}:")
 
                 # Charging and payment process
-                self.logger.info("Excluindo cobrança e selecionando 'Sem Pagamentos'.")
-                self._click_element(page=logged_page, element_to_click=self.coord_charging, delay=2)
-                self._click_element(page=logged_page, element_to_click=self.coord_exclude, delay=3)
-                self._click_element(page=logged_page, element_to_click=self.coord_confirm_exclusion, delay=2)
-                self._click_element(page=logged_page, element_to_click=self.coord_payments, delay=2)
-                self._click_element(page=logged_page, element_to_click=self.coord_no_payments, delay=2)
-                self.check_cancelled()
+                self.set_charging_and_payment(
+                    page_to_use=logged_page,
+                    coord_charging=self.coord_charging,
+                    coord_exclude=self.coord_exclude,
+                    coord_confirm_exclusion=self.coord_confirm_exclusion,
+                    coord_payments=self.coord_payments,
+                    coord_no_payments=self.coord_no_payments,
+                )
 
                 # Invoice visualization process
                 # Cancelling is no longer supported here

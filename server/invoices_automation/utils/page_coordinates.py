@@ -4,11 +4,10 @@ class BasePageCoordinates:
     Defines X/ Y axis based coordinates of the main operations.
 
     Inject the following JS into the devtools.console to discover coordinates per click:
-        ```
-        document.addEventListener("click", function(event) {
-            console.log("Coordinates (viewport): (", event.clientX, ",", event.clientY, ")");
-        });
-        ```
+        .. code-block:: javascript
+            document.addEventListener("click", function(event) {
+                console.log("Coordinates (viewport): (", event.clientX, ",", event.clientY, ")");
+            });
     """
 
     # Initial login process
@@ -40,7 +39,7 @@ class BasePageCoordinates:
     # Charging and payment process
     coord_charging = (517, 174)
     coord_exclude = (961, 476)
-    coord_confirm_exclusion = (671, 440)
+    coord_confirm_exclusion = (709, 483)  # Before: (671, 440)
     coord_payments = (904, 236)
     coord_no_payments = (791, 496)
 
@@ -83,7 +82,8 @@ class ExitInvoicePageCoordinates(BasePageCoordinates):
     coord_select_exit = (409, 119)
 
     # Provider selection process
-
+    coord_provider_search_bar = (417, 498)
+    coord_provider_selection = (414, 270)
     # Material inclusion process
 
     # Set freight information
@@ -105,6 +105,57 @@ class ExitInvoicePageCoordinates(BasePageCoordinates):
     coord_search_observation_by_name = (184, 157)
     coord_search_observation = (214, 560)
     coord_close_observation_tab = (1214, 104)
+
+    # Invoice visualization process
+
+    # Invoice saving and transmission process
+
+
+class StockTransferInvoicePageCoordinates(ExitInvoicePageCoordinates):
+    """(Exit) Stock Transfer Invoices specific page operational coordinates.
+
+    Stock Transfer process (Transferência de Estoque).
+    """
+
+    # Initial login process
+
+    # Main page operations
+
+    # Set operation type
+
+    # Provider selection process
+    coord_select_provider_by_code = (595, 255)
+
+    # Select product transfer
+    coord_operation_nature = (1025, 80)
+    coord_operation_nature_search_bar = (429, 517)
+    coord_close_selection = (1022, 556)
+
+    # Material inclusion process
+    # No discount to this invoice
+    # Click on "código de situação tributária CST"
+    coord_tax_situation_code = (777, 406)
+    # Select 41 (No taxation)
+    coord_no_taxation = (703, 537)
+    coord_pis = (288, 344)
+    coord_tsc_pis = (317, 409)
+    # Select 08 (No incidence)
+    coord_no_incidence_pis = (318, 514)
+    coord_cofins = (343, 344)
+    coord_tsc_cofins = (398, 408)
+    # Select 08 (No incidence)
+    coord_no_incidence_cofins = (403, 514)
+    coord_tsc_store_progress = (625, 697)
+
+    # Set Transport and Volumes
+
+    # Set carrier information by code ("18 - RECIMINAS" || "25 - SUCATRANS")
+
+    # Charging and payment process
+
+    # Observation inclusion process
+    coord_search_observation_by_code = (83, 155)
+    # Enter with the code "4" (referring to the transfer between establishments of the same owner)
 
     # Invoice visualization process
 

@@ -68,8 +68,8 @@ class Migration(migrations.Migration):
                     models.CharField(
                         choices=[
                             ("entry", "Entrada"),
-                            ("exit_instate", "Saída (Dentro do Estado)"),
-                            ("exit_outstate", "Saída (Fora do Estado)"),
+                            ("exit_instate", "Venda Comum (Dentro do Estado)"),
+                            ("exit_outstate", "Venda Comum (Fora do Estado)"),
                             ("exit_stock_transfer", "Saída (Transferência de Estoque)"),
                             ("exit_triangular_sale", "Saída (Venda Triangular)"),
                         ],
@@ -124,7 +124,7 @@ class Migration(migrations.Migration):
                         ],
                     ),
                 ),
-                ("observation", models.CharField(max_length=500)),
+                ("observation", models.CharField(max_length=500, blank=True)),
                 ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={

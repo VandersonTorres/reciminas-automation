@@ -118,7 +118,7 @@ def access_entry_invoices_queue(request):
             invoice.status = "cancelled"
             invoice.save()
 
-    queue = EntryInvoiceQueue.objects.all().order_by("created_at")
+    queue = EntryInvoiceQueue.objects.all().order_by("created_at").reverse()
     paginator = Paginator(queue, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)

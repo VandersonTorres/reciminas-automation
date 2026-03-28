@@ -199,14 +199,20 @@ class BaseServiceManager(AutomationControl):
 
         # Go to Reciminas ticker content
         self.logger.info(f"Selecionando ticker {self.company_name}.\n")
-        self._click_element(page=page_to_use, element_to_click=initial_ticker_selection, delay=1)
-        # Ensure the previous click works
+        self._click_element(page=page_to_use, element_to_click=initial_ticker_selection, delay=2)
+        self._click_element(
+            page=page_to_use,
+            element_to_click=initial_ticker_selection,
+            add_redundance=True,
+            delay=2,
+        )
+        # Ensure the previous clicks works
         self._click_element(
             page=page_to_use,
             element_to_click=initial_ticker_selection,
             use_dblclick=True,
             add_redundance=True,
-            delay=9,
+            delay=10,
         )
         self.check_cancelled()
 
@@ -226,7 +232,6 @@ class BaseServiceManager(AutomationControl):
         self._click_element(
             page=page_to_use,
             element_to_click=password_insertion,
-            use_dblclick=True,
             add_redundance=True,
             delay=2,
         )
@@ -371,6 +376,25 @@ class BaseServiceManager(AutomationControl):
             self._click_element(page=page_to_use, element_to_click=store_progress, delay=3)
             self.check_cancelled()
 
+    def set_charging_and_payment(
+        self,
+        page_to_use: Page,
+        coord_charging: tuple[int],
+        coord_exclude: tuple[int],
+        coord_confirm_exclusion: tuple[int],
+        coord_payments: tuple[int],
+        coord_no_payments: tuple[int],
+    ) -> None:
+        """Isolate actions for setting charging and payment options."""
+
+        self.logger.info("Excluindo cobrança e selecionando 'Sem Pagamentos'.")
+        self._click_element(page=page_to_use, element_to_click=coord_charging, delay=2)
+        self._click_element(page=page_to_use, element_to_click=coord_exclude, delay=2)
+        self._click_element(page=page_to_use, element_to_click=coord_confirm_exclusion, delay=2)
+        self._click_element(page=page_to_use, element_to_click=coord_payments, delay=2)
+        self._click_element(page=page_to_use, element_to_click=coord_no_payments, delay=2)
+        self.check_cancelled()
+
     def preview_invoice(
         self,
         page_to_use: Page,
@@ -433,7 +457,7 @@ class BaseServiceManager(AutomationControl):
         self._click_element(page=page_to_use, element_to_click=dont_send_email)
         self.logger.info(f"NF '{self.name}' para '{self.provider}' Transmitida com sucesso.")
 
-    # TODO: This is a poor way to warn client-side to finish the Log Fetcher(Handler) process.
+    # TODO: This is a workaround to warn client-side to finish the Log Fetcher(Handler) process.
     # Despite we are using sync playwright, when trying to manage the finishing process through django.Models,
     # we get a Django Error pointing to a sync-async operation
     def gracefully_terminate_process(self, provider) -> None:
