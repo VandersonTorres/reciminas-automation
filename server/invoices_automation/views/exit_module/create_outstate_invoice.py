@@ -8,9 +8,9 @@ from invoices_automation.forms import ExitInvoiceForm, ExitInvoiceItemFormSet
 from invoices_automation.models import ExitInvoiceQueue
 
 
-# Create invoice Exit - In State Sale
+# Create invoice Exit - Out State Sale
 @login_required
-def create_instate_sale_invoice(request, invoice_pk=None):
+def create_outstate_sale_invoice(request, invoice_pk=None):
     invoice = None
     if invoice_pk:
         invoice = get_object_or_404(ExitInvoiceQueue, pk=invoice_pk)
@@ -22,7 +22,7 @@ def create_instate_sale_invoice(request, invoice_pk=None):
 
         post_data = request.POST.copy()
         if not post_data.get("modality"):
-            post_data["modality"] = "exit_instate"
+            post_data["modality"] = "exit_outstate"
 
         invoice_form = ExitInvoiceForm(post_data, instance=invoice)
         material_formset = ExitInvoiceItemFormSet(
@@ -43,7 +43,7 @@ def create_instate_sale_invoice(request, invoice_pk=None):
                 # re-render template
                 return render(
                     request,
-                    "invoices_automation/exit_module/exit_invoices_instate_sale_management.html",
+                    "invoices_automation/exit_module/exit_invoices_outstate_sale_management.html",
                     {
                         "form": invoice_form,
                         "formset": material_formset,
@@ -66,14 +66,14 @@ def create_instate_sale_invoice(request, invoice_pk=None):
                 emission_url = (
                     f"{url}?"
                     "invoice_model=ExitInvoiceQueue&"
-                    "service_class=InStateInvoiceService&"
+                    "service_class=OutStateInvoiceService&"
                     "access_invoices_view=access_exit_invoices_queue"
                 )
                 return redirect(emission_url)
 
             elif action == "add_to_queue":
                 messages.success(request, "Nota adicionada à fila!")
-                return redirect("create_instate_sale_invoice")
+                return redirect("create_outstate_sale_invoice")
         else:
             if not material_formset.is_valid():
                 material_formset.non_form_errors = "Material sem especificações"
@@ -83,7 +83,7 @@ def create_instate_sale_invoice(request, invoice_pk=None):
             # re-render template
             return render(
                 request,
-                "invoices_automation/exit_module/exit_invoices_instate_sale_management.html",
+                "invoices_automation/exit_module/exit_invoices_outstate_sale_management.html",
                 {
                     "form": invoice_form,
                     "formset": material_formset,
@@ -92,7 +92,7 @@ def create_instate_sale_invoice(request, invoice_pk=None):
             )
 
     else:
-        initial_data = {"modality": "exit_instate"}
+        initial_data = {"modality": "exit_outstate"}
         invoice_form = ExitInvoiceForm(instance=invoice, initial=initial_data)
         material_formset = ExitInvoiceItemFormSet(
             instance=invoice if is_edit else None,
@@ -101,7 +101,7 @@ def create_instate_sale_invoice(request, invoice_pk=None):
 
     return render(
         request,
-        "invoices_automation/exit_module/exit_invoices_instate_sale_management.html",
+        "invoices_automation/exit_module/exit_invoices_outstate_sale_management.html",
         {
             "form": invoice_form,
             "formset": material_formset,

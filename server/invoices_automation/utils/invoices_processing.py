@@ -5,10 +5,12 @@ from invoices_automation.models import BaseInvoiceModel
 from invoices_automation.services import CANCEL_FLAGS
 from invoices_automation.services.entry_invoices_service import EntryInvoiceService
 from invoices_automation.services.exit_invoices_service.exit_in_state_sale import InStateInvoiceService
+from invoices_automation.services.exit_invoices_service.exit_out_state_sale import OutStateInvoiceService
 from invoices_automation.services.exit_invoices_service.exit_stock_transfer import StockTransferInvoiceService
 from invoices_automation.services.lock_manager import automation_lock
+from . import service_class_modality_map
 
-ServiceType = EntryInvoiceService | InStateInvoiceService | StockTransferInvoiceService
+ServiceType = EntryInvoiceService | InStateInvoiceService | OutStateInvoiceService | StockTransferInvoiceService
 
 
 def build_material_payload(invoice: BaseInvoiceModel) -> list[dict[str, Any]]:
@@ -34,7 +36,7 @@ def build_service(service_class: ServiceType, invoice: BaseInvoiceModel, job_id:
             current_iter=current_iter,
             close_popup_confirmation=invoice.close_popup,
         )
-    elif service_class in (InStateInvoiceService, StockTransferInvoiceService):
+    elif service_class in (InStateInvoiceService, OutStateInvoiceService, StockTransferInvoiceService):
         return service_class(
             provider=invoice.provider,
             materials=serialized_materials,
@@ -75,12 +77,12 @@ def process_single_invoice(
 
 
 def process_invoice_batch(
-    service_class: ServiceType,
     invoices: list[BaseInvoiceModel],
     job_id: str,
 ) -> None:
     with automation_lock:
         for idx, invoice in enumerate(invoices):
+            service_class: ServiceType = service_class_modality_map[invoice.modality]
             if CANCEL_FLAGS.get(job_id) or CANCEL_FLAGS.get("__GLOBAL_CANCEL__"):
                 invoice.status = "cancelled"
                 invoice.save()

@@ -9,19 +9,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from invoices_automation.models import EntryInvoiceQueue, ExitInvoiceQueue
 from invoices_automation.services import CANCEL_FLAGS
-from invoices_automation.services.entry_invoices_service import EntryInvoiceService
-from invoices_automation.services.exit_invoices_service.exit_in_state_sale import InStateInvoiceService
-from invoices_automation.services.exit_invoices_service.exit_stock_transfer import StockTransferInvoiceService
 from invoices_automation.services.lock_manager import automation_lock
 from invoices_automation.services.log_buffer import current_logs
 
 from invoices_automation.utils.invoices_processing import process_invoice_batch
-
-service_class_map = {
-    "EntryInvoiceService": EntryInvoiceService,
-    "InStateInvoiceService": InStateInvoiceService,
-    "StockTransferInvoiceService": StockTransferInvoiceService,
-}
 
 invoice_model_map = {
     "EntryInvoiceQueue": EntryInvoiceQueue,
@@ -35,18 +26,11 @@ def emit_invoice(request, invoice_pk):
         messages.error(request, "Outra automação já está em andamento.")
         return redirect("dashboard")
 
-    service_class_name = request.GET.get("service_class")
     invoice_model_name = request.GET.get("invoice_model")
     access_invoices_view = request.GET.get("access_invoices_view")
-
-    try:
-        invoice_model = invoice_model_map[invoice_model_name]
-        service_class = service_class_map[service_class_name]
-    except KeyError:
-        messages.error(request, f"Serviço {service_class_name} não implementado")
-        return redirect("dashboard")
-
+    invoice_model = invoice_model_map[invoice_model_name]
     invoice = get_object_or_404(invoice_model, pk=invoice_pk)
+
     if invoice.status != "pending":
         messages.error(request, "Nota não está pendente.")
         return redirect(access_invoices_view)
@@ -55,7 +39,7 @@ def emit_invoice(request, invoice_pk):
     request.session["job_id"] = job_id
 
     threading.Thread(
-        target=lambda: process_invoice_batch(service_class, [invoice], job_id),
+        target=lambda: process_invoice_batch([invoice], job_id),
         daemon=True,
     ).start()
 
@@ -68,16 +52,9 @@ def start_batch_automation(request):
         messages.error(request, "Outra automação já está em andamento.")
         return redirect("dashboard")
 
-    service_class_name = request.GET.get("service_class")
     invoice_model_name = request.GET.get("invoice_model")
     access_invoices_view = request.GET.get("access_invoices_view")
-
-    try:
-        invoice_model = invoice_model_map[invoice_model_name]
-        service_class = service_class_map[service_class_name]
-    except KeyError:
-        messages.error(request, f"Serviço {service_class_name} não implementado")
-        return redirect("dashboard")
+    invoice_model = invoice_model_map[invoice_model_name]
 
     invoices = list(invoice_model.objects.filter(user=request.user, status="pending"))
     if not invoices:
@@ -88,7 +65,7 @@ def start_batch_automation(request):
     request.session["job_id"] = job_id
 
     threading.Thread(
-        target=lambda: process_invoice_batch(service_class, invoices, job_id),
+        target=lambda: process_invoice_batch(invoices, job_id),
         daemon=True,
     ).start()
 

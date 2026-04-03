@@ -62,6 +62,8 @@ def edit_exit_invoice(request, pk):
         template_name = "invoices_automation/exit_module/exit_invoices_stock_transfer_management.html"
     elif invoice.modality == "exit_instate":
         template_name = "invoices_automation/exit_module/exit_invoices_instate_sale_management.html"
+    elif invoice.modality == "exit_outstate":
+        template_name = "invoices_automation/exit_module/exit_invoices_outstate_sale_management.html"
 
     return render(
         request,

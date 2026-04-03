@@ -125,7 +125,9 @@ class AutomationControl:
 
         self._sleep_between_actions(seconds=delay)
 
-    def _insert_data(self, page: Page, element_to_click: tuple[int], data_to_insert: str, delay: int = 4) -> None:
+    def _insert_data(
+        self, page: Page, element_to_click: tuple[int], data_to_insert: str, delay: int = 4, press_enter: bool = False
+    ) -> None:
         """Insert data into a field by clicking and typing.
 
         Args:
@@ -133,9 +135,13 @@ class AutomationControl:
             element_to_click (tuple[int]): X and Y axis coordinates to click.
             data_to_insert (str): Data to be typed.
             delay (int): Delay after clicking before typing.
+            press_enter (bool): Whether to press Enter after typing.
         """
         self._click_element(page=page, element_to_click=element_to_click, delay=delay)
         page.keyboard.type(data_to_insert)
+        if press_enter:
+            page.keyboard.press("Enter")
+            self._sleep_between_actions(seconds=2)
 
 
 class BaseServiceManager(AutomationControl):
@@ -199,10 +205,11 @@ class BaseServiceManager(AutomationControl):
 
         # Go to Reciminas ticker content
         self.logger.info(f"Selecionando ticker {self.company_name}.\n")
-        self._click_element(page=page_to_use, element_to_click=initial_ticker_selection, delay=2)
+        self._click_element(page=page_to_use, element_to_click=initial_ticker_selection, delay=3)
         self._click_element(
             page=page_to_use,
             element_to_click=initial_ticker_selection,
+            use_dblclick=True,
             add_redundance=True,
             delay=2,
         )
