@@ -14,8 +14,7 @@ class InStateInvoiceService(ExitInvoiceService, InstateSaleInvoicePageCoordinate
 
     name = "SAIDA - Venda comum (dentro do Estado)"
 
-    # TODO: REMOVE HEADFUL
-    def run(self, headless: bool = False, devtools: bool = True) -> Optional[str]:
+    def run(self, headless: bool = True, devtools: bool = False) -> Optional[str]:
         """Run the exit invoice automation process (Common Sale - Within State)"""
         try:
             self.logger.info(
@@ -34,11 +33,9 @@ class InStateInvoiceService(ExitInvoiceService, InstateSaleInvoicePageCoordinate
                     self.check_cancelled()
                     self._sleep_between_actions(seconds=18)
 
-                # Capturing new tab
+                # Capturing new tab and going to certified page
                 logged_page = logged_page_event.value
-                logged_page.wait_for_load_state("load", timeout=60000)
-                self.check_cancelled()
-                self._sleep_between_actions()
+                self._navigate_to_certified_area(logged_page, self.coord_home_auth, COMPANY_CNPJ)
 
                 # Set Account
                 self.set_account(

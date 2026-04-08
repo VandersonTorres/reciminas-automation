@@ -15,6 +15,7 @@ class BasePageCoordinates:
     coord_user_insertion = (366, 365)
     coord_password_insertion = (430, 430)
     coord_log_in = (365, 583)
+    coord_home_auth = (561, 485)
 
     # Main page operations
     coord_fiscal_tab = (511, 30)

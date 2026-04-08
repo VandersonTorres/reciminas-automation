@@ -156,6 +156,7 @@ class BaseServiceManager(AutomationControl):
 
     name: str  # Name of the service
     approval_status: Literal["inactive", "pending", "approved", "cancelled"] = "inactive"
+    certified_url = "https://cloud.gruposygecom.com.br/~~CLOUD-APP9/software/html5.html"
 
     def __init__(self, job_id: str, current_iter: str = "") -> None:
         super().__init__()
@@ -263,6 +264,25 @@ class BaseServiceManager(AutomationControl):
             delay=10,
         )
         self.check_cancelled()
+
+    def _navigate_to_certified_area(self, page_to_use: Page, coord_home_auth: tuple[int], cnpj: str) -> None:
+        """Isolate actions for navigating to the certified area of the ERP"""
+
+        page_to_use.wait_for_load_state("load", timeout=60000)
+        self.logger.info(f"Navegando para URL certificada: {self.certified_url}")
+        page_to_use.goto(self.certified_url, wait_until="load", timeout=60000)
+        self.check_cancelled()
+        self._sleep_between_actions(seconds=10)
+        self._click_element(page=page_to_use, element_to_click=coord_home_auth, delay=2)
+        self._insert_data(
+            page=page_to_use,
+            element_to_click=coord_home_auth,
+            data_to_insert=cnpj,
+            delay=1,
+        )
+        page_to_use.keyboard.press("Enter")
+        self.check_cancelled()
+        self._sleep_between_actions()
 
     def prepare_options(
         self,

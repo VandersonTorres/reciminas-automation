@@ -15,8 +15,7 @@ class OutStateInvoiceService(ExitInvoiceService, OutstateSaleInvoicePageCoordina
     name = "SAIDA - Venda comum (fora do Estado)"
     icms_aliq_percentual = "12"  # 12% for out of state sales, as tax regulations
 
-    # TODO: REMOVE HEADFUL
-    def run(self, headless: bool = False, devtools: bool = True) -> Optional[str]:
+    def run(self, headless: bool = True, devtools: bool = False) -> Optional[str]:
         """Run the exit invoice automation process (Common Sale - Out of State)"""
         try:
             self.logger.info(
@@ -35,11 +34,9 @@ class OutStateInvoiceService(ExitInvoiceService, OutstateSaleInvoicePageCoordina
                     self.check_cancelled()
                     self._sleep_between_actions(seconds=18)
 
-                # Capturing new tab
+                # Capturing new tab and going to certified page
                 logged_page = logged_page_event.value
-                logged_page.wait_for_load_state("load", timeout=60000)
-                self.check_cancelled()
-                self._sleep_between_actions()
+                self._navigate_to_certified_area(logged_page, self.coord_home_auth, COMPANY_CNPJ)
 
                 # Set Account
                 self.set_account(
