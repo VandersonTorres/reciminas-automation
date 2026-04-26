@@ -3,19 +3,20 @@ from playwright.sync_api._generated import Page
 
 from core.settings import COMPANY_CNPJ, COMPANY_USERNAME, COMPANY_PASSWORD
 from invoices_automation.services.exit_invoices_service import ExitInvoiceService
-from invoices_automation.utils.page_coordinates import InstateSaleInvoicePageCoordinates
+from invoices_automation.utils.page_coordinates import OutstateSaleInvoicePageCoordinates
 
 
-# In State (common sale) - Venda comum dentro do Estado
+# Out State (common sale) - Venda comum fora do Estado
 
 
-class InStateInvoiceService(ExitInvoiceService, InstateSaleInvoicePageCoordinates):
-    """Service class for automating In State Sale invoice processing."""
+class OutStateInvoiceService(ExitInvoiceService, OutstateSaleInvoicePageCoordinates):
+    """Service class for automating Out State Sale invoice processing."""
 
-    name = "SAIDA - Venda comum (dentro do Estado)"
+    name = "SAIDA - Venda comum (fora do Estado)"
+    icms_aliq_percentual = "12"  # 12% for out of state sales, as tax regulations
 
     def run(self, headless: bool = True, devtools: bool = False) -> Optional[str]:
-        """Run the exit invoice automation process (Common Sale - Within State)"""
+        """Run the exit invoice automation process (Common Sale - Out of State)"""
         try:
             self.logger.info(
                 f"Iniciando {self.name} '{self.current_iter}'. NF: {self.provider}\n\t" f"- CONTA: {COMPANY_USERNAME}\n"
@@ -73,33 +74,53 @@ class InStateInvoiceService(ExitInvoiceService, InstateSaleInvoicePageCoordinate
                 )
 
                 # Material inclusion process
-                self.include_materials(
-                    page_to_use=logged_page,
-                    materials=self.materials,
-                    include_provider=self.coord_include_provider,
-                    insert_mat_code=self.coord_insert_mat_code,
-                    quantity_selection=self.coord_quantity_selection,
-                    empty_space=self.coord_empty_space,
-                    confirm_mat=self.coord_confirm_mat,
-                    close_mat_confirmation=self.coord_close_mat_confirmation,
-                    price=self.coord_price,
-                    discount=self.coord_discount,
-                    store_progress=self.coord_store_progress,
-                )
+                for mat in self.materials:
+                    self.logger.info("INCLUSÃO DE MATERIAL:")
+                    self._click_element(page=logged_page, element_to_click=self.coord_include_provider)
+                    self.logger.info(
+                        "Registrando:\n\t"
+                        f"Código {mat['material_code']}\n\t"
+                        f"Quantidade {mat['material_quantity']}\n\t"
+                        f"Preço {mat['material_price']}\n\t"
+                        f"Desconto {mat['discount']}.\n"
+                    )
 
-                # Set freight information
-                self.logger.info("Definindo informações de frete.")
-                self._click_element(page=logged_page, element_to_click=self.coord_transport_and_volumes, delay=1)
-                self._insert_data(
-                    page=logged_page,
-                    element_to_click=self.coord_freight_by,
-                    data_to_insert=str(self.freight),
-                    delay=1,
-                )
-                self._click_element(page=logged_page, element_to_click=self.coord_freight_by, delay=1)
-                self.check_cancelled()
+                    self._insert_data(
+                        page=logged_page,
+                        element_to_click=self.coord_insert_mat_code,
+                        data_to_insert=mat["material_code"],
+                    )
+                    self._click_element(page=logged_page, element_to_click=self.coord_quantity_selection)
+                    self._click_element(page=logged_page, element_to_click=self.coord_empty_space)
+                    self._click_element(page=logged_page, element_to_click=self.coord_confirm_mat, use_dblclick=True)
+                    self._insert_data(
+                        page=logged_page,
+                        element_to_click=self.coord_quantity_selection,
+                        data_to_insert=str(mat["material_quantity"]),
+                        delay=2,
+                    )
+                    self._insert_data(
+                        page=logged_page,
+                        element_to_click=self.coord_price,
+                        data_to_insert=str(mat["material_price"]),
+                        delay=2,
+                    )
+                    self.check_cancelled()
+
+                    self._insert_data(
+                        page=logged_page,
+                        element_to_click=self.coord_icms_aliq,
+                        data_to_insert=self.icms_aliq_percentual,
+                        delay=2,
+                        press_enter=True,
+                    )
+
+                    self._click_element(page=logged_page, element_to_click=self.coord_store_progress)
+                    self.check_cancelled()
 
                 # Set carrier information
+                self.logger.info("Definindo Transportadora.")
+                self._click_element(page=logged_page, element_to_click=self.coord_transport_and_volumes, delay=1)
                 self.set_carrier_info(
                     page_to_use=logged_page,
                     coord_select_carrier=self.coord_select_carrier,
@@ -107,6 +128,17 @@ class InStateInvoiceService(ExitInvoiceService, InstateSaleInvoicePageCoordinate
                     coord_search_by_name=self.coord_search_by_name,
                     carrier_target=self.carrier_target,
                 )
+
+                self._insert_data(
+                    page=logged_page,
+                    element_to_click=self.coord_search_carrier,
+                    data_to_insert=self.carrier_target,
+                    delay=1,
+                )
+                self._click_element(
+                    page=logged_page, element_to_click=self.coord_confirm_carrier, use_dblclick=True, delay=1
+                )
+                self.check_cancelled()
 
                 self._insert_data(
                     page=logged_page,
@@ -141,6 +173,9 @@ class InStateInvoiceService(ExitInvoiceService, InstateSaleInvoicePageCoordinate
                 )
 
                 self.logger.info(f"FINALIZAÇÃO DE NF {self.name}:")
+                import pdb
+
+                pdb.set_trace()
 
                 # Invoice visualization process
                 # Cancelling is no longer supported here

@@ -137,7 +137,7 @@ class ExitInvoiceForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         modality = self.data.get("modality") or self.initial.get("modality") or getattr(self.instance, "modality", None)
 
-        if modality == "exit_stock_transfer":
+        if modality in ("exit_outstate", "exit_stock_transfer"):
             self.fields["carrier_code"].widget = forms.Select(
                 choices=self.CARRIER_CODE_CHOICES, attrs={"class": "form-select"}
             )
@@ -145,8 +145,9 @@ class ExitInvoiceForm(forms.ModelForm):
             self.fields["freight"].initial = "0"
             self.fields["search_carrier_by"].required = False
             self.fields["search_carrier_by"].initial = "code"
-            self.fields["observation"].required = False
-            self.fields["observation"].initial = ""
+            if modality == "exit_stock_transfer":
+                self.fields["observation"].required = False
+                self.fields["observation"].initial = ""
         else:
             self.fields["observation"].required = True
 
@@ -177,7 +178,9 @@ class ExitInvoiceForm(forms.ModelForm):
             "search_carrier_by": forms.Select(attrs={"class": "form-select"}),
             "carrier_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome do transportador"}),
             "carrier_code": forms.TextInput(attrs={"class": "form-control", "placeholder": "Código do transportador"}),
-            "observation": forms.Textarea(attrs={"class": "form-control", "placeholder": "Observações", "rows": 2}),
+            "observation": forms.Textarea(
+                attrs={"class": "form-control", "placeholder": "Ex: PIS E COFINS", "rows": 2}
+            ),
         }
 
 

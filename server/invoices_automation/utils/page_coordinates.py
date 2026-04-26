@@ -15,6 +15,7 @@ class BasePageCoordinates:
     coord_user_insertion = (366, 365)
     coord_password_insertion = (430, 430)
     coord_log_in = (365, 583)
+    coord_home_auth = (561, 485)
 
     # Main page operations
     coord_fiscal_tab = (511, 30)
@@ -68,10 +69,7 @@ class EntryInvoicePageCoordinates(BasePageCoordinates):
 
 
 class ExitInvoicePageCoordinates(BasePageCoordinates):
-    """Exit Invoices specific page operational coordinates.
-
-    In State Sale (Venda comum) process.
-    """
+    """Exit Invoices specific page operational coordinates"""
 
     # Initial login process
 
@@ -105,6 +103,43 @@ class ExitInvoicePageCoordinates(BasePageCoordinates):
     coord_search_observation_by_name = (184, 157)
     coord_search_observation = (214, 560)
     coord_close_observation_tab = (1214, 104)
+
+    # Invoice visualization process
+
+    # Invoice saving and transmission process
+
+
+class InstateSaleInvoicePageCoordinates(ExitInvoicePageCoordinates):
+    """(Exit) Instate Sale Invoices specific page operational coordinates.
+
+    In State Sale process (Venda comum dentro do estado).
+    """
+
+    pass
+
+
+class OutstateSaleInvoicePageCoordinates(ExitInvoicePageCoordinates):
+    """(Exit) Outstate Sale Invoices specific page operational coordinates.
+
+    Outstate Sale process (Venda comum fora do estado).
+    """
+
+    # Initial login process
+
+    # Main page operations
+
+    # Set operation type
+
+    # Material inclusion process
+    coord_icms_aliq = (1001, 517)
+
+    # Set Transport and Volumes
+
+    # Set carrier information by code ("18 - RECIMINAS" || "25 - SUCATRANS")
+
+    # Charging and payment process
+
+    # Observation inclusion process
 
     # Invoice visualization process
 

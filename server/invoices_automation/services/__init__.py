@@ -125,7 +125,9 @@ class AutomationControl:
 
         self._sleep_between_actions(seconds=delay)
 
-    def _insert_data(self, page: Page, element_to_click: tuple[int], data_to_insert: str, delay: int = 4) -> None:
+    def _insert_data(
+        self, page: Page, element_to_click: tuple[int], data_to_insert: str, delay: int = 4, press_enter: bool = False
+    ) -> None:
         """Insert data into a field by clicking and typing.
 
         Args:
@@ -133,9 +135,13 @@ class AutomationControl:
             element_to_click (tuple[int]): X and Y axis coordinates to click.
             data_to_insert (str): Data to be typed.
             delay (int): Delay after clicking before typing.
+            press_enter (bool): Whether to press Enter after typing.
         """
         self._click_element(page=page, element_to_click=element_to_click, delay=delay)
         page.keyboard.type(data_to_insert)
+        if press_enter:
+            page.keyboard.press("Enter")
+            self._sleep_between_actions(seconds=2)
 
 
 class BaseServiceManager(AutomationControl):
@@ -150,6 +156,7 @@ class BaseServiceManager(AutomationControl):
 
     name: str  # Name of the service
     approval_status: Literal["inactive", "pending", "approved", "cancelled"] = "inactive"
+    certified_url = "https://cloud.gruposygecom.com.br/~~CLOUD-APP9/software/html5.html"
 
     def __init__(self, job_id: str, current_iter: str = "") -> None:
         super().__init__()
@@ -199,10 +206,11 @@ class BaseServiceManager(AutomationControl):
 
         # Go to Reciminas ticker content
         self.logger.info(f"Selecionando ticker {self.company_name}.\n")
-        self._click_element(page=page_to_use, element_to_click=initial_ticker_selection, delay=2)
+        self._click_element(page=page_to_use, element_to_click=initial_ticker_selection, delay=3)
         self._click_element(
             page=page_to_use,
             element_to_click=initial_ticker_selection,
+            use_dblclick=True,
             add_redundance=True,
             delay=2,
         )
@@ -256,6 +264,25 @@ class BaseServiceManager(AutomationControl):
             delay=10,
         )
         self.check_cancelled()
+
+    def _navigate_to_certified_area(self, page_to_use: Page, coord_home_auth: tuple[int], cnpj: str) -> None:
+        """Isolate actions for navigating to the certified area of the ERP"""
+
+        page_to_use.wait_for_load_state("load", timeout=60000)
+        self.logger.info(f"Navegando para URL certificada: {self.certified_url}")
+        page_to_use.goto(self.certified_url, wait_until="load", timeout=60000)
+        self.check_cancelled()
+        self._sleep_between_actions(seconds=10)
+        self._click_element(page=page_to_use, element_to_click=coord_home_auth, delay=2)
+        self._insert_data(
+            page=page_to_use,
+            element_to_click=coord_home_auth,
+            data_to_insert=cnpj,
+            delay=1,
+        )
+        page_to_use.keyboard.press("Enter")
+        self.check_cancelled()
+        self._sleep_between_actions()
 
     def prepare_options(
         self,
