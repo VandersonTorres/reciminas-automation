@@ -22,5 +22,9 @@ RUN python server/manage.py collectstatic --noinput
 # Expose port for the application
 EXPOSE 8000
 
+# Install basic utilities for waiting on services and handling timezones
+RUN apt-get update && apt-get install -y netcat-openbsd
+# RUN apt-get update && apt-get install -y tzdata  -- IGNORE ---
+
 # Startup command
 ENTRYPOINT [ "./entrypoint.sh" ]

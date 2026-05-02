@@ -16,3 +16,5 @@ env/*.env
 .python-version
 db.sqlite3
 staticfiles/
+downloads/
+data/

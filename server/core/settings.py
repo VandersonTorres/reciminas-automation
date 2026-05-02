@@ -32,6 +32,8 @@ logging.basicConfig(
     force=True,
 )
 
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -41,16 +43,6 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # TODO: Disable DEBUG Mode
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-# TODO: Add the domain here
-ALLOWED_HOSTS = ["*"]
-
-# TODO: Remove this in production
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.ngrok-free.app",
-    "https://*.trycloudflare.com",
-]
 
 # TODO: Uncomment this line for PROD
 # STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
@@ -58,8 +50,8 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Application definition
 
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False  # Set to True when using HTTPS (with domain)
+CSRF_COOKIE_SECURE = False  # Set to True when using HTTPS (with domain)
 
 INSTALLED_APPS = [
     "invoices_automation.apps.InvoicesAutomationConfig",
@@ -73,13 +65,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -106,13 +98,23 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if ENVIRONMENT == "production":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("POSTGRES_DB"),
+            "USER": os.getenv("POSTGRES_USER"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+            "HOST": os.getenv("DB_HOST", "db"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+        }
     }
-}
-
+    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+    DEBUG = False
+else:
+    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "data/db.sqlite3"}}
+    ALLOWED_HOSTS = ["*"]
+    DEBUG = True
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
