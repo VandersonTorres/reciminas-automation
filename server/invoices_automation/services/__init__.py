@@ -83,12 +83,12 @@ class AutomationControl:
                     self.logger.error(f"Erro durante automação: {exc_val}")
 
                 self.logger.warning("Fechando o contexto do playwright.")
-                if hasattr(self, "_context"):
-                    self._context.close()
-                if hasattr(self, "_browser"):
-                    self._browser.close()
-                if hasattr(self, "_pw"):
-                    self._pw.stop()
+                if hasattr(inner_self, "_context"):
+                    inner_self._context.close()
+                if hasattr(inner_self, "_browser"):
+                    inner_self._browser.close()
+                if hasattr(inner_self, "_pw"):
+                    inner_self._pw.stop()
 
         return PageContext()
 
