@@ -19,12 +19,9 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / "subdir".
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MEDIA_URL = "/downloads/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "downloads")
-
 # TODO: Production Settings for MEDIA
-# MEDIA_URL = "/media/"
-# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "downloads"
 
 load_dotenv()  # Loads env vars from .env file if it exists
 
@@ -44,10 +41,10 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # TODO: Disable DEBUG Mode
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # TODO: Add the domain here
-ALLOWED_HOSTS = ["*", ".ngrok-free.app", ".trycloudflare.com"]
+ALLOWED_HOSTS = ["*"]
 
 # TODO: Remove this in production
 CSRF_TRUSTED_ORIGINS = [
@@ -57,8 +54,12 @@ CSRF_TRUSTED_ORIGINS = [
 
 # TODO: Uncomment this line for PROD
 # STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Application definition
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 INSTALLED_APPS = [
     "invoices_automation.apps.InvoicesAutomationConfig",
@@ -78,6 +79,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -146,7 +148,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

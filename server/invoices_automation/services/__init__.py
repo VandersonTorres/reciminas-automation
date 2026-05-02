@@ -65,18 +65,30 @@ class AutomationControl:
 
         class PageContext:
             def __enter__(inner_self):
-                self._pw = sync_playwright().start()
-                self._browser = self._pw.chromium.launch(headless=headless, devtools=devtools)
-                self._context = self._browser.new_context()
-                self._page = self._context.new_page()
+                inner_self._pw = sync_playwright().start()
+                inner_self._browser = inner_self._pw.chromium.launch(
+                    headless=headless,
+                    devtools=devtools,
+                )
+                inner_self._context = inner_self._browser.new_context()
+                inner_self._page = inner_self._context.new_page()
+
                 self.logger.info(f"Navegando para {url}...")
-                self._page.goto(url, wait_until="load", timeout=60000)
-                return self._page
+                inner_self._page.goto(url, wait_until="load", timeout=60000)
+
+                return inner_self._page
 
             def __exit__(inner_self, exc_type, exc_val, exc_tb):
+                if exc_type:
+                    self.logger.error(f"Erro durante automação: {exc_val}")
+
                 self.logger.warning("Fechando o contexto do playwright.")
-                self._browser.close()
-                self._pw.stop()
+                if hasattr(self, "_context"):
+                    self._context.close()
+                if hasattr(self, "_browser"):
+                    self._browser.close()
+                if hasattr(self, "_pw"):
+                    self._pw.stop()
 
         return PageContext()
 

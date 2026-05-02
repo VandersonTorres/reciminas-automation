@@ -3,6 +3,7 @@ import uuid
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import close_old_connections
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.csrf import csrf_exempt
@@ -18,6 +19,15 @@ invoice_model_map = {
     "EntryInvoiceQueue": EntryInvoiceQueue,
     "ExitInvoiceQueue": ExitInvoiceQueue,
 }
+
+
+def run_job(invoice_ids: list[int], model_name: str, job_id: str) -> None:
+    close_old_connections()
+
+    model = invoice_model_map[model_name]
+    invoices = list(model.objects.filter(pk__in=invoice_ids))
+
+    process_invoice_batch(invoices, job_id)
 
 
 @login_required
@@ -39,7 +49,8 @@ def emit_invoice(request, invoice_pk):
     request.session["job_id"] = job_id
 
     threading.Thread(
-        target=lambda: process_invoice_batch([invoice], job_id),
+        target=run_job,
+        args=([invoice.pk], invoice_model_name, job_id),
         daemon=True,
     ).start()
 
@@ -65,7 +76,8 @@ def start_batch_automation(request):
     request.session["job_id"] = job_id
 
     threading.Thread(
-        target=lambda: process_invoice_batch(invoices, job_id),
+        target=run_job,
+        args=([invoice.pk for invoice in invoices], invoice_model_name, job_id),
         daemon=True,
     ).start()
 
