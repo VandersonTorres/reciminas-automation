@@ -168,7 +168,9 @@ class BaseServiceManager(AutomationControl):
 
     name: str  # Name of the service
     approval_status: Literal["inactive", "pending", "approved", "cancelled"] = "inactive"
-    certified_url = "https://cloud.gruposygecom.com.br/~~CLOUD-APP9/software/html5.html"
+    certified_url = "https://cloud.gruposygecom.com.br/~~CLOUD-{app}/software/html5.html"
+    certified_app_server = "APP9"
+    alt_app_server = "APP3"
 
     def __init__(self, job_id: str, current_iter: str = "") -> None:
         super().__init__()
@@ -281,8 +283,25 @@ class BaseServiceManager(AutomationControl):
         """Isolate actions for navigating to the certified area of the ERP"""
 
         page_to_use.wait_for_load_state("load", timeout=60000)
-        self.logger.info(f"Navegando para URL certificada: {self.certified_url}")
-        page_to_use.goto(self.certified_url, wait_until="load", timeout=60000)
+        target_url = self.certified_url.format(app=self.certified_app_server)
+        self.logger.info(f"Navegando para URL certificada: {target_url}")
+        page_to_use.goto(target_url, wait_until="load", timeout=60000)
+        if title := page_to_use.query_selector("h1"):
+            page_to_use.on("close", lambda: print("❌ Página fechada"))
+            page_to_use.on("popup", lambda p: print("🆕 Popup aberto:", p))
+            page_to_use.on("framenavigated", lambda f: print("➡️ Navegou para:", f.url))
+            title_text = title.text_content()
+            if "HTTP TARGET SERVER NOT AVAILABLE" in title_text:
+                self._sleep_between_actions()
+                self.logger.error("Erro ao acessar área certificada. O servidor de destino não está disponível.")
+
+                # Inject js to avoid unexpected close
+                page_to_use.add_init_script("window.close = () => console.log('NO CLOSE');")
+
+                target_url = self.certified_url.format(app=self.alt_app_server)
+                self.logger.info(f"Acessando servidor alternativo: {target_url}")
+                page_to_use.goto(target_url, wait_until="load", timeout=60000)
+
         self.check_cancelled()
         self._sleep_between_actions(seconds=10)
         self._click_element(page=page_to_use, element_to_click=coord_home_auth, delay=2)
@@ -302,6 +321,7 @@ class BaseServiceManager(AutomationControl):
         fiscal_tab: tuple[int],
         invoice_control: tuple[int],
         register: tuple[int],
+        close_viewport_warning: tuple[int],
     ) -> None:
         """Isolate actions for preparing options on the initial ERP Page"""
 
@@ -314,6 +334,8 @@ class BaseServiceManager(AutomationControl):
         self.logger.info("Abrindo guia 'Controle de Nota Fiscal'.")
         self._click_element(page=page_to_use, element_to_click=invoice_control, delay=1)
         self.check_cancelled()
+
+        self._click_element(page=page_to_use, element_to_click=close_viewport_warning, delay=1, add_redundance=True)
 
         # Open Registry
         self.logger.info("Abrindo 'Cadastro'.")
