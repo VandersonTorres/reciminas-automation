@@ -56,6 +56,7 @@ class OutStateInvoiceService(ExitInvoiceService, OutstateSaleInvoicePageCoordina
                     fiscal_tab=self.coord_fiscal_tab,
                     invoice_control=self.coord_invoice_control,
                     register=self.coord_register,
+                    close_viewport_warning=self.coord_close_viewport_warning,
                 )
 
                 # Set Operation Type

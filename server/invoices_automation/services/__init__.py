@@ -65,18 +65,30 @@ class AutomationControl:
 
         class PageContext:
             def __enter__(inner_self):
-                self._pw = sync_playwright().start()
-                self._browser = self._pw.chromium.launch(headless=headless, devtools=devtools)
-                self._context = self._browser.new_context()
-                self._page = self._context.new_page()
+                inner_self._pw = sync_playwright().start()
+                inner_self._browser = inner_self._pw.chromium.launch(
+                    headless=headless,
+                    devtools=devtools,
+                )
+                inner_self._context = inner_self._browser.new_context()
+                inner_self._page = inner_self._context.new_page()
+
                 self.logger.info(f"Navegando para {url}...")
-                self._page.goto(url, wait_until="load", timeout=60000)
-                return self._page
+                inner_self._page.goto(url, wait_until="load", timeout=60000)
+
+                return inner_self._page
 
             def __exit__(inner_self, exc_type, exc_val, exc_tb):
+                if exc_type:
+                    self.logger.error(f"Erro durante automação: {exc_val}")
+
                 self.logger.warning("Fechando o contexto do playwright.")
-                self._browser.close()
-                self._pw.stop()
+                if hasattr(inner_self, "_context"):
+                    inner_self._context.close()
+                if hasattr(inner_self, "_browser"):
+                    inner_self._browser.close()
+                if hasattr(inner_self, "_pw"):
+                    inner_self._pw.stop()
 
         return PageContext()
 
@@ -156,7 +168,9 @@ class BaseServiceManager(AutomationControl):
 
     name: str  # Name of the service
     approval_status: Literal["inactive", "pending", "approved", "cancelled"] = "inactive"
-    certified_url = "https://cloud.gruposygecom.com.br/~~CLOUD-APP9/software/html5.html"
+    certified_url = "https://cloud.gruposygecom.com.br/~~CLOUD-{app}/software/html5.html"
+    certified_app_server = "APP9"
+    alt_app_server = "APP3"
 
     def __init__(self, job_id: str, current_iter: str = "") -> None:
         super().__init__()
@@ -269,8 +283,22 @@ class BaseServiceManager(AutomationControl):
         """Isolate actions for navigating to the certified area of the ERP"""
 
         page_to_use.wait_for_load_state("load", timeout=60000)
-        self.logger.info(f"Navegando para URL certificada: {self.certified_url}")
-        page_to_use.goto(self.certified_url, wait_until="load", timeout=60000)
+        target_url = self.certified_url.format(app=self.certified_app_server)
+        self.logger.info(f"Navegando para URL certificada: {target_url}")
+        page_to_use.goto(target_url, wait_until="load", timeout=60000)
+        if title := page_to_use.query_selector("h1"):
+            title_text = title.text_content()
+            if "HTTP TARGET SERVER NOT AVAILABLE" in title_text:
+                self._sleep_between_actions()
+                self.logger.error("Erro ao acessar área certificada. O servidor de destino não está disponível.")
+
+                # Inject js to avoid unexpected close
+                page_to_use.add_init_script("window.close = () => console.log('NO CLOSE');")
+
+                target_url = self.certified_url.format(app=self.alt_app_server)
+                self.logger.info(f"Acessando servidor alternativo: {target_url}")
+                page_to_use.goto(target_url, wait_until="load", timeout=60000)
+
         self.check_cancelled()
         self._sleep_between_actions(seconds=10)
         self._click_element(page=page_to_use, element_to_click=coord_home_auth, delay=2)
@@ -290,6 +318,7 @@ class BaseServiceManager(AutomationControl):
         fiscal_tab: tuple[int],
         invoice_control: tuple[int],
         register: tuple[int],
+        close_viewport_warning: tuple[int],
     ) -> None:
         """Isolate actions for preparing options on the initial ERP Page"""
 
@@ -302,6 +331,8 @@ class BaseServiceManager(AutomationControl):
         self.logger.info("Abrindo guia 'Controle de Nota Fiscal'.")
         self._click_element(page=page_to_use, element_to_click=invoice_control, delay=1)
         self.check_cancelled()
+
+        self._click_element(page=page_to_use, element_to_click=close_viewport_warning, delay=1, add_redundance=True)
 
         # Open Registry
         self.logger.info("Abrindo 'Cadastro'.")

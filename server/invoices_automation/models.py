@@ -99,7 +99,7 @@ class ExitInvoiceQueue(BaseInvoiceModel):
     observation = models.CharField(max_length=500, blank=True)
 
     def __str__(self):
-        return f"{self.provider} - {self.id} (Saída)"
+        return f"{self.provider} - {self.id} (Saída | {self.modality})"
 
     def clean(self):
         super().clean()
