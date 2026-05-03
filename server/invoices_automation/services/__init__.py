@@ -287,9 +287,6 @@ class BaseServiceManager(AutomationControl):
         self.logger.info(f"Navegando para URL certificada: {target_url}")
         page_to_use.goto(target_url, wait_until="load", timeout=60000)
         if title := page_to_use.query_selector("h1"):
-            page_to_use.on("close", lambda: print("❌ Página fechada"))
-            page_to_use.on("popup", lambda p: print("🆕 Popup aberto:", p))
-            page_to_use.on("framenavigated", lambda f: print("➡️ Navegou para:", f.url))
             title_text = title.text_content()
             if "HTTP TARGET SERVER NOT AVAILABLE" in title_text:
                 self._sleep_between_actions()
