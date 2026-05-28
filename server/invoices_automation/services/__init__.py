@@ -284,6 +284,10 @@ class BaseServiceManager(AutomationControl):
 
         page_to_use.wait_for_load_state("load", timeout=60000)
         target_url = self.certified_url.format(app=self.certified_app_server)
+        if page_to_use.url == target_url:
+            self.logger.info("Já estamos na URL certificada.")
+            return
+
         self.logger.info(f"Navegando para URL certificada: {target_url}")
         page_to_use.goto(target_url, wait_until="load", timeout=60000)
         if title := page_to_use.query_selector("h1"):
