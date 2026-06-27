@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 from typing import Any
 
 from invoices_automation.models import BaseInvoiceModel
@@ -14,6 +15,7 @@ ServiceType = EntryInvoiceService | InStateInvoiceService | OutStateInvoiceServi
 
 
 def build_material_payload(invoice: BaseInvoiceModel) -> list[dict[str, Any]]:
+    items = list(invoice.items.all())
     return [
         {
             "material_code": item.material.code,
@@ -21,7 +23,7 @@ def build_material_payload(invoice: BaseInvoiceModel) -> list[dict[str, Any]]:
             "material_price": item.material_price,
             "discount": item.discount,
         }
-        for item in invoice.items.all()
+        for item in items
     ]
 
 
@@ -67,6 +69,7 @@ def process_single_invoice(
         if invoice_path:
             invoice.status = "done"
             invoice.invoice_path = invoice_path.replace("downloads/", "")
+            invoice.invoice_path = str(Path(invoice_path).name)
         else:
             invoice.status = "cancelled"
 

@@ -58,7 +58,9 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
 
                 # Capturing new tab and going to certified page
                 logged_page = logged_page_event.value
-                self._navigate_to_certified_area(logged_page, self.coord_home_auth, COMPANY_CNPJ)
+                self._navigate_to_certified_area(
+                    page_to_use=logged_page, coord_home_auth=self.coord_home_auth, cnpj=COMPANY_CNPJ
+                )
 
                 # Set Account
                 self.set_account(
@@ -78,6 +80,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                     fiscal_tab=self.coord_fiscal_tab,
                     invoice_control=self.coord_invoice_control,
                     register=self.coord_register,
+                    close_viewport_warning=self.coord_close_viewport_warning,
                 )
 
                 self.set_provider(

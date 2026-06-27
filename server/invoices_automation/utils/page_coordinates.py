@@ -60,6 +60,7 @@ class BasePageCoordinates:
     coord_empty_space = (30, 10)
     coord_close_unwanted_popup = (782, 441)
     coord_close_unwanted_popup_alt = (713, 444)
+    coord_close_viewport_warning = (847, 493)
 
 
 class EntryInvoicePageCoordinates(BasePageCoordinates):

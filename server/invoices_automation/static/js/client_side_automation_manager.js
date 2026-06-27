@@ -26,7 +26,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 .then(response => response.json())
                 .then(data => {
                     const logsEl = document.getElementById("logs");
+                    const shouldScroll = isNearBottom(logsEl);
                     logsEl.innerText = data.logs.join("\n");
+
+                    if (shouldScroll) {
+                        logsEl.scrollTop = logsEl.scrollHeight;
+                    }
                     const lastLines = data.logs.slice(-2).join("\n");
 
                     if (lastLines.includes("Automação cancelada")) {
@@ -41,6 +46,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 });
         }
+    }
+
+    function isNearBottom(element) {
+        return element.scrollHeight - element.scrollTop - element.clientHeight < 50;
     }
 
     function updateAlertCancelled() {
@@ -66,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (spinner) {
             spinner.style.display = "none";
         }
-        
+
         fetch(urls.clearLogs, { method: "POST" })
             .then((response) => response.json())
             .then((data) => console.log("Logs limpos:", data))
