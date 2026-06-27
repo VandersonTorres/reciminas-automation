@@ -11,6 +11,7 @@ services:
     volumes:
       - ./downloads:/app/server/downloads
       - ./data:/app/server/data
+      - ./staticfiles:/app/server/staticfiles
     depends_on:
       - db
     restart: always

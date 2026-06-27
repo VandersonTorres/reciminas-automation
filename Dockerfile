@@ -16,9 +16,6 @@ RUN chmod +x entrypoint.sh
 # Create media folder
 RUN mkdir -p /app/server/downloads
 
-# Collect static files
-RUN python server/manage.py collectstatic --noinput
-
 # Expose port for the application
 EXPOSE 8000
 
