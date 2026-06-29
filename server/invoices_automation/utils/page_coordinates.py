@@ -61,6 +61,7 @@ class BasePageCoordinates:
     coord_close_unwanted_popup = (782, 441)
     coord_close_unwanted_popup_alt = (713, 444)
     coord_close_viewport_warning = (847, 493)
+    coord_close_viewport_warning_alt = (821, 471)
 
 
 class EntryInvoicePageCoordinates(BasePageCoordinates):
@@ -78,7 +79,7 @@ class ExitInvoicePageCoordinates(BasePageCoordinates):
 
     # Set operation type
     coord_operation = (450, 79)
-    coord_select_exit = (409, 119)
+    coord_select_exit = (439, 106)
 
     # Provider selection process
     coord_provider_search_bar = (417, 498)
@@ -175,12 +176,12 @@ class StockTransferInvoicePageCoordinates(ExitInvoicePageCoordinates):
     coord_no_taxation = (703, 537)
     coord_pis = (288, 344)
     coord_tsc_pis = (317, 409)
-    # Select 08 (No incidence)
-    coord_no_incidence_pis = (318, 514)
+    # Select 07 (Exempt)
+    coord_no_incidence_pis = (318, 500)
     coord_cofins = (343, 344)
     coord_tsc_cofins = (398, 408)
-    # Select 08 (No incidence)
-    coord_no_incidence_cofins = (403, 514)
+    # Select 07 (Exempt)
+    coord_no_incidence_cofins = (403, 500)
     coord_tsc_store_progress = (625, 697)
 
     # Set Transport and Volumes

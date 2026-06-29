@@ -323,6 +323,7 @@ class BaseServiceManager(AutomationControl):
         invoice_control: tuple[int],
         register: tuple[int],
         close_viewport_warning: tuple[int],
+        close_viewport_warning_alt: Optional[tuple[int]] = None,
     ) -> None:
         """Isolate actions for preparing options on the initial ERP Page"""
 
@@ -337,6 +338,11 @@ class BaseServiceManager(AutomationControl):
         self.check_cancelled()
 
         self._click_element(page=page_to_use, element_to_click=close_viewport_warning, delay=1, add_redundance=True)
+
+        if close_viewport_warning_alt:
+            self._click_element(
+                page=page_to_use, element_to_click=close_viewport_warning_alt, delay=1, add_redundance=True
+            )
 
         # Open Registry
         self.logger.info("Abrindo 'Cadastro'.")
