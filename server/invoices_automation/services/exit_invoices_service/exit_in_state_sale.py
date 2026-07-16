@@ -57,6 +57,7 @@ class InStateInvoiceService(ExitInvoiceService, InstateSaleInvoicePageCoordinate
                     register=self.coord_register,
                     close_viewport_warning=self.coord_close_viewport_warning,
                     close_viewport_warning_alt=self.coord_close_viewport_warning_alt,
+                    close_experience_warning=self.coord_close_experience_warning,
                 )
 
                 # Set Operation Type
@@ -87,6 +88,7 @@ class InStateInvoiceService(ExitInvoiceService, InstateSaleInvoicePageCoordinate
                     price=self.coord_price,
                     discount=self.coord_discount,
                     store_progress=self.coord_store_progress,
+                    close_material_inclusion_warning=self.coord_close_material_inclusion_warning,
                 )
 
                 # Set freight information

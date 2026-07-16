@@ -324,6 +324,7 @@ class BaseServiceManager(AutomationControl):
         register: tuple[int],
         close_viewport_warning: tuple[int],
         close_viewport_warning_alt: Optional[tuple[int]] = None,
+        close_experience_warning: Optional[tuple[int]] = None,
     ) -> None:
         """Isolate actions for preparing options on the initial ERP Page"""
 
@@ -336,6 +337,11 @@ class BaseServiceManager(AutomationControl):
         self.logger.info("Abrindo guia 'Controle de Nota Fiscal'.")
         self._click_element(page=page_to_use, element_to_click=invoice_control, delay=1)
         self.check_cancelled()
+
+        if close_experience_warning:
+            self._click_element(
+                page=page_to_use, element_to_click=close_experience_warning, delay=1, add_redundance=True
+            )
 
         self._click_element(page=page_to_use, element_to_click=close_viewport_warning, delay=1, add_redundance=True)
 
@@ -397,6 +403,7 @@ class BaseServiceManager(AutomationControl):
         price: tuple[int],
         discount: tuple[int],
         store_progress: tuple[int],
+        close_material_inclusion_warning: Optional[tuple[int]] = None,
     ) -> None:
         """Isolate actions for including materials on the Invoice"""
 
@@ -420,6 +427,8 @@ class BaseServiceManager(AutomationControl):
             self._click_element(page=page_to_use, element_to_click=empty_space)
             self._click_element(page=page_to_use, element_to_click=confirm_mat, use_dblclick=True)
             self._click_element(page=page_to_use, element_to_click=close_mat_confirmation)
+            self._click_element(page=page_to_use, element_to_click=quantity_selection)
+
             self._insert_data(
                 page=page_to_use,
                 element_to_click=quantity_selection,
@@ -427,6 +436,8 @@ class BaseServiceManager(AutomationControl):
                 delay=2,
             )
             self.check_cancelled()
+
+            self._click_element(page=page_to_use, element_to_click=price)
             self._insert_data(
                 page=page_to_use,
                 element_to_click=price,
@@ -434,6 +445,11 @@ class BaseServiceManager(AutomationControl):
                 delay=2,
             )
             self.check_cancelled()
+
+            if close_material_inclusion_warning:
+                self._click_element(page=page_to_use, element_to_click=close_material_inclusion_warning, delay=2)
+
+            self._click_element(page=page_to_use, element_to_click=discount)
             self._insert_data(
                 page=page_to_use,
                 element_to_click=discount,
@@ -441,7 +457,7 @@ class BaseServiceManager(AutomationControl):
                 delay=2,
             )
 
-            self._click_element(page=page_to_use, element_to_click=store_progress, delay=3)
+            self._click_element(page=page_to_use, element_to_click=store_progress, add_redundance=True, delay=3)
             self.check_cancelled()
 
     def set_charging_and_payment(

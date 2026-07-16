@@ -17,7 +17,7 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
     product_transfer_code = "6152"
     same_owner_stablishments_code = "4"
 
-    def run(self, headless: bool = True, devtools: bool = False) -> Optional[str]:
+    def run(self, headless: bool = False, devtools: bool = True) -> Optional[str]:
         """Run the Stock Transfer invoice automation process."""
         try:
             self.logger.info(
@@ -60,6 +60,7 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                     register=self.coord_register,
                     close_viewport_warning=self.coord_close_viewport_warning,
                     close_viewport_warning_alt=self.coord_close_viewport_warning_alt,
+                    close_experience_warning=self.coord_close_experience_warning,
                 )
 
                 # Set Operation Type
@@ -131,6 +132,10 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
                         delay=2,
                     )
                     self.check_cancelled()
+
+                    self._click_element(
+                        page=logged_page, element_to_click=self.coord_close_material_inclusion_warning, delay=2
+                    )
 
                     self._click_element(page=logged_page, element_to_click=self.coord_tax_situation_code)
                     self._click_element(page=logged_page, element_to_click=self.coord_no_taxation)

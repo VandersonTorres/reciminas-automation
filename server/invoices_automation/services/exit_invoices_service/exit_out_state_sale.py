@@ -58,6 +58,7 @@ class OutStateInvoiceService(ExitInvoiceService, OutstateSaleInvoicePageCoordina
                     register=self.coord_register,
                     close_viewport_warning=self.coord_close_viewport_warning,
                     close_viewport_warning_alt=self.coord_close_viewport_warning_alt,
+                    close_experience_warning=self.coord_close_experience_warning,
                 )
 
                 # Set Operation Type
@@ -108,6 +109,10 @@ class OutStateInvoiceService(ExitInvoiceService, OutstateSaleInvoicePageCoordina
                         delay=2,
                     )
                     self.check_cancelled()
+
+                    self._click_element(
+                        page=logged_page, element_to_click=self.coord_close_material_inclusion_warning, delay=2
+                    )
 
                     self._insert_data(
                         page=logged_page,
@@ -175,9 +180,6 @@ class OutStateInvoiceService(ExitInvoiceService, OutstateSaleInvoicePageCoordina
                 )
 
                 self.logger.info(f"FINALIZAÇÃO DE NF {self.name}:")
-                import pdb
-
-                pdb.set_trace()
 
                 # Invoice visualization process
                 # Cancelling is no longer supported here

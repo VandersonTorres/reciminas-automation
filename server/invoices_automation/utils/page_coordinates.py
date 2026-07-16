@@ -40,7 +40,7 @@ class BasePageCoordinates:
     # Charging and payment process
     coord_charging = (517, 174)
     coord_exclude = (961, 476)
-    coord_confirm_exclusion = (709, 483)  # Before: (671, 440)
+    coord_confirm_exclusion = (688, 462)  # Before: (671, 440), (709, 483)
     coord_payments = (904, 236)
     coord_no_payments = (791, 496)
 
@@ -62,6 +62,8 @@ class BasePageCoordinates:
     coord_close_unwanted_popup_alt = (713, 444)
     coord_close_viewport_warning = (847, 493)
     coord_close_viewport_warning_alt = (821, 471)
+    coord_close_material_inclusion_warning = (1025, 256)
+    coord_close_experience_warning = (878, 359)
 
 
 class EntryInvoicePageCoordinates(BasePageCoordinates):

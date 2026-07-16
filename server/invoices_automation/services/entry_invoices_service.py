@@ -37,7 +37,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
         self.materials = materials
         self.close_popup_confirmation = close_popup_confirmation
 
-    def run(self, headless: bool = True, devtools: bool = False) -> Optional[str]:
+    def run(self, headless: bool = False, devtools: bool = True) -> Optional[str]:
         """Run the Entry Invoices Automation"""
         try:
             self.logger.info(
@@ -82,6 +82,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                     register=self.coord_register,
                     close_viewport_warning=self.coord_close_viewport_warning,
                     close_viewport_warning_alt=self.coord_close_viewport_warning_alt,
+                    close_experience_warning=self.coord_close_experience_warning,
                 )
 
                 self.set_provider(
@@ -107,6 +108,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
                     price=self.coord_price,
                     discount=self.coord_discount,
                     store_progress=self.coord_store_progress,
+                    close_material_inclusion_warning=self.coord_close_material_inclusion_warning,
                 )
 
                 self.logger.info(f"FINALIZAÇÃO DE NF {self.name}:")
