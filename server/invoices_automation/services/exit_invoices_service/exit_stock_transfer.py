@@ -17,7 +17,7 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
     product_transfer_code = "6152"
     same_owner_stablishments_code = "4"
 
-    def run(self, headless: bool = False, devtools: bool = True) -> Optional[str]:
+    def run(self, headless: bool = True, devtools: bool = False) -> Optional[str]:
         """Run the Stock Transfer invoice automation process."""
         try:
             self.logger.info(
