@@ -21,6 +21,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
         job_id: str,
         current_iter: str = "",
         close_popup_confirmation: bool = False,
+        which_filial: str = "default",
         *args,
         **kwargs,
     ) -> None:
@@ -31,8 +32,9 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
             materials (list[dict]): List of materials with their details.
             job_id (str): Unique job identifier.
             current_iter (str, optional): Current iteration in batch processing. Defaults to "".
+            which_filial (str, optional): Filial to select in the ERP. Defaults to "default".
         """
-        super().__init__(job_id=job_id, current_iter=current_iter)
+        super().__init__(job_id=job_id, current_iter=current_iter, which_filial=which_filial)
         self.provider = provider
         self.materials = materials
         self.close_popup_confirmation = close_popup_confirmation
@@ -77,6 +79,7 @@ class EntryInvoiceService(BaseServiceManager, EntryInvoicePageCoordinates):
 
                 self.prepare_options(
                     page_to_use=logged_page,
+                    filial_selection=self.coord_select_filial,
                     fiscal_tab=self.coord_fiscal_tab,
                     invoice_control=self.coord_invoice_control,
                     register=self.coord_register,

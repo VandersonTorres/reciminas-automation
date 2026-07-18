@@ -62,10 +62,11 @@ class MaterialForm(forms.ModelForm):
 class EntryInvoiceForm(forms.ModelForm):
     class Meta:
         model = EntryInvoiceQueue
-        fields = ["provider"]
-        labels = {"provider": "Fornecedor"}
+        fields = ["provider", "which_filial"]
+        labels = {"provider": "Fornecedor", "which_filial": "Filial"}
         widgets = {
             "provider": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome completo"}),
+            "which_filial": forms.Select(attrs={"class": "form-select"}),
         }
 
 
@@ -156,6 +157,7 @@ class ExitInvoiceForm(forms.ModelForm):
         fields = [
             "modality",
             "provider",
+            "which_filial",
             "freight",
             "search_carrier_by",
             "carrier_name",
@@ -165,6 +167,7 @@ class ExitInvoiceForm(forms.ModelForm):
         labels = {
             "modality": "Modalidade",
             "provider": "Fornecedor",
+            "which_filial": "Filial",
             "freight": "Tipo de Frete",
             "search_carrier_by": "Buscar Transportador por",
             "carrier_name": "Nome do Transportador",
@@ -174,6 +177,7 @@ class ExitInvoiceForm(forms.ModelForm):
         widgets = {
             "modality": forms.Select(attrs={"class": "form-select"}),
             "provider": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome completo"}),
+            "which_filial": forms.Select(attrs={"class": "form-select"}),
             "freight": forms.Select(attrs={"class": "form-select"}),
             "search_carrier_by": forms.Select(attrs={"class": "form-select"}),
             "carrier_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome do transportador"}),

@@ -20,6 +20,7 @@ class ExitInvoiceService(BaseServiceManager, ExitInvoicePageCoordinates):
         observation: str,
         job_id: str,
         current_iter: str = "",
+        which_filial: str = "default",
         *args,
         **kwargs,
     ) -> None:
@@ -34,8 +35,9 @@ class ExitInvoiceService(BaseServiceManager, ExitInvoicePageCoordinates):
             observation (str): Additional observations for the invoice.
             job_id (str): Unique job identifier.
             current_iter (str, optional): Current iteration in batch processing. Defaults to "".
+            which_filial (str, optional): Filial to select in the ERP. Defaults to "default".
         """
-        super().__init__(job_id=job_id, current_iter=current_iter)
+        super().__init__(job_id=job_id, current_iter=current_iter, which_filial=which_filial)
         self.provider = provider
         self.materials = materials
         self.freight = freight

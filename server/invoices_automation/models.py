@@ -33,6 +33,19 @@ class BaseInvoiceModel(models.Model):
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     provider = models.CharField(max_length=255)
+    which_filial = models.CharField(
+        max_length=50,
+        choices=[
+            ("", "Selecione a Filial (Opcional)"),
+            ("bahia", "Bahia"),
+            ("rj", "Rio de Janeiro"),
+            ("mt", "Mato Grosso"),
+            ("varejo", "Varejo"),
+            ("jba", "JBA"),
+        ],
+        default="",
+        blank=True,
+    )
     close_popup = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(

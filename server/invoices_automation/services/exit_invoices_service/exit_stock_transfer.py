@@ -55,6 +55,7 @@ class StockTransferInvoiceService(ExitInvoiceService, StockTransferInvoicePageCo
 
                 self.prepare_options(
                     page_to_use=logged_page,
+                    filial_selection=self.coord_select_filial,
                     fiscal_tab=self.coord_fiscal_tab,
                     invoice_control=self.coord_invoice_control,
                     register=self.coord_register,

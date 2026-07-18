@@ -37,6 +37,7 @@ def build_service(service_class: ServiceType, invoice: BaseInvoiceModel, job_id:
             job_id=job_id,
             current_iter=current_iter,
             close_popup_confirmation=invoice.close_popup,
+            which_filial=invoice.which_filial,
         )
     elif service_class in (InStateInvoiceService, OutStateInvoiceService, StockTransferInvoiceService):
         return service_class(
@@ -48,6 +49,7 @@ def build_service(service_class: ServiceType, invoice: BaseInvoiceModel, job_id:
             search_carrier_by=invoice.search_carrier_by,
             carrier_target=invoice.carrier_name or invoice.carrier_code,
             observation=invoice.observation,
+            which_filial=invoice.which_filial,
         )
 
     raise ValueError("Invalid service class")

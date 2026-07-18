@@ -9,13 +9,23 @@ from .log_buffer import InMemoryLogHandler
 
 # Shared registries for services: base URL, cancellation flags and PDF-approval workflow
 RECIMINAS_URL = "https://cloud.gruposygecom.com.br/sgr_reciminas.html"
+
 CANCEL_FLAGS = {}
+
 TO_PDF_APPROVAL = {
     # "<taskID>": {
     #     "path": "downloads/path.pdf",
     #     "status": "inactive",  # ("inactive", "pending", "cancelled" or "approved")
     #     "job_id": "JOB_001",
     # }
+}
+
+FILIAL_MAPPING = {
+    "bahia": "coord_filial_bahia",
+    "rj": "coord_filial_rj",
+    "mt": "coord_filial_mt",
+    "varejo": "coord_filial_varejo",
+    "jba": "coord_filial_jba",
 }
 
 
@@ -172,10 +182,11 @@ class BaseServiceManager(AutomationControl):
     certified_app_server = "APP9"
     alt_app_server = "APP3"
 
-    def __init__(self, job_id: str, current_iter: str = "") -> None:
+    def __init__(self, job_id: str, current_iter: str = "", which_filial: str = "default") -> None:
         super().__init__()
         self.job_id = job_id
         self.current_iter = current_iter or ""
+        self.which_filial = which_filial.lower()
 
         # Build a stable task id joined by '-' from the iteration (e.g. "JOB_1_1-2")
         self.task_id = (
@@ -319,6 +330,7 @@ class BaseServiceManager(AutomationControl):
     def prepare_options(
         self,
         page_to_use: Page,
+        filial_selection: tuple[int],
         fiscal_tab: tuple[int],
         invoice_control: tuple[int],
         register: tuple[int],
@@ -327,6 +339,13 @@ class BaseServiceManager(AutomationControl):
         close_experience_warning: Optional[tuple[int]] = None,
     ) -> None:
         """Isolate actions for preparing options on the initial ERP Page"""
+
+        # Set Filial
+        self.logger.info(f"Definindo filial {self.which_filial}.")
+        if self.which_filial in FILIAL_MAPPING and hasattr(self, FILIAL_MAPPING[self.which_filial]):
+            filial_coord = getattr(self, FILIAL_MAPPING[self.which_filial])
+            self._click_element(page=page_to_use, element_to_click=filial_selection, delay=1)
+            self._click_element(page=page_to_use, element_to_click=filial_coord, delay=4)
 
         # Open Fiscal Tab
         self.logger.info("Abrindo guia 'Opções | Fiscal'.")

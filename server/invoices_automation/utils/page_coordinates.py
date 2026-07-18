@@ -65,6 +65,15 @@ class BasePageCoordinates:
     coord_close_material_inclusion_warning = (1025, 256)
     coord_close_experience_warning = (878, 359)
 
+    # Set Filial coordinates
+    coord_select_filial = (1215, 70)
+    coord_filial_default = (1118, 102)
+    coord_filial_bahia = (1094, 130)
+    coord_filial_rj = (1135, 159)
+    coord_filial_mt = (1126, 191)
+    coord_filial_varejo = (1138, 213)
+    coord_filial_jba = (1122, 242)
+
 
 class EntryInvoicePageCoordinates(BasePageCoordinates):
     """Entry Invoices specific page operational coordinates."""
