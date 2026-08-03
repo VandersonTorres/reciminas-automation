@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
         getPdfs: cfg.getPdfsUrl,
         approve: cfg.approveUrl,
         servePdf: cfg.servePdfUrl,
+        getScreenshots: cfg.getScreenshotsUrl,
+        serveScreenshot: cfg.serveScreenshotUrl,
     };
 
     const jobId = cfg.jobId;
@@ -19,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let finished = false;
     let pendingPdfs = [];
     let currentPdfIndex = 0;
+    let nextScreenshotIndex = 0;
 
     function fetchLogs() {
         if (!cancelConfirmed && !finished) {
@@ -99,6 +102,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setInterval(fetchLogs, 1000);
     fetchLogs();
+
+    function fetchScreenshots() {
+        if (cancelConfirmed) return;
+
+        fetch(`${urls.getScreenshots}?job_id=${jobId}&since=${nextScreenshotIndex}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.results.length) return;
+
+                const panel = document.getElementById("screenshotsPanel");
+                const strip = document.getElementById("screenshotsStrip");
+                panel.style.display = "block";
+
+                data.results.forEach(shot => {
+                    let cleanPath = shot.screenshot_path.replace(/^downloads\//, "");
+                    const imgUrl = urls.serveScreenshot.replace("__PLACEHOLDER__", cleanPath);
+
+                    const thumb = document.createElement("img");
+                    thumb.src = imgUrl;
+                    thumb.title = shot.label;
+                    thumb.style.height = "100px";
+                    thumb.style.borderRadius = "4px";
+                    thumb.style.cursor = "pointer";
+                    thumb.style.border = "1px solid #ccc";
+                    thumb.addEventListener("click", () => {
+                        document.getElementById("screenshotPreviewImg").src = imgUrl;
+                        document.getElementById("screenshotPreviewLabel").innerText = shot.label;
+                        const modal = new bootstrap.Modal(document.getElementById("screenshotPreviewModal"));
+                        modal.show();
+                    });
+
+                    strip.appendChild(thumb);
+                    nextScreenshotIndex = Math.max(nextScreenshotIndex, shot.index + 1);
+                });
+
+                strip.scrollLeft = strip.scrollWidth;
+            });
+    }
+
+    setInterval(fetchScreenshots, 2000);
+    fetchScreenshots();
 
     document.getElementById("cancelButton").addEventListener("click", () => {
         if (confirm("Deseja realmente cancelar a automação em andamento?")) {

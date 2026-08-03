@@ -14,6 +14,8 @@
       data-get-pdfs-url="{% url 'get_pending_pdfs' %}"
       data-approve-url="{% url 'approve_pdf' %}"
       data-serve-pdf-url="{% url 'serve_pdf' filename='__PLACEHOLDER__' %}"
+      data-get-screenshots-url="{% url 'get_screenshots' %}"
+      data-serve-screenshot-url="{% url 'serve_screenshot' filename='__PLACEHOLDER__' %}"
       data-job-id="{{ request.session.job_id }}"
       data-csrf-token="{{ csrf_token }}">
   </div>
@@ -29,6 +31,15 @@
       <pre id="logs"
         style="max-height: 400px; overflow-y: auto; background: #111; color: #0f0; padding: 10px; border-radius: 5px;">
       </pre>
+
+      <!-- Follow-up Screenshots (informational only) -->
+      <div id="screenshotsPanel" class="mt-3" style="display: none;">
+        <h6 class="mb-2" style="color: azure;">📸 Acompanhe o processo em tempo real</h6>
+        <div id="screenshotsStrip" class="d-flex gap-2 flex-wrap"
+          style="max-height: 160px; overflow-y: auto; background: #001507b7; padding: 8px; border-radius: 5px;">
+        </div>
+      </div>
+
       <!-- Approval PDF MODAL -->
       <div class="modal fade" id="pdfApprovalModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -43,6 +54,21 @@
             <div class="modal-footer">
               <button class="btn btn-success" id="approveBtn">Transmitir</button>
               <button class="btn btn-danger" id="cancelBtn">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot Preview MODAL -->
+      <div class="modal fade" id="screenshotPreviewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="screenshotPreviewLabel">Captura de tela</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+              <img id="screenshotPreviewImg" src="" style="max-width: 100%;" alt="Captura de tela">
             </div>
           </div>
         </div>

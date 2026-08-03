@@ -3,7 +3,13 @@ from django.urls import path
 
 from invoices_automation.forms import CustomAuthenticationForm
 from invoices_automation.views.core import dashboard, register
-from invoices_automation.views.manage_emission_approval import approve_pdf, get_pending_pdfs, serve_pdf
+from invoices_automation.views.manage_emission_approval import (
+    approve_pdf,
+    get_pending_pdfs,
+    serve_pdf,
+    get_screenshots,
+    serve_screenshot,
+)
 from invoices_automation.views.entry_module.crud_entry_invoices import (
     create_entry_invoice,
     access_entry_invoices_queue,
@@ -45,6 +51,8 @@ urlpatterns = [
     path("aprovar-nota/", approve_pdf, name="approve_pdf"),
     path("pdfs-pendentes/", get_pending_pdfs, name="get_pending_pdfs"),
     path("downloads/<path:filename>", serve_pdf, name="serve_pdf"),
+    path("screenshots-acompanhamento/", get_screenshots, name="get_screenshots"),
+    path("screenshots/<path:filename>", serve_screenshot, name="serve_screenshot"),
     path("registro-nf-entrada/", create_entry_invoice, name="create_entry_invoice"),
     path("controle-nfs-entrada/", access_entry_invoices_queue, name="access_entry_invoices_queue"),
     path("fila/editar/entrada/<int:pk>/", edit_entry_invoice, name="edit_entry_invoice"),

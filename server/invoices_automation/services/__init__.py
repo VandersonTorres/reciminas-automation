@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from typing import Any, Literal, Optional
 
@@ -18,6 +19,14 @@ TO_PDF_APPROVAL = {
     #     "status": "inactive",  # ("inactive", "pending", "cancelled" or "approved")
     #     "job_id": "JOB_001",
     # }
+}
+
+# Registry of "follow-up" screenshots taken during the automation, purely informational
+# (does not block the flow like TO_PDF_APPROVAL does).
+SCREENSHOTS = {
+    # "<jobID>": [
+    #     {"path": "downloads/screenshots/<jobID>/<ts>_label.png", "label": "..."},
+    # ]
 }
 
 FILIAL_MAPPING = {
@@ -207,6 +216,33 @@ class BaseServiceManager(AutomationControl):
         """Register the generated invoice PDF and set it to pending approval."""
         TO_PDF_APPROVAL[self.task_id] = {"path": invoice_path, "status": "pending", "job_id": self.job_id}
 
+    def _capture_screenshot(self, page: Page, label: str) -> None:
+        """Take a follow-up screenshot at a specific point of the flow and register it
+        so it can be displayed alongside the logs for the user (purely informational,
+        it does not block the automation like `register_pdf_pending` does).
+
+        Args:
+            page (Page): Playwright Page object.
+            label (str): Short description of the step being captured (e.g. "login-realizado").
+        """
+        try:
+            screenshots_dir = os.path.join("downloads", "screenshots", self.job_id)
+            os.makedirs(screenshots_dir, exist_ok=True)
+
+            safe_label = label.replace(" ", "-")
+            filename = f"{self.task_id}_{int(time.time() * 1000)}_{safe_label}.png"
+            screenshot_path = os.path.join(screenshots_dir, filename)
+
+            page.screenshot(path=screenshot_path)
+
+            SCREENSHOTS.setdefault(self.job_id, []).append(
+                {"path": screenshot_path, "label": label, "task_id": self.task_id}
+            )
+            self.logger.info(f"📸 Screenshot capturado: {label}.")
+        except Exception as exc:
+            # Never break the automation because of a failed screenshot attempt
+            self.logger.warning(f"Não foi possível capturar screenshot ('{label}'): {exc}")
+
     def wait_for_transmit_decision(self, sleep_seconds: int = 2) -> str:
         """Block until the PDF is approved/cancelled by the user. Returns the final status."""
         while TO_PDF_APPROVAL[self.task_id]["status"] == "pending":
@@ -289,9 +325,16 @@ class BaseServiceManager(AutomationControl):
             delay=10,
         )
         self.check_cancelled()
+        self._capture_screenshot(page=page_to_use, label="login-realizado")
 
     def _navigate_to_certified_area(self, page_to_use: Page, coord_home_auth: tuple[int], cnpj: str) -> None:
         """Isolate actions for navigating to the certified area of the ERP"""
+
+        # Neutralize window.close() as early as possible, before any navigation to the
+        # certified area, since the ERP page itself may try to close the tab/browser
+        # (e.g. detecting an unavailable session/server), which would abort the automation
+        # with "Target page, context or browser has been closed".
+        page_to_use.add_init_script("window.close = () => console.log('NO CLOSE');")
 
         page_to_use.wait_for_load_state("load", timeout=60000)
         target_url = self.certified_url.format(app=self.certified_app_server)
@@ -306,9 +349,6 @@ class BaseServiceManager(AutomationControl):
             if "HTTP TARGET SERVER NOT AVAILABLE" in title_text:
                 self._sleep_between_actions()
                 self.logger.error("Erro ao acessar área certificada. O servidor de destino não está disponível.")
-
-                # Inject js to avoid unexpected close
-                page_to_use.add_init_script("window.close = () => console.log('NO CLOSE');")
 
                 target_url = self.certified_url.format(app=self.alt_app_server)
                 self.logger.info(f"Acessando servidor alternativo: {target_url}")
@@ -326,6 +366,7 @@ class BaseServiceManager(AutomationControl):
         page_to_use.keyboard.press("Enter")
         self.check_cancelled()
         self._sleep_between_actions()
+        self._capture_screenshot(page=page_to_use, label="acesso-area-certificada")
 
     def prepare_options(
         self,
@@ -385,6 +426,8 @@ class BaseServiceManager(AutomationControl):
         close_unwanted_popup: Optional[tuple[int]] = None,
     ) -> None:
         """Isolate actions for setting the provider"""
+        # TODO: The name "close_popup_confirmation" is misleading,
+        # it should be something like "close_unwanted_popup"
 
         # Locate provider
         self.logger.info("Expandindo lista de fornecedores.")
@@ -408,6 +451,7 @@ class BaseServiceManager(AutomationControl):
             self._click_element(page=page_to_use, element_to_click=close_unwanted_popup, delay=2)
 
         self.check_cancelled()
+        self._capture_screenshot(page=page_to_use, label=f"fornecedor-selecionado-{provider}")
 
     def include_materials(
         self,
@@ -465,8 +509,15 @@ class BaseServiceManager(AutomationControl):
             )
             self.check_cancelled()
 
+            self._click_element(page=page_to_use, element_to_click=discount)
             if close_material_inclusion_warning:
-                self._click_element(page=page_to_use, element_to_click=close_material_inclusion_warning, delay=2)
+                self._click_element(
+                    page=page_to_use,
+                    element_to_click=close_material_inclusion_warning,
+                    delay=2,
+                    use_dblclick=True,
+                    add_redundance=True,
+                )
 
             self._click_element(page=page_to_use, element_to_click=discount)
             self._insert_data(
@@ -478,6 +529,7 @@ class BaseServiceManager(AutomationControl):
 
             self._click_element(page=page_to_use, element_to_click=store_progress, add_redundance=True, delay=3)
             self.check_cancelled()
+            self._capture_screenshot(page=page_to_use, label=f"material-incluido-{mat['material_code']}")
 
     def set_charging_and_payment(
         self,

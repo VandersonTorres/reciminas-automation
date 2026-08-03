@@ -6,7 +6,7 @@ from django.http import FileResponse, Http404, JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 
-from invoices_automation.services import TO_PDF_APPROVAL
+from invoices_automation.services import TO_PDF_APPROVAL, SCREENSHOTS
 
 
 @login_required
@@ -46,3 +46,32 @@ def serve_pdf(request, filename):
     if not os.path.exists(file_path):
         raise Http404("Arquivo não encontrado")
     return FileResponse(open(file_path, "rb"), content_type="application/pdf")
+
+
+@login_required
+def get_screenshots(request):
+    """Return the follow-up screenshots captured so far for a given job, ordered by capture time."""
+    job_id = request.GET.get("job_id")
+    since = int(request.GET.get("since", 0))
+
+    screenshots = SCREENSHOTS.get(job_id, [])
+    results = [
+        {
+            "index": idx,
+            "task_id": info["task_id"],
+            "label": info["label"],
+            "screenshot_path": info["path"],
+        }
+        for idx, info in enumerate(screenshots)
+        if idx >= since
+    ]
+    return JsonResponse({"results": results})
+
+
+@login_required
+@xframe_options_sameorigin
+def serve_screenshot(request, filename):
+    file_path = os.path.join(settings.MEDIA_ROOT, filename)
+    if not os.path.exists(file_path):
+        raise Http404("Arquivo não encontrado")
+    return FileResponse(open(file_path, "rb"), content_type="image/png")
