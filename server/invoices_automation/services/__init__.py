@@ -262,6 +262,7 @@ class BaseServiceManager(AutomationControl):
         log_in_button: tuple[int],
         username: str,
         password: str,
+        close_update_suggestion: Optional[tuple[int]] = None,
     ) -> None:
         """Isolate actions for setting account on the ERP Environment"""
 
@@ -284,6 +285,10 @@ class BaseServiceManager(AutomationControl):
             delay=10,
         )
         self.check_cancelled()
+
+        if close_update_suggestion:
+            self._click_element(page=page_to_use, element_to_click=close_update_suggestion)
+            self._click_element(page=page_to_use, element_to_click=initial_ticker_selection, delay=2)
 
         self.logger.info("LOGIN:")
 
@@ -356,6 +361,7 @@ class BaseServiceManager(AutomationControl):
 
         self.check_cancelled()
         self._sleep_between_actions(seconds=10)
+        self._capture_screenshot(page=page_to_use, label="acesso-area-certificada")
         self._click_element(page=page_to_use, element_to_click=coord_home_auth, delay=2)
         self._insert_data(
             page=page_to_use,
@@ -366,7 +372,6 @@ class BaseServiceManager(AutomationControl):
         page_to_use.keyboard.press("Enter")
         self.check_cancelled()
         self._sleep_between_actions()
-        self._capture_screenshot(page=page_to_use, label="acesso-area-certificada")
 
     def prepare_options(
         self,

@@ -47,6 +47,7 @@ class OutStateInvoiceService(ExitInvoiceService, OutstateSaleInvoicePageCoordina
                     log_in_button=self.coord_log_in,
                     username=COMPANY_USERNAME,
                     password=COMPANY_PASSWORD,
+                    close_update_suggestion=self.coord_close_update_suggestion,
                 )
 
                 self.logger.info(f"PREPARAÇÃO DA NF {self.name}:")

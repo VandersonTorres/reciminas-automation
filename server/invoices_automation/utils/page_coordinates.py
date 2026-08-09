@@ -64,6 +64,7 @@ class BasePageCoordinates:
     coord_close_viewport_warning_alt = (821, 471)
     coord_close_material_inclusion_warning = (1025, 256)
     coord_close_experience_warning = (878, 359)
+    coord_close_update_suggestion = (620, 394)
 
     # Set Filial coordinates
     coord_select_filial = (1215, 70)
