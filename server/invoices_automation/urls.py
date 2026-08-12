@@ -31,6 +31,7 @@ from invoices_automation.views.manage_automation_process import (
     follow_automation_logs,
     get_logs,
     clear_logs,
+    reissue_invoice,
 )
 from invoices_automation.views.crud_materials import (
     list_materials,
@@ -65,6 +66,7 @@ urlpatterns = [
     path("fila/excluir/saida/<int:pk>/", delete_exit_invoice, name="delete_exit_invoice"),
     path("cancelar-processo/", cancel_automation, name="cancel_automation"),
     path("emitir-nota/<int:invoice_pk>/", emit_invoice, name="emit_invoice"),
+    path("reemitir-nota/<int:invoice_pk>/", reissue_invoice, name="reissue_invoice"),
     path("emissoes-nfs/", start_batch_automation, name="start_batch_automation"),
     path("logs-automacao/", follow_automation_logs, name="follow_automation_logs"),
     path("get-logs/", get_logs, name="get_logs"),

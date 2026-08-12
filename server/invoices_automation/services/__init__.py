@@ -274,21 +274,19 @@ class BaseServiceManager(AutomationControl):
             element_to_click=initial_ticker_selection,
             use_dblclick=True,
             add_redundance=True,
-            delay=2,
-        )
-        # Ensure the previous clicks works
-        self._click_element(
-            page=page_to_use,
-            element_to_click=initial_ticker_selection,
-            use_dblclick=True,
-            add_redundance=True,
             delay=10,
         )
         self.check_cancelled()
 
         if close_update_suggestion:
-            self._click_element(page=page_to_use, element_to_click=close_update_suggestion)
-            self._click_element(page=page_to_use, element_to_click=initial_ticker_selection, delay=2)
+            self._click_element(page=page_to_use, element_to_click=close_update_suggestion, delay=1)
+            self._click_element(
+                page=page_to_use,
+                element_to_click=initial_ticker_selection,
+                use_dblclick=True,
+                add_redundance=True,
+                delay=1,
+            )
 
         self.logger.info("LOGIN:")
 

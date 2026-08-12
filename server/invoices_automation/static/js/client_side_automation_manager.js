@@ -163,12 +163,18 @@ document.addEventListener("DOMContentLoaded", () => {
             })
                 .then(r => r.json())
                 .then(data => {
-                    if (data.status === "cancelling") {
-                        alert("Prosseguindo com cancelamento...");
-                        window.location.href = urls.followLogs;
-                    } else {
+                    if (data.status !== "cancelling") {
                         alert("Erro ao cancelar: " + (data.error || "Desconhecido"));
+                        const spinnerEl = document.getElementById("cancelLoadingSpinner");
+                        if (spinnerEl) {
+                            spinnerEl.style.display = "none";
+                        }
                     }
+                    // On success, stay on this same page: the existing fetchLogs polling loop
+                    // will detect "Automação cancelada" in the logs and update the UI in-place.
+                    // Forcing a full page navigation here could race with that detection and
+                    // reload the page right when the session's job_id gets cleared, causing the
+                    // card to disappear before the "cancelado" message is ever shown.
                 });
         }
     });

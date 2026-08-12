@@ -86,7 +86,15 @@ def start_batch_automation(request):
 
 @login_required
 def follow_automation_logs(request):
-    return render(request, "invoices_automation/follow_automation_logs.html", {"logs": current_logs})
+    # An automation is considered "in progress" if the session holds a job_id, regardless of
+    # whether the background thread has already written any log line yet (it may still be
+    # starting up right after a redirect), avoiding a false "no automation running" flash.
+    has_active_job = bool(request.session.get("job_id"))
+    return render(
+        request,
+        "invoices_automation/follow_automation_logs.html",
+        {"logs": current_logs, "has_active_job": has_active_job},
+    )
 
 
 @login_required
@@ -98,6 +106,7 @@ def get_logs(request):
 @csrf_exempt
 def clear_logs(request):
     current_logs.clear()
+    request.session.pop("job_id", None)
     return JsonResponse({"status": "cleared"})
 
 
@@ -125,3 +134,35 @@ def cancel_automation(request):
         return JsonResponse({"status": "cancelling_with_error"})
     finally:
         return JsonResponse({"status": "cancelling"})
+
+
+@login_required
+def reissue_invoice(request, invoice_pk):
+    """Reset a cancelled invoice back to 'pending' and immediately re-trigger its emission."""
+    if automation_lock.locked():
+        messages.error(request, "Outra automação já está em andamento.")
+        return redirect("dashboard")
+
+    invoice_model_name = request.GET.get("invoice_model")
+    access_invoices_view = request.GET.get("access_invoices_view")
+    invoice_model = invoice_model_map[invoice_model_name]
+    invoice = get_object_or_404(invoice_model, pk=invoice_pk)
+
+    if invoice.status != "cancelled":
+        messages.error(request, "Apenas notas canceladas podem ser reemitidas.")
+        return redirect(access_invoices_view)
+
+    invoice.status = "pending"
+    invoice.invoice_path = None
+    invoice.save()
+
+    job_id = str(uuid.uuid4())
+    request.session["job_id"] = job_id
+
+    threading.Thread(
+        target=run_job,
+        args=([invoice.pk], invoice_model_name, job_id),
+        daemon=True,
+    ).start()
+
+    return redirect("follow_automation_logs")

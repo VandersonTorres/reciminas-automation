@@ -94,6 +94,16 @@
                                     </form>
                                 {% endif %}
 
+                                {% if invoice.status == "cancelled" %}
+                                    <a
+                                        href="{% url 'reissue_invoice' invoice.pk %}?invoice_model=ExitInvoiceQueue&access_invoices_view=access_exit_invoices_queue"
+                                        class="btn btn-sm btn-primary"
+                                        onclick="return confirm('Deseja reemitir esta nota?');"
+                                    >
+                                        🔁 Re-emitir
+                                    </a>
+                                {% endif %}
+
                                 {% if invoice.invoice_path %}
                                     <a href="{% url 'serve_pdf' filename=invoice.invoice_path %}" class="btn btn-sm btn-info" download>
                                         📥 Baixar PDF
